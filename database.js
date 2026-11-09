@@ -55,7 +55,7 @@ db.serialize(() => {
     );
   `);
 
-  // Table 2: activity_logs
+  // Table 2: activity_logs (Telemetry Engine: Workstation Focus vs External Task Work)
   db.run(`
     CREATE TABLE IF NOT EXISTS activity_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,8 +63,15 @@ db.serialize(() => {
       session_start DATETIME DEFAULT CURRENT_TIMESTAMP,
       last_heartbeat DATETIME DEFAULT CURRENT_TIMESTAMP,
       active_seconds INTEGER DEFAULT 0,
+      workstation_seconds INTEGER DEFAULT 0,
+      external_work_seconds INTEGER DEFAULT 0,
+      idle_seconds INTEGER DEFAULT 0,
+      active_task_id INTEGER,
+      total_interactions INTEGER DEFAULT 0,
+      last_work_log TEXT,
       status TEXT CHECK(status IN ('active', 'idle', 'closed')) DEFAULT 'active',
-      FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
+      FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE,
+      FOREIGN KEY (active_task_id) REFERENCES tasks(id) ON DELETE SET NULL
     );
   `);
 
@@ -126,13 +133,34 @@ db.serialize(() => {
     );
   `);
 
-  // Migration: Add priority to tasks if not present
+  // Table 7: work_logs (Proof-of-Work Check-Ins & Real-Time Activity Stream)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS work_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      candidate_id INTEGER NOT NULL,
+      task_id INTEGER,
+      log_type TEXT CHECK(log_type IN ('progress', 'git_commit', 'blocker', 'checkpoint')) DEFAULT 'progress',
+      message TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE,
+      FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE SET NULL
+    );
+  `);
+
+  // Safe schema migrations for existing database columns
   db.run(`ALTER TABLE tasks ADD COLUMN priority TEXT CHECK(priority IN ('critical', 'high', 'medium', 'low')) DEFAULT 'medium'`, () => {});
+  db.run(`ALTER TABLE activity_logs ADD COLUMN workstation_seconds INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE activity_logs ADD COLUMN external_work_seconds INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE activity_logs ADD COLUMN idle_seconds INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE activity_logs ADD COLUMN active_task_id INTEGER REFERENCES tasks(id)`, () => {});
+  db.run(`ALTER TABLE activity_logs ADD COLUMN total_interactions INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE activity_logs ADD COLUMN last_work_log TEXT`, () => {});
 
   // Performance & Security Indexes
   db.run(`CREATE INDEX IF NOT EXISTS idx_candidates_access_token ON candidates(access_token);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_candidate_id ON activity_logs(candidate_id);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_status ON activity_logs(status);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_active_task ON activity_logs(active_task_id);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_tasks_assigned_to ON tasks(assigned_to);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_audit_trail_candidate_id ON audit_trail(candidate_id);`);
@@ -141,6 +169,8 @@ db.serialize(() => {
   db.run(`CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_notifications_candidate_id ON notifications(candidate_id);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_work_logs_candidate_id ON work_logs(candidate_id);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_work_logs_task_id ON work_logs(task_id);`);
 
   console.log('[INFO] [DevSecOps] Database schema and indexes verified successfully.');
 });

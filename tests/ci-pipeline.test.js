@@ -62,6 +62,12 @@ async function runTestSuite() {
         session_start DATETIME DEFAULT CURRENT_TIMESTAMP,
         last_heartbeat DATETIME DEFAULT CURRENT_TIMESTAMP,
         active_seconds INTEGER DEFAULT 0,
+        workstation_seconds INTEGER DEFAULT 0,
+        external_work_seconds INTEGER DEFAULT 0,
+        idle_seconds INTEGER DEFAULT 0,
+        active_task_id INTEGER,
+        total_interactions INTEGER DEFAULT 0,
+        last_work_log TEXT,
         status TEXT CHECK(status IN ('active', 'idle', 'closed')) DEFAULT 'active',
         FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
       );
@@ -106,6 +112,18 @@ async function runTestSuite() {
         message TEXT NOT NULL,
         type TEXT DEFAULT 'info',
         is_read INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
+      );
+    `);
+
+    await run(`
+      CREATE TABLE work_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        candidate_id INTEGER NOT NULL,
+        task_id INTEGER,
+        log_type TEXT DEFAULT 'progress',
+        message TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
       );

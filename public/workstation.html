@@ -9,26 +9,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-base: #06070a;
-      --bg-surface: #0c0e17;
-      --bg-surface-elevated: #131726;
-      --bg-surface-hover: #191f33;
-      --border-subtle: #1a2035;
-      --border-accent: #2a3454;
-      --border-glow: rgba(0, 242, 254, 0.25);
+      --bg-base: #07090e;
+      --bg-surface: #0e121b;
+      --bg-surface-elevated: #151b28;
+      --bg-surface-hover: #1c2436;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-accent: rgba(255, 255, 255, 0.15);
+      --border-glow: rgba(0, 242, 254, 0.3);
       --text-main: #f3f6fc;
-      --text-muted: #828fa8;
-      --text-faint: #4e5a74;
+      --text-muted: #8a96ad;
+      --text-faint: #526079;
       --cyan: #00f2fe;
-      --cyan-glow: rgba(0, 242, 254, 0.4);
       --blue: #3b82f6;
       --purple: #8b5cf6;
       --green: #10b981;
-      --green-glow: rgba(16, 185, 129, 0.35);
       --amber: #f59e0b;
-      --amber-glow: rgba(245, 158, 11, 0.35);
       --red: #ef4444;
-      --red-glow: rgba(239, 68, 68, 0.35);
       --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
       --font-mono: 'Fira Code', monospace;
     }
@@ -40,10 +36,10 @@
       font-family: var(--font-sans);
       min-height: 100vh;
       line-height: 1.5;
-      overflow-x: hidden;
+      font-variant-numeric: tabular-nums;
       background-image: 
-        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.04) 0%, transparent 40%),
-        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.04) 0%, transparent 40%);
+        radial-gradient(circle at 10% 10%, rgba(0, 242, 254, 0.04) 0%, transparent 45%),
+        radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.04) 0%, transparent 45%);
     }
 
     /* Auth Screen */
@@ -53,19 +49,17 @@
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
-      position: relative;
     }
 
     .auth-card {
       background: var(--bg-surface);
-      border: 1px solid var(--border-accent);
+      border: 1px solid var(--border-subtle);
       border-radius: 16px;
       padding: 2.75rem 2.25rem;
       max-width: 480px;
       width: 100%;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 242, 254, 0.05);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
       position: relative;
-      overflow: hidden;
     }
 
     .auth-card::before {
@@ -75,9 +69,9 @@
       background: linear-gradient(90deg, var(--cyan), var(--blue), var(--purple));
     }
 
-    .brand-emblem {
-      width: 52px;
-      height: 52px;
+    .brand-icon {
+      width: 48px;
+      height: 48px;
       background: linear-gradient(135deg, #00f2fe, #4facfe);
       border-radius: 12px;
       display: flex;
@@ -85,44 +79,26 @@
       justify-content: center;
       font-weight: 800;
       color: #000;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       margin-bottom: 1.5rem;
-      box-shadow: 0 0 25px var(--cyan-glow);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
     }
 
-    .auth-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
-    .auth-sub { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.75rem; line-height: 1.5; }
+    .auth-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.35rem; }
+    .auth-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.75rem; }
 
-    .security-tags {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-
-    .tag-pill {
-      font-size: 0.7rem;
-      font-family: var(--font-mono);
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
-      padding: 3px 8px;
-      border-radius: 4px;
-    }
-
-    /* Main Workstation Screen */
     .app-screen { display: none; }
     .app-screen.active { display: block; }
 
-    /* Top Navigation HUD */
+    /* Top HUD */
     header {
-      background: rgba(12, 14, 23, 0.85);
+      background: rgba(14, 18, 27, 0.85);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border-subtle);
       position: sticky;
       top: 0;
       z-index: 100;
-      padding: 0.85rem 2rem;
+      padding: 0.75rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -149,54 +125,69 @@
       color: var(--cyan);
       background: rgba(0, 242, 254, 0.08);
       border: 1px solid rgba(0, 242, 254, 0.25);
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: 4px;
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .hud-controls {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.85rem;
     }
 
-    .status-indicator {
+    .telemetry-status-pill {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       background: rgba(16, 185, 129, 0.08);
       border: 1px solid rgba(16, 185, 129, 0.25);
-      padding: 0.4rem 0.85rem;
+      padding: 0.35rem 0.8rem;
       border-radius: 9999px;
-      font-size: 0.775rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: #34d399;
+      transition: all 0.3s ease;
     }
 
-    .pulse-green {
+    .telemetry-status-pill.mode-external {
+      background: rgba(59, 130, 246, 0.12);
+      border-color: rgba(59, 130, 246, 0.35);
+      color: #60a5fa;
+    }
+
+    .telemetry-status-pill.mode-idle {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .pulse-dot {
       width: 7px;
       height: 7px;
-      background: var(--green);
       border-radius: 50%;
-      box-shadow: 0 0 10px var(--green);
-      animation: pulseAnim 2s infinite;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
     }
+    .pulse-dot.blue { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+    .pulse-dot.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
 
-    @keyframes pulseAnim {
+    @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.2); }
+      50% { opacity: 0.4; transform: scale(1.2); }
     }
 
-    .user-profile-badge {
+    .user-pill {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
       background: var(--bg-surface-elevated);
       border: 1px solid var(--border-accent);
-      padding: 0.35rem 0.85rem;
+      padding: 0.35rem 0.8rem;
       border-radius: 9999px;
-      font-size: 0.825rem;
+      font-size: 0.8rem;
       font-weight: 600;
     }
 
@@ -206,22 +197,174 @@
       padding: 2px 6px;
       border-radius: 4px;
       text-transform: uppercase;
+      font-weight: 700;
     }
-    .role-core { background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); }
-    .role-junior { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .role-lead { background: rgba(0, 242, 254, 0.2); color: #00f2fe; }
+    .role-core { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
+    .role-junior { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
 
-    /* Layout & Navigation Tabs */
+    /* Container */
     .container {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 2rem 1.5rem;
     }
 
-    .tab-bar {
+    /* Active Deliverable Command Bar */
+    .deliverable-bar {
+      background: linear-gradient(135deg, rgba(14, 18, 27, 0.95), rgba(21, 27, 40, 0.95));
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--cyan);
+      border-radius: 12px;
+      padding: 1.25rem 1.75rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .deliv-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .deliv-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .deliv-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .deliv-subtext {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .deliv-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* KPI Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .metric-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .metric-header {
+      font-size: 0.725rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .metric-val {
+      font-size: 1.85rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: #fff;
+    }
+
+    .metric-sub {
+      font-size: 0.75rem;
+      color: var(--text-faint);
+      margin-top: 0.35rem;
+    }
+
+    /* Quick Check-in Bar */
+    .checkin-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .checkin-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .checkin-form {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .checkin-input {
+      flex: 1;
+      min-width: 260px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .checkin-input:focus { border-color: var(--cyan); }
+
+    .checkin-select {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.825rem;
+      outline: none;
+    }
+
+    /* Tabs */
+    .tab-nav {
       display: flex;
       gap: 0.5rem;
       border-bottom: 1px solid var(--border-subtle);
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
       overflow-x: auto;
     }
 
@@ -240,186 +383,28 @@
       border-bottom: 2px solid transparent;
       transition: all 0.2s;
     }
-
-    .tab-btn:hover { color: var(--text-main); }
+    .tab-btn:hover { color: #fff; }
     .tab-btn.active {
       color: var(--cyan);
       border-bottom-color: var(--cyan);
     }
 
-    .tab-count {
+    .pill-counter {
       background: rgba(255, 255, 255, 0.08);
       font-size: 0.7rem;
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: 9999px;
       font-family: var(--font-mono);
     }
 
-    /* Metric Cards */
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
-    }
-
-    .metric-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-
-    .metric-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--border-accent);
-    }
-
-    .metric-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.5rem;
-    }
-
-    .metric-val {
-      font-size: 1.85rem;
-      font-weight: 800;
-      font-family: var(--font-mono);
-      color: #fff;
-    }
-
-    /* Governance Task Cards */
-    .task-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1.25rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
-
-    .task-card:hover {
-      border-color: var(--border-accent);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-    }
-
-    .task-card.overdue {
-      border-color: rgba(239, 68, 68, 0.4);
-      background: linear-gradient(90deg, rgba(239, 68, 68, 0.03), var(--bg-surface));
-    }
-
-    .task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 0.75rem;
-      gap: 1rem;
-    }
-
-    .task-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .task-badges {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .task-desc {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 1.25rem;
-      line-height: 1.6;
-    }
-
-    .task-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border-subtle);
-    }
-
-    .deadline-countdown {
-      font-size: 0.825rem;
-      font-family: var(--font-mono);
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    /* Support Tickets */
-    .ticket-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 1.35rem 1.5rem;
-      margin-bottom: 1rem;
-      transition: border-color 0.2s;
-    }
-    .ticket-card:hover { border-color: var(--border-accent); }
-
-    .ticket-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .ticket-subject { font-size: 1.05rem; font-weight: 700; }
-
-    .admin-remark-box {
-      margin-top: 1rem;
-      background: rgba(0, 242, 254, 0.04);
-      border-left: 3px solid var(--cyan);
-      padding: 0.75rem 1rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
-
-    /* Priority & Status Badges */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 3px 8px;
-      border-radius: 9999px;
-      font-size: 0.725rem;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-    }
-
-    .prio-critical { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
-    .prio-high { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-    .prio-medium { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
-    .prio-low { background: rgba(132, 144, 171, 0.15); color: var(--text-muted); border: 1px solid var(--border-accent); }
-
-    .status-open { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
-    .status-in_progress { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-    .status-resolved { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .status-closed { background: rgba(132, 144, 171, 0.15); color: var(--text-muted); border: 1px solid var(--border-accent); }
-
-    /* Inputs, Buttons, & Forms */
+    /* Buttons */
     .btn {
       background: var(--bg-surface-elevated);
       color: var(--text-main);
       border: 1px solid var(--border-accent);
-      padding: 0.6rem 1.15rem;
+      padding: 0.55rem 1rem;
       border-radius: 8px;
-      font-size: 0.85rem;
+      font-size: 0.825rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
@@ -438,77 +423,165 @@
       background: linear-gradient(135deg, #0072ff, #00c6ff);
       color: #fff;
       border: none;
-      box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
+      box-shadow: 0 2px 10px rgba(0, 198, 255, 0.25);
     }
     .btn-primary:hover {
       filter: brightness(1.15);
-      box-shadow: 0 6px 20px rgba(0, 198, 255, 0.45);
+      box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
     }
+
+    .btn-success {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: var(--green);
+    }
+    .btn-success:hover { background: var(--green); color: #fff; }
 
     .btn-danger {
       background: rgba(239, 68, 68, 0.15);
       border-color: rgba(239, 68, 68, 0.4);
       color: var(--red);
     }
-    .btn-danger:hover {
-      background: var(--red);
+    .btn-danger:hover { background: var(--red); color: #fff; }
+
+    /* Task Cards */
+    .task-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .task-card:hover { border-color: var(--border-accent); }
+    .task-card.active-deliverable {
+      border-color: rgba(0, 242, 254, 0.4);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.08);
+    }
+    .task-card.overdue { border-left: 4px solid var(--red); }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .task-title {
+      font-size: 1.05rem;
+      font-weight: 700;
       color: #fff;
     }
 
-    .form-group {
+    .task-badges {
       display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-      margin-bottom: 1.25rem;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
-    label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .task-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .task-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .deadline-text {
+      font-size: 0.775rem;
+      font-family: var(--font-mono);
       color: var(--text-muted);
     }
 
-    input, select, textarea {
-      background: #08090f;
-      border: 1px solid var(--border-subtle);
-      color: #fff;
-      padding: 0.75rem 0.95rem;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-family: var(--font-sans);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+    /* Badges */
+    .badge {
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--cyan);
-      box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.2);
+    .prio-critical { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .prio-high { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .prio-medium { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .prio-low { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); border: 1px solid var(--border-subtle); }
+    
+    .status-badge {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+    }
+    .status-badge.in_progress { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.35); }
+    .status-badge.submitted { background: rgba(139, 92, 246, 0.15); color: #c084fc; border-color: rgba(139, 92, 246, 0.35); }
+    .status-badge.completed { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
+
+    /* Work Log Timeline */
+    .timeline-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .stream-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .stream-msg {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+    }
+
+    .stream-meta {
+      font-size: 0.725rem;
+      color: var(--text-faint);
+      white-space: nowrap;
     }
 
     /* Modals */
-    .modal-backdrop {
-      display: none;
+    .modal-overlay {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
-      z-index: 200;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: none;
       align-items: center;
       justify-content: center;
-      padding: 1.5rem;
+      z-index: 200;
+      padding: 1rem;
     }
-    .modal-backdrop.open { display: flex; }
+    .modal-overlay.open { display: flex; }
 
-    .modal-card {
+    .modal-box {
       background: var(--bg-surface);
       border: 1px solid var(--border-accent);
       border-radius: 16px;
+      padding: 2rem;
       max-width: 540px;
       width: 100%;
-      padding: 2.25rem;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
-      position: relative;
     }
 
     .modal-header {
@@ -517,237 +590,315 @@
       align-items: center;
       margin-bottom: 1.5rem;
     }
-    .modal-title { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; }
+
+    .modal-title { font-size: 1.15rem; font-weight: 700; }
     .modal-close {
-      background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
     }
 
-    /* Notification Bell & Dropdown */
-    .notif-btn {
-      position: relative;
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
       background: var(--bg-surface-elevated);
       border: 1px solid var(--border-subtle);
-      width: 38px;
-      height: 38px;
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.875rem;
+      outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--cyan);
+    }
+
+    /* Notifications Dropdown */
+    .notif-container { position: relative; }
+    .notif-bell {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-accent);
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      color: var(--text-main);
+      position: relative;
     }
     .notif-badge {
       position: absolute;
       top: -4px;
       right: -4px;
-      background: var(--cyan);
-      color: #000;
+      background: var(--red);
+      color: #fff;
       font-size: 0.65rem;
       font-weight: 800;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
+      padding: 1px 5px;
+      border-radius: 9999px;
       display: none;
-      align-items: center;
-      justify-content: center;
     }
-
-    .notif-dropdown {
-      display: none;
+    .notif-menu {
       position: absolute;
-      top: 60px;
-      right: 2rem;
-      width: 360px;
-      background: var(--bg-surface);
+      right: 0;
+      top: 45px;
+      width: 320px;
+      background: var(--bg-surface-elevated);
       border: 1px solid var(--border-accent);
       border-radius: 12px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+      display: none;
       z-index: 150;
-      max-height: 450px;
-      overflow-y: auto;
+      overflow: hidden;
     }
-    .notif-dropdown.open { display: block; }
-    .notif-item {
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--border-subtle);
-      font-size: 0.825rem;
-      transition: background 0.15s;
-    }
-    .notif-item:hover { background: var(--bg-surface-elevated); }
-    .notif-item.unread { border-left: 3px solid var(--cyan); }
+    .notif-menu.open { display: block; }
   </style>
 </head>
 <body>
 
-  <!-- Screen 1: Token Authentication Gate -->
-  <div class="auth-wrapper" id="authScreen">
+  <!-- Auth Screen -->
+  <div id="authScreen" class="auth-wrapper">
     <div class="auth-card">
-      <div class="brand-emblem">CF</div>
-      <div class="auth-title">Candidate Workstation</div>
-      <div class="auth-sub">Enter your 32-character cryptographic bearer token to initialize your governance session.</div>
-
-      <div class="security-tags">
-        <span class="tag-pill">🔒 TLS 1.3</span>
-        <span class="tag-pill">🛡️ Zero-Trust Active</span>
-        <span class="tag-pill">⏱️ 60s Telemetry</span>
-      </div>
-
+      <div class="brand-icon">⚡</div>
+      <div class="auth-title">CyberForge Workstation</div>
+      <div class="auth-sub">Enter your authorized candidate token to initialize your monitored workstation environment.</div>
       <form onsubmit="handleTokenLogin(event)">
         <div class="form-group">
-          <label>Bearer Access Token</label>
-          <input 
-            type="password" 
-            id="tokenInput" 
-            placeholder="Paste your 32-character access token..." 
-            style="font-family:var(--font-mono);" 
-            required 
-          />
+          <label>Candidate Access Token</label>
+          <input type="password" id="tokenInput" placeholder="e.g. 04521968ccdc2d5bc71066dd3aed7f82" required />
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:0.85rem;">
-          Connect to Workstation Gateway ➔
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:0.75rem;">
+          Connect to Workstation ➔
         </button>
       </form>
     </div>
   </div>
 
-  <!-- Screen 2: Enterprise Candidate Workstation HUD -->
-  <div class="app-screen" id="appScreen">
-    <!-- Top Bar -->
+  <!-- Main Workstation App Screen -->
+  <div id="appScreen" class="app-screen">
+    
+    <!-- Top HUD Navigation -->
     <header>
       <div class="brand-group">
-        <div class="brand-emblem" style="width:34px; height:34px; font-size:0.95rem; margin:0;">CF</div>
         <div class="brand-name">
-          CyberForge <span class="portal-tag">Workstation</span>
+          <span>⚡ CyberForge</span>
+          <span class="portal-tag">Candidate Hub</span>
         </div>
       </div>
 
       <div class="hud-controls">
-        <div class="status-indicator">
-          <div class="pulse-green"></div>
-          <span>GATEWAY LINKED</span>
+        <!-- Telemetry Status Pill -->
+        <div id="telemetryPill" class="telemetry-status-pill">
+          <div id="pulseDot" class="pulse-dot"></div>
+          <span id="telemetryLabel">Direct Workstation Active</span>
         </div>
 
-        <!-- In-app Notification Bell -->
-        <div style="position:relative;">
-          <button class="notif-btn" onclick="toggleNotifDropdown()">
+        <!-- Notifications Bell -->
+        <div class="notif-container">
+          <button class="notif-bell" onclick="toggleNotifDropdown()">
             🔔
-            <span class="notif-badge" id="notifBadge">0</span>
+            <span id="notifBadge" class="notif-badge">0</span>
           </button>
-          <div class="notif-dropdown" id="notifDropdown">
-            <div style="padding:0.85rem 1rem; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
-              <strong style="font-size:0.85rem;">Notifications</strong>
-              <button onclick="markAllNotifsRead()" style="background:none; border:none; color:var(--cyan); font-size:0.75rem; cursor:pointer;">Mark all read</button>
+          <div id="notifDropdown" class="notif-menu">
+            <div style="padding:0.75rem 1rem; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.8rem; font-weight:700;">Notifications</span>
+              <button onclick="markAllNotifsRead()" style="background:none; border:none; color:var(--cyan); font-size:0.7rem; cursor:pointer;">Mark all read</button>
             </div>
-            <div id="notifListContainer">
-              <div style="padding:1.5rem; text-align:center; color:var(--text-muted); font-size:0.8rem;">No new notifications</div>
-            </div>
+            <div id="notifListContainer" style="max-height:280px; overflow-y:auto;"></div>
           </div>
         </div>
 
-        <div class="user-profile-badge">
+        <!-- Candidate Profile -->
+        <div class="user-pill">
           <span id="userNameLabel">Candidate</span>
-          <span id="userRoleBadge" class="role-badge role-core">CORE</span>
+          <span id="userRoleBadge" class="role-badge role-junior">JUNIOR</span>
         </div>
 
-        <button class="btn btn-danger" onclick="handleLogout()">Sign Out</button>
+        <!-- Logout -->
+        <button class="btn btn-danger" onclick="handleLogout()" title="Log out and end session">
+          ⏻ Disconnect
+        </button>
       </div>
     </header>
 
     <div class="container">
-      <!-- Metric Counters -->
-      <div class="metric-grid">
-        <div class="metric-card">
-          <div class="metric-title">Live Focus Session</div>
-          <div class="metric-val" id="sessionTimerDisplay" style="color:var(--cyan);">00:00:00</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-title">Assigned Tasks</div>
-          <div class="metric-val" id="assignedTasksCount">0</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-title">Telemetry Status</div>
-          <div class="metric-val" style="font-size:1.15rem; color:var(--green); display:flex; align-items:center; gap:0.5rem;">
-            <div class="pulse-green"></div> <span id="telemetryState">Active (60s)</span>
+
+      <!-- Active Deliverable HUD Command Bar -->
+      <div class="deliverable-bar">
+        <div class="deliv-info">
+          <div class="deliv-label">
+            <span>CURRENT ACTIVE DELIVERABLE</span>
+            <span id="clockStatusBadge" class="badge" style="background:rgba(0,242,254,0.1); color:var(--cyan); border:1px solid rgba(0,242,254,0.3);">UNASSIGNED</span>
+          </div>
+          <div id="currentDeliverableTitle" class="deliv-title">
+            No Task Currently Clocked In
+          </div>
+          <div id="clockStatusNotice" class="deliv-subtext">
+            💡 Select <strong>"⚡ Clock In"</strong> on an assigned task below. When clocked in, time you spend on <strong>other tabs (IDEs, GitHub, Documentation)</strong> is fully credited to that deliverable!
           </div>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">Support Desk</div>
-          <div class="metric-val" id="activeTicketsCount">0</div>
-        </div>
-      </div>
 
-      <!-- Navigation Tabs -->
-      <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('tasks')">
-          📋 Governance Tasks <span class="tab-count" id="tabTaskCount">0</span>
-        </button>
-        <button class="tab-btn" onclick="switchTab('tickets')">
-          🎫 Support & Incident Desk <span class="tab-count" id="tabTicketCount">0</span>
-        </button>
-      </div>
-
-      <!-- TAB 1: Tasks -->
-      <div id="tasksTab">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-          <div>
-            <h2 style="font-size:1.25rem; font-weight:800;">Assigned Governance Deliverables</h2>
-            <p style="font-size:0.85rem; color:var(--text-muted);">Implement required security controls and submit deliverable URLs before the deadline.</p>
+        <div class="deliv-actions">
+          <div style="text-align:right; margin-right:0.5rem;">
+            <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">DELIVERABLE TIMER</div>
+            <div id="deliverableTimerDisplay" style="font-size:1.4rem; font-weight:800; font-family:var(--font-mono); color:var(--cyan);">00:00:00</div>
           </div>
-          <button class="btn" onclick="loadMyTasks()">🔄 Refresh</button>
-        </div>
-
-        <div id="tasksContainer">
-          <div style="text-align:center; padding:3rem; color:var(--text-muted);">Loading governance tasks...</div>
-        </div>
-      </div>
-
-      <!-- TAB 2: Support Tickets -->
-      <div id="ticketsTab" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-          <div>
-            <h2 style="font-size:1.25rem; font-weight:800;">Support & Incident Desk</h2>
-            <p style="font-size:0.85rem; color:var(--text-muted);">Encountered environment blockers, access issues, or need clarification? Raise a ticket directly to lead engineers.</p>
-          </div>
-          <button class="btn btn-primary" onclick="openRaiseTicketModal()">
-            <span>+</span> Raise Support Ticket
+          <button id="clockOutBtn" class="btn btn-danger" style="display:none;" onclick="handleClockOut()">
+            ⏸ Pause / Clock Out
           </button>
         </div>
+      </div>
 
-        <div id="ticketsContainer">
-          <div style="text-align:center; padding:3rem; color:var(--text-muted);">Loading support tickets...</div>
+      <!-- Quick Proof-of-Work Check-In Bar -->
+      <div class="checkin-card">
+        <div class="checkin-title">
+          <span>⚡ Quick Proof-of-Work Milestone Check-In</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Keeps leads updated on your progress across tabs/tools)</span>
         </div>
+        <form class="checkin-form" onsubmit="handleQuickCheckin(event)">
+          <input type="text" id="quickLogMsg" class="checkin-input" placeholder="e.g. Pushed commit 4b9f2 - parameterized auth middleware, tested SQLite constraints..." required />
+          <select id="quickLogType" class="checkin-select">
+            <option value="progress">Progress Milestone</option>
+            <option value="git_commit">Git Commit SHA</option>
+            <option value="checkpoint">Deliverable Checkpoint</option>
+            <option value="blocker">Blocker Note</option>
+          </select>
+          <button type="submit" class="btn btn-primary">
+            + Log Check-In
+          </button>
+        </form>
+      </div>
+
+      <!-- High-Level Metric Tiles -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Session Duration</span>
+            <span>⏱️</span>
+          </div>
+          <div id="sessionTimerDisplay" class="metric-val">00:00:00</div>
+          <div class="metric-sub">Monitored workstation session</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Assigned Tasks</span>
+            <span>📋</span>
+          </div>
+          <div id="assignedTasksCount" class="metric-val">0</div>
+          <div class="metric-sub">Active governance deliverables</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Support Tickets</span>
+            <span>🎫</span>
+          </div>
+          <div id="activeTicketsCount" class="metric-val">0</div>
+          <div class="metric-sub">Open incident & blocker tickets</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span>Work Log Milestones</span>
+            <span>📝</span>
+          </div>
+          <div id="workLogsCount" class="metric-val">0</div>
+          <div class="metric-sub">Verified proof-of-work entries</div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('tasks')">
+          Governance Tasks
+          <span id="tabTaskCount" class="pill-counter">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('proof')">
+          Proof-of-Work Stream
+          <span id="tabStreamCount" class="pill-counter">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('tickets')">
+          Support Desk
+          <span id="tabTicketCount" class="pill-counter">0</span>
+        </button>
+      </div>
+
+      <!-- Tab 1: Tasks -->
+      <div id="tasksTab">
+        <div id="tasksContainer"></div>
+      </div>
+
+      <!-- Tab 2: Proof-of-Work Stream -->
+      <div id="proofTab" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+          <div>
+            <h3 style="font-size:1.1rem; font-weight:700;">Proof-of-Work & Activity Log Stream</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Non-repudiation audit records of your commits, checkpoints, and task milestones.</p>
+          </div>
+          <button class="btn" onclick="loadMyWorkLogs()">↻ Refresh Stream</button>
+        </div>
+        <div id="workLogsContainer" class="timeline-stream"></div>
+      </div>
+
+      <!-- Tab 3: Tickets -->
+      <div id="ticketsTab" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+          <div>
+            <h3 style="font-size:1.1rem; font-weight:700;">Support & Incident Desk</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Raise blockers, permission requests, or technical incidents to Lead Engineers.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openRaiseTicketModal()">+ Raise Support Ticket</button>
+        </div>
+        <div id="ticketsContainer"></div>
       </div>
 
     </div>
   </div>
 
-  <!-- Deliverable Submission Modal -->
-  <div class="modal-backdrop" id="submitModal">
-    <div class="modal-card">
+  <!-- Modal: Submit Deliverable -->
+  <div id="submitModal" class="modal-overlay">
+    <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title" id="submitModalTitle">Submit Task Deliverable</div>
+        <div class="modal-title" id="submitModalTitle">Submit Deliverable</div>
         <button class="modal-close" onclick="closeSubmitModal()">&times;</button>
       </div>
       <form onsubmit="handleDeliverableSubmit(event)">
         <input type="hidden" id="submitTaskId" />
         <div class="form-group">
-          <label>Artifact / PR Link (GitHub, Gist, or Drive)</label>
+          <label>Deliverable Artifact / GitHub PR URL</label>
           <input type="url" id="submitUrl" placeholder="https://github.com/org/repo/pull/42" required />
         </div>
         <div class="form-group">
-          <label>Implementation Remarks & Test Notes</label>
-          <textarea id="submitNotes" rows="3" placeholder="Summary of architecture, unit test coverage, and verification steps..."></textarea>
+          <label>Implementation Notes & Proof-of-Work Verification</label>
+          <textarea id="submitNotes" rows="4" placeholder="Detail the test cases passed, architectural decisions, and verification steps..."></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeSubmitModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Transmit Deliverable ➔</button>
+          <button type="submit" class="btn btn-primary">Submit to Leads ➔</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Raise Ticket Modal -->
-  <div class="modal-backdrop" id="ticketModal">
-    <div class="modal-card">
+  <!-- Modal: Raise Ticket -->
+  <div id="ticketModal" class="modal-overlay">
+    <div class="modal-box">
       <div class="modal-header">
         <div class="modal-title">Raise Support / Blocker Ticket</div>
         <button class="modal-close" onclick="closeRaiseTicketModal()">&times;</button>
@@ -755,7 +906,7 @@
       <form onsubmit="handleCreateTicket(event)">
         <div class="form-group">
           <label>Subject / Summary</label>
-          <input type="text" id="ticketSubject" placeholder="e.g. SQLite foreign key constraint blocker on activity logs" required />
+          <input type="text" id="ticketSubject" placeholder="e.g. SQLite foreign key blocker or Render port binding" required />
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
@@ -779,8 +930,8 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Detailed Description & Reproduction Steps</label>
-          <textarea id="ticketDescription" rows="4" placeholder="Provide complete error logs, expected vs actual behavior, or reasons for extension..." required></textarea>
+          <label>Detailed Description & Logs</label>
+          <textarea id="ticketDescription" rows="4" placeholder="Provide complete logs, reproduction steps, or context..." required></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeRaiseTicketModal()">Cancel</button>
@@ -793,8 +944,32 @@
   <script>
     let TOKEN = sessionStorage.getItem('cyberforge_candidate_token') || '';
     let sessionSeconds = 0;
+    let deliverableSeconds = 0;
     let timerInterval = null;
+    let deliverableTimerInterval = null;
     let heartbeatInterval = null;
+
+    // Active Task & Telemetry Sensor State
+    let activeTaskId = null;
+    let activeTaskTitle = null;
+    let interactionCounter = 0;
+
+    // Listen to user inputs to measure real presence (debounced)
+    let lastInputTime = 0;
+    ['keydown', 'mousedown', 'scroll', 'touchstart'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        const now = Date.now();
+        if (now - lastInputTime > 300) { // debounce to max ~3 per second
+          interactionCounter++;
+          lastInputTime = now;
+        }
+      }, { passive: true });
+    });
+
+    // Page Visibility API: Detect when candidate switches tabs
+    document.addEventListener('visibilitychange', () => {
+      updateTelemetryHUD();
+    });
 
     window.addEventListener('DOMContentLoaded', () => {
       if (TOKEN) {
@@ -802,11 +977,43 @@
       }
     });
 
+    function updateTelemetryHUD() {
+      const isVisible = !document.hidden;
+      const pill = document.getElementById('telemetryPill');
+      const dot = document.getElementById('pulseDot');
+      const label = document.getElementById('telemetryLabel');
+
+      if (activeTaskId) {
+        if (isVisible) {
+          pill.className = 'telemetry-status-pill';
+          dot.className = 'pulse-dot';
+          label.innerText = 'Workstation Focused (Task #' + activeTaskId + ')';
+        } else {
+          pill.className = 'telemetry-status-pill mode-external';
+          dot.className = 'pulse-dot blue';
+          label.innerText = 'Working Externally on Task #' + activeTaskId;
+        }
+      } else {
+        if (isVisible) {
+          pill.className = 'telemetry-status-pill';
+          dot.className = 'pulse-dot';
+          label.innerText = 'Direct Workstation Browsing';
+        } else {
+          pill.className = 'telemetry-status-pill mode-idle';
+          dot.className = 'pulse-dot amber';
+          label.innerText = 'Standby (Tab Backgrounded)';
+        }
+      }
+    }
+
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('tasksTab').style.display = tab === 'tasks' ? 'block' : 'none';
+      document.getElementById('proofTab').style.display = tab === 'proof' ? 'block' : 'none';
       document.getElementById('ticketsTab').style.display = tab === 'tickets' ? 'block' : 'none';
       event.currentTarget.classList.add('active');
+
+      if (tab === 'proof') loadMyWorkLogs();
     }
 
     async function handleTokenLogin(e) {
@@ -866,26 +1073,158 @@
 
       loadMyTasks();
       loadMyTickets();
+      loadMyWorkLogs();
       loadNotifications();
       setInterval(loadNotifications, 15000);
+      updateTelemetryHUD();
     }
 
     async function sendHeartbeat() {
       if (!TOKEN) return;
+      const isVisible = !document.hidden;
+      const interactionsToSend = interactionCounter;
+      interactionCounter = 0; // reset counter for the next interval
+
       try {
         const res = await fetch('/api/session/heartbeat', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${TOKEN}` }
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${TOKEN}`
+          },
+          body: JSON.stringify({
+            is_tab_focused: isVisible,
+            active_task_id: activeTaskId,
+            interactions: interactionsToSend
+          })
         });
+
         if (res.ok) {
           const data = await res.json();
-          document.getElementById('telemetryState').innerText = 'Acknowledged (' + new Date().toLocaleTimeString() + ')';
           if (data.status === 'idle') {
-            alert('Your workstation went idle due to inactivity. Re-authenticating...');
+            alert('Your session timed out due to prolonged inactivity (>180s). Re-authenticating...');
+            handleLogout();
           }
         }
-      } catch (_) {
-        document.getElementById('telemetryState').innerText = 'Reconnecting...';
+      } catch (_) {}
+    }
+
+    async function handleClockIn(taskId, taskTitle) {
+      if (!TOKEN) return;
+      try {
+        const res = await fetch('/api/candidate/clock-in', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${TOKEN}`
+          },
+          body: JSON.stringify({ task_id: taskId })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Failed to clock into task: ' + (err.message || res.statusText));
+          return;
+        }
+
+        activeTaskId = taskId;
+        activeTaskTitle = taskTitle;
+
+        document.getElementById('currentDeliverableTitle').innerText = `[Task #${taskId}] ${taskTitle}`;
+        const statusBadge = document.getElementById('clockStatusBadge');
+        statusBadge.innerText = 'CLOCKED IN & TRACKING';
+        statusBadge.style.background = 'rgba(16,185,129,0.15)';
+        statusBadge.style.color = 'var(--green)';
+        statusBadge.style.borderColor = 'rgba(16,185,129,0.4)';
+
+        document.getElementById('clockStatusNotice').innerHTML = `
+          🟢 <strong>Actively Clocked In:</strong> Time spent working on <strong>other tabs, VS Code, or browser tools</strong> is now credited to this deliverable!
+        `;
+        document.getElementById('clockOutBtn').style.display = 'inline-flex';
+
+        // Start Deliverable Timer
+        deliverableSeconds = 0;
+        clearInterval(deliverableTimerInterval);
+        deliverableTimerInterval = setInterval(() => {
+          deliverableSeconds++;
+          const hrs = String(Math.floor(deliverableSeconds / 3600)).padStart(2, '0');
+          const mins = String(Math.floor((deliverableSeconds % 3600) / 60)).padStart(2, '0');
+          const secs = String(deliverableSeconds % 60).padStart(2, '0');
+          document.getElementById('deliverableTimerDisplay').innerText = `${hrs}:${mins}:${secs}`;
+        }, 1000);
+
+        updateTelemetryHUD();
+        loadMyTasks();
+        loadMyWorkLogs();
+      } catch (err) {
+        alert('Clock-in error: ' + err.message);
+      }
+    }
+
+    async function handleClockOut() {
+      if (!TOKEN) return;
+      try {
+        await fetch('/api/candidate/clock-out', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${TOKEN}` }
+        });
+
+        activeTaskId = null;
+        activeTaskTitle = null;
+
+        document.getElementById('currentDeliverableTitle').innerText = 'No Task Currently Clocked In';
+        const statusBadge = document.getElementById('clockStatusBadge');
+        statusBadge.innerText = 'STANDBY';
+        statusBadge.style.background = 'rgba(0,242,254,0.1)';
+        statusBadge.style.color = 'var(--cyan)';
+        statusBadge.style.borderColor = 'rgba(0,242,254,0.3)';
+
+        document.getElementById('clockStatusNotice').innerHTML = `
+          💡 Select <strong>"⚡ Clock In"</strong> on an assigned task below to start tracking your deliverable time.
+        `;
+        document.getElementById('clockOutBtn').style.display = 'none';
+
+        clearInterval(deliverableTimerInterval);
+        document.getElementById('deliverableTimerDisplay').innerText = '00:00:00';
+
+        updateTelemetryHUD();
+        loadMyTasks();
+        loadMyWorkLogs();
+      } catch (err) {
+        alert('Clock-out error: ' + err.message);
+      }
+    }
+
+    async function handleQuickCheckin(e) {
+      e.preventDefault();
+      const message = document.getElementById('quickLogMsg').value.trim();
+      const log_type = document.getElementById('quickLogType').value;
+      if (!message) return;
+
+      try {
+        const res = await fetch('/api/candidate/work-log', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${TOKEN}`
+          },
+          body: JSON.stringify({
+            task_id: activeTaskId,
+            log_type,
+            message
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Failed to log check-in: ' + (err.message || res.statusText));
+          return;
+        }
+
+        document.getElementById('quickLogMsg').value = '';
+        loadMyWorkLogs();
+      } catch (err) {
+        alert('Check-in error: ' + err.message);
       }
     }
 
@@ -916,29 +1255,40 @@
         container.innerHTML = tasks.map(t => {
           const deadlineDate = new Date(t.deadline);
           const isOverdue = t.is_overdue || (t.status !== 'completed' && deadlineDate < now);
-
-          let statusBadge = `<span class="badge status-open">${t.status}</span>`;
-          if (isOverdue) statusBadge = `<span class="badge prio-critical">OVERDUE</span>`;
-          else if (t.status === 'submitted') statusBadge = `<span class="badge status-in_progress">SUBMITTED (IN REVIEW)</span>`;
-          else if (t.status === 'completed') statusBadge = `<span class="badge status-resolved">COMPLETED</span>`;
+          const isClockedIn = activeTaskId === t.id;
 
           const priorityBadge = `<span class="badge prio-${t.priority || 'medium'}">${(t.priority || 'medium').toUpperCase()}</span>`;
+          let statusBadge = `<span class="badge status-badge ${t.status}">${t.status.toUpperCase()}</span>`;
+          if (isOverdue) statusBadge = `<span class="badge prio-critical">OVERDUE</span>`;
 
-          let actionBtn = `
+          let clockBtn = '';
+          if (t.status !== 'completed') {
+            if (isClockedIn) {
+              clockBtn = `<button class="btn btn-danger" onclick="handleClockOut()">⏸ Clock Out</button>`;
+            } else {
+              clockBtn = `<button class="btn btn-success" onclick="handleClockIn(${t.id}, '${t.title.replace(/'/g, "\\'")}')">⚡ Clock In (Start Working)</button>`;
+            }
+          }
+
+          let submitBtn = `
             <button class="btn btn-primary" onclick="openSubmitModal(${t.id}, '${t.title.replace(/'/g, "\\'")}')">
               Submit Deliverable ↗
             </button>
           `;
           if (t.status === 'submitted') {
-            actionBtn = `<span style="font-size:0.8rem; color:#c084fc;">Artifact Under Lead Evaluation</span>`;
+            submitBtn = `<span style="font-size:0.8rem; color:#c084fc;">Artifact Under Lead Evaluation</span>`;
           } else if (t.status === 'completed') {
-            actionBtn = `<span style="font-size:0.8rem; color:#34d399;">✓ Approved & Completed</span>`;
+            submitBtn = `<span style="font-size:0.8rem; color:#34d399;">✓ Approved & Completed</span>`;
           }
 
           return `
-            <div class="task-card ${isOverdue ? 'overdue' : ''}">
+            <div class="task-card ${isClockedIn ? 'active-deliverable' : ''} ${isOverdue ? 'overdue' : ''}">
               <div class="task-header">
-                <div class="task-title">${t.title}</div>
+                <div>
+                  <div class="task-title">
+                    ${isClockedIn ? '🟢 ' : ''}#${t.id}: ${t.title}
+                  </div>
+                </div>
                 <div class="task-badges">
                   ${priorityBadge}
                   ${statusBadge}
@@ -946,10 +1296,13 @@
               </div>
               <div class="task-desc">${t.description || 'No detailed instructions provided.'}</div>
               <div class="task-footer">
-                <div class="deadline-countdown" style="color: ${isOverdue ? 'var(--red)' : 'var(--text-muted)'};">
+                <div class="deadline-text" style="color: ${isOverdue ? 'var(--red)' : 'var(--text-muted)'};">
                   📅 Deadline: ${deadlineDate.toLocaleString()} ${isOverdue ? '(EXPIRED)' : ''}
                 </div>
-                <div>${actionBtn}</div>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  ${clockBtn}
+                  ${submitBtn}
+                </div>
               </div>
             </div>
           `;
@@ -957,6 +1310,46 @@
 
       } catch (err) {
         console.error('Failed to load tasks:', err);
+      }
+    }
+
+    async function loadMyWorkLogs() {
+      if (!TOKEN) return;
+      try {
+        const res = await fetch('/api/candidate/work-logs', {
+          headers: { 'Authorization': `Bearer ${TOKEN}` }
+        });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const logs = data.logs || [];
+        document.getElementById('workLogsCount').innerText = logs.length;
+        document.getElementById('tabStreamCount').innerText = logs.length;
+
+        const container = document.getElementById('workLogsContainer');
+        if (logs.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-surface); border-radius:12px; border:1px solid var(--border-subtle);">
+              No work logs recorded yet. Use the Quick Check-In Bar above to post milestone progress!
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = logs.map(l => `
+          <div class="stream-item">
+            <div>
+              <div style="margin-bottom:0.25rem;">
+                <span class="badge" style="background:rgba(255,255,255,0.06); color:var(--cyan); border:1px solid var(--border-subtle);">${l.log_type.toUpperCase()}</span>
+                ${l.task_title ? `<span style="font-size:0.75rem; color:var(--text-muted); margin-left:0.5rem;">[${l.task_title}]</span>` : ''}
+              </div>
+              <div class="stream-msg">${l.message}</div>
+            </div>
+            <div class="stream-meta">${new Date(l.created_at).toLocaleTimeString()}</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load work logs:', err);
       }
     }
 
@@ -976,20 +1369,20 @@
         const container = document.getElementById('ticketsContainer');
         if (tickets.length === 0) {
           container.innerHTML = `
-            <div class="ticket-card" style="text-align:center; padding:3rem; color:var(--text-muted);">
-              No support tickets submitted. Click <strong>+ Raise Support Ticket</strong> if you encounter any issues.
+            <div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-surface); border-radius:12px; border:1px solid var(--border-subtle);">
+              No support tickets submitted. Click <strong>+ Raise Support Ticket</strong> if you encounter any technical blockers.
             </div>
           `;
           return;
         }
 
         container.innerHTML = tickets.map(tk => `
-          <div class="ticket-card">
-            <div class="ticket-header">
-              <div class="ticket-subject">#${tk.id} — ${tk.subject}</div>
+          <div class="task-card">
+            <div class="task-header">
+              <div class="task-title">Ticket #${tk.id}: ${tk.subject}</div>
               <div style="display:flex; gap:0.5rem;">
                 <span class="badge prio-${tk.priority}">${tk.priority.toUpperCase()}</span>
-                <span class="badge status-${tk.status}">${tk.status.toUpperCase()}</span>
+                <span class="badge status-badge ${tk.status}">${tk.status.toUpperCase()}</span>
               </div>
             </div>
             <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:0.75rem;">${tk.description}</p>
@@ -997,7 +1390,7 @@
               Category: ${tk.category} · Created: ${new Date(tk.created_at).toLocaleString()}
             </div>
             ${tk.admin_notes ? `
-              <div class="admin-remark-box">
+              <div style="margin-top:1rem; padding:0.75rem 1rem; background:rgba(0,242,254,0.06); border-left:3px solid var(--cyan); border-radius:4px; font-size:0.825rem;">
                 <strong style="color:var(--cyan); display:block; margin-bottom:0.25rem;">Lead Response:</strong>
                 ${tk.admin_notes}
               </div>
@@ -1023,7 +1416,7 @@
         const badge = document.getElementById('notifBadge');
         if (unread > 0) {
           badge.innerText = unread;
-          badge.style.display = 'flex';
+          badge.style.display = 'block';
         } else {
           badge.style.display = 'none';
         }
@@ -1035,9 +1428,9 @@
         }
 
         list.innerHTML = data.notifications.map(n => `
-          <div class="notif-item ${n.is_read === 0 ? 'unread' : ''}">
-            <strong style="color:var(--text-main); display:block;">${n.title}</strong>
-            <p style="color:var(--text-muted); font-size:0.775rem; margin:0.2rem 0;">${n.message}</p>
+          <div style="padding:0.75rem 1rem; border-bottom:1px solid var(--border-subtle); background:${n.is_read === 0 ? 'rgba(0,242,254,0.04)' : 'transparent'};">
+            <strong style="color:var(--text-main); font-size:0.825rem; display:block;">${n.title}</strong>
+            <p style="color:var(--text-muted); font-size:0.75rem; margin:0.2rem 0;">${n.message}</p>
             <span style="font-size:0.65rem; color:var(--text-faint); font-family:var(--font-mono);">${new Date(n.created_at).toLocaleTimeString()}</span>
           </div>
         `).join('');
@@ -1092,7 +1485,8 @@
         }
         closeSubmitModal();
         loadMyTasks();
-        alert('Deliverable submitted successfully for lead review!');
+        loadMyWorkLogs();
+        alert('Deliverable submitted successfully for lead evaluation!');
       } catch (err) {
         alert('Submission failed: ' + err.message);
       }
@@ -1148,6 +1542,7 @@
       } catch (_) {}
 
       clearInterval(timerInterval);
+      clearInterval(deliverableTimerInterval);
       clearInterval(heartbeatInterval);
       sessionStorage.removeItem('cyberforge_candidate_token');
       TOKEN = '';

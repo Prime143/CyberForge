@@ -75,9 +75,39 @@ async function runTestSuite() {
         assigned_to INTEGER,
         deadline DATETIME NOT NULL,
         status TEXT CHECK(status IN ('pending', 'in_progress', 'submitted', 'completed', 'overdue')) DEFAULT 'pending',
+        priority TEXT CHECK(priority IN ('critical', 'high', 'medium', 'low')) DEFAULT 'medium',
         submission_url TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (assigned_to) REFERENCES candidates(id) ON DELETE SET NULL
+      );
+    `);
+
+    await run(`
+      CREATE TABLE tickets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        candidate_id INTEGER NOT NULL,
+        subject TEXT NOT NULL,
+        category TEXT DEFAULT 'technical',
+        priority TEXT DEFAULT 'medium',
+        description TEXT NOT NULL,
+        status TEXT DEFAULT 'open',
+        admin_notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
+      );
+    `);
+
+    await run(`
+      CREATE TABLE notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        candidate_id INTEGER,
+        title TEXT NOT NULL,
+        message TEXT NOT NULL,
+        type TEXT DEFAULT 'info',
+        is_read INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
       );
     `);
 

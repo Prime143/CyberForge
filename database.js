@@ -95,6 +95,40 @@ db.serialize(() => {
     );
   `);
 
+  // Table 5: tickets (Support & Incident Ticketing)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS tickets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      candidate_id INTEGER NOT NULL,
+      subject TEXT NOT NULL,
+      category TEXT CHECK(category IN ('technical', 'task_blocker', 'access_issue', 'extension_request', 'general')) DEFAULT 'technical',
+      priority TEXT CHECK(priority IN ('critical', 'high', 'medium', 'low')) DEFAULT 'medium',
+      description TEXT NOT NULL,
+      status TEXT CHECK(status IN ('open', 'in_progress', 'resolved', 'closed')) DEFAULT 'open',
+      admin_notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Table 6: notifications (In-app Notification Center)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      candidate_id INTEGER,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type TEXT CHECK(type IN ('info', 'warning', 'success', 'urgent')) DEFAULT 'info',
+      is_read INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Migration: Add priority to tasks if not present
+  db.run(`ALTER TABLE tasks ADD COLUMN priority TEXT CHECK(priority IN ('critical', 'high', 'medium', 'low')) DEFAULT 'medium'`, () => {});
+
   // Performance & Security Indexes
   db.run(`CREATE INDEX IF NOT EXISTS idx_candidates_access_token ON candidates(access_token);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_candidate_id ON activity_logs(candidate_id);`);
@@ -103,6 +137,10 @@ db.serialize(() => {
   db.run(`CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_audit_trail_candidate_id ON audit_trail(candidate_id);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_audit_trail_event_type ON audit_trail(event_type);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_tickets_candidate_id ON tickets(candidate_id);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_notifications_candidate_id ON notifications(candidate_id);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);`);
 
   console.log('[INFO] [DevSecOps] Database schema and indexes verified successfully.');
 });
@@ -214,6 +252,17 @@ async function logAudit(candidateId, eventType, details = null) {
 }
 
 /**
+ * In-App Notification Recorder
+ */
+async function createNotification(candidateId, title, message, type = 'info') {
+  const sql = `
+    INSERT INTO notifications (candidate_id, title, message, type)
+    VALUES (?, ?, ?, ?)
+  `;
+  return run(sql, [candidateId || null, title, message, type]);
+}
+
+/**
  * Graceful connection termination
  * @returns {Promise<void>}
  */
@@ -251,6 +300,7 @@ module.exports = {
   all,
   exec,
   logAudit,
+  createNotification,
   close
 };
 

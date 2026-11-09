@@ -15,7 +15,7 @@ const crypto = require('crypto');
 const path = require('path');
 require('dotenv').config();
 
-const { db, run, get, all, logAudit } = require('./database');
+const { db, run, get, all, logAudit, createNotification } = require('./database');
 const { sendAlert } = require('./notifier');
 const { requireAdmin, requireCandidate } = require('./middleware/auth');
 const { startSweeper, runGovernanceSweep } = require('./services/sweeper');
@@ -343,7 +343,7 @@ app.post('/api/session/logout', requireCandidate, async (req, res) => {
  */
 app.post('/api/tasks', requireAdmin, async (req, res) => {
   try {
-    const { title, description, assigned_to, deadline } = req.body;
+    const { title, description, assigned_to, deadline, priority } = req.body;
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return res.status(400).json({ error: 'Validation Error', message: 'Task title is required.' });
@@ -356,6 +356,8 @@ app.post('/api/tasks', requireAdmin, async (req, res) => {
       });
     }
 
+    const taskPriority = ['critical', 'high', 'medium', 'low'].includes(priority) ? priority : 'medium';
+
     let candidate = null;
     if (assigned_to) {
       candidate = await get('SELECT id, name, role FROM candidates WHERE id = ?', [assigned_to]);
@@ -365,25 +367,37 @@ app.post('/api/tasks', requireAdmin, async (req, res) => {
     }
 
     const result = await run(`
-      INSERT INTO tasks (title, description, assigned_to, deadline, status)
-      VALUES (?, ?, ?, ?, 'pending')
-    `, [title.trim(), description ? description.trim() : null, assigned_to || null, deadline]);
+      INSERT INTO tasks (title, description, assigned_to, deadline, status, priority)
+      VALUES (?, ?, ?, ?, 'pending', ?)
+    `, [title.trim(), description ? description.trim() : null, assigned_to || null, deadline, taskPriority]);
 
     await logAudit(assigned_to || null, 'ADMIN_TASK_CREATED', {
       taskId: result.lastID,
       title: title.trim(),
-      deadline
+      deadline,
+      priority: taskPriority
     });
 
-    // Alert lead channel via Discord
+    // In-app notification for candidate
+    if (assigned_to) {
+      await createNotification(
+        assigned_to,
+        'New Governance Task Assigned',
+        `Task "${title.trim()}" has been assigned to you. Deadline: ${new Date(deadline).toLocaleString()}`,
+        taskPriority === 'critical' ? 'urgent' : 'info'
+      );
+    }
+
+    // Alert lead channel via Discord (if enabled)
     const candidateLabel = candidate ? candidate.name : 'Unassigned';
     await sendAlert(
       'New Governance Task Assigned',
-      `New Task Assigned to **${candidateLabel}**: **${title.trim()}** (Deadline: ${deadline})`,
-      'warning',
+      `New Task Assigned to **${candidateLabel}**: **${title.trim()}** (Priority: ${taskPriority.toUpperCase()}, Deadline: ${deadline})`,
+      taskPriority === 'critical' ? 'danger' : 'warning',
       [
         { name: 'Task ID', value: String(result.lastID), inline: true },
         { name: 'Assigned To', value: candidateLabel, inline: true },
+        { name: 'Priority', value: taskPriority.toUpperCase(), inline: true },
         { name: 'Deadline', value: String(deadline), inline: true }
       ]
     );
@@ -528,6 +542,17 @@ app.patch('/api/tasks/:id/review', requireAdmin, async (req, res) => {
     });
 
     const isCompleted = status === 'completed';
+
+    // In-app notification for candidate
+    if (task.assigned_to) {
+      await createNotification(
+        task.assigned_to,
+        isCompleted ? 'Deliverable Approved' : 'Task Revision Requested',
+        `Task "${task.title}" updated to ${status.toUpperCase()}. Remarks: ${feedback || 'No remarks provided.'}`,
+        isCompleted ? 'success' : 'warning'
+      );
+    }
+
     const alertTitle = isCompleted ? 'Task Review: Completed / Approved' : 'Task Review: Needs Revision';
     const alertColor = isCompleted ? 'success' : 'danger';
 
@@ -549,6 +574,271 @@ app.patch('/api/tasks/:id/review', requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('[ERROR] [Tasks::Review]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// ============================================================================
+// Support & Incident Desk Governance (Tickets)
+// ============================================================================
+
+/**
+ * POST /api/candidate/tickets
+ * Candidate files a support / incident / blocker ticket.
+ */
+app.post('/api/candidate/tickets', requireCandidate, async (req, res) => {
+  try {
+    const { subject, category, priority, description } = req.body;
+    const candidate = req.candidate;
+
+    if (!subject || typeof subject !== 'string' || !subject.trim()) {
+      return res.status(400).json({ error: 'Validation Error', message: 'Subject is required.' });
+    }
+
+    if (!description || typeof description !== 'string' || !description.trim()) {
+      return res.status(400).json({ error: 'Validation Error', message: 'Description is required.' });
+    }
+
+    const validCategories = ['technical', 'task_blocker', 'access_issue', 'extension_request', 'general'];
+    const validPriorities = ['critical', 'high', 'medium', 'low'];
+
+    const cat = validCategories.includes(category) ? category : 'technical';
+    const prio = validPriorities.includes(priority) ? priority : 'medium';
+
+    const result = await run(`
+      INSERT INTO tickets (candidate_id, subject, category, priority, description, status)
+      VALUES (?, ?, ?, ?, ?, 'open')
+    `, [candidate.id, subject.trim(), cat, prio, description.trim()]);
+
+    await logAudit(candidate.id, 'SUPPORT_TICKET_RAISED', {
+      ticketId: result.lastID,
+      subject: subject.trim(),
+      category: cat,
+      priority: prio
+    });
+
+    // In-app acknowledgment notification
+    await createNotification(
+      candidate.id,
+      'Support Ticket Opened',
+      `Ticket #${result.lastID} ("${subject.trim()}") received. Lead engineers have been alerted.`,
+      'info'
+    );
+
+    // Lead alert via Discord (if configured)
+    await sendAlert(
+      `Support Ticket Raised: #${result.lastID}`,
+      `**${candidate.name}** raised a **${prio.toUpperCase()}** ticket: "${subject.trim()}"\n\n${description.trim()}`,
+      prio === 'critical' ? 'danger' : 'warning',
+      [
+        { name: 'Ticket ID', value: String(result.lastID), inline: true },
+        { name: 'Candidate', value: candidate.name, inline: true },
+        { name: 'Priority', value: prio.toUpperCase(), inline: true },
+        { name: 'Category', value: cat, inline: true }
+      ]
+    );
+
+    const createdTicket = await get('SELECT * FROM tickets WHERE id = ?', [result.lastID]);
+    res.status(201).json({
+      message: 'Support ticket successfully submitted.',
+      ticket: createdTicket
+    });
+  } catch (err) {
+    console.error('[ERROR] [Tickets::Create]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * GET /api/candidate/tickets
+ * Candidate retrieves all their submitted tickets.
+ */
+app.get('/api/candidate/tickets', requireCandidate, async (req, res) => {
+  try {
+    const tickets = await all(
+      'SELECT * FROM tickets WHERE candidate_id = ? ORDER BY id DESC',
+      [req.candidate.id]
+    );
+    res.json({ total: tickets.length, tickets });
+  } catch (err) {
+    console.error('[ERROR] [Candidate::Tickets]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * GET /api/admin/tickets
+ * Lead retrieves all system tickets with candidate details.
+ */
+app.get('/api/admin/tickets', requireAdmin, async (req, res) => {
+  try {
+    const tickets = await all(`
+      SELECT 
+        t.*,
+        c.name AS candidate_name,
+        c.role AS candidate_role
+      FROM tickets t
+      JOIN candidates c ON t.candidate_id = c.id
+      ORDER BY 
+        CASE 
+          WHEN t.status = 'open' THEN 1
+          WHEN t.status = 'in_progress' THEN 2
+          WHEN t.status = 'resolved' THEN 3
+          ELSE 4
+        END,
+        CASE 
+          WHEN t.priority = 'critical' THEN 1
+          WHEN t.priority = 'high' THEN 2
+          WHEN t.priority = 'medium' THEN 3
+          ELSE 4
+        END,
+        t.id DESC;
+    `);
+    res.json({ total: tickets.length, tickets });
+  } catch (err) {
+    console.error('[ERROR] [Admin::Tickets]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * PATCH /api/admin/tickets/:id
+ * Lead resolves or updates ticket status with remarks.
+ */
+app.patch('/api/admin/tickets/:id', requireAdmin, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const { status, admin_notes } = req.body;
+
+    const validStatuses = ['open', 'in_progress', 'resolved', 'closed'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: "Status must be 'open', 'in_progress', 'resolved', or 'closed'."
+      });
+    }
+
+    const ticket = await get(`
+      SELECT t.*, c.name AS candidate_name
+      FROM tickets t
+      JOIN candidates c ON t.candidate_id = c.id
+      WHERE t.id = ?
+    `, [ticketId]);
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Not Found', message: 'Ticket not found.' });
+    }
+
+    await run(`
+      UPDATE tickets 
+      SET status = ?, admin_notes = ?, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = ?
+    `, [status, admin_notes ? admin_notes.trim() : ticket.admin_notes, ticketId]);
+
+    await logAudit(ticket.candidate_id, 'TICKET_STATUS_UPDATED', {
+      ticketId,
+      newStatus: status,
+      remarks: admin_notes || null
+    });
+
+    // Notify candidate of resolution/update
+    await createNotification(
+      ticket.candidate_id,
+      `Support Ticket #${ticketId} Updated`,
+      `Your ticket "${ticket.subject}" has been marked as ${status.toUpperCase()}.${admin_notes ? ` Remarks: ${admin_notes}` : ''}`,
+      status === 'resolved' ? 'success' : 'info'
+    );
+
+    const updated = await get('SELECT * FROM tickets WHERE id = ?', [ticketId]);
+    res.json({ message: 'Ticket updated successfully.', ticket: updated });
+  } catch (err) {
+    console.error('[ERROR] [Admin::TicketUpdate]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// ============================================================================
+// In-App Notification Center
+// ============================================================================
+
+/**
+ * GET /api/candidate/notifications
+ * Retrieves candidate's notifications (personal + global broadcasts).
+ */
+app.get('/api/candidate/notifications', requireCandidate, async (req, res) => {
+  try {
+    const notifs = await all(`
+      SELECT * FROM notifications 
+      WHERE candidate_id = ? OR candidate_id IS NULL 
+      ORDER BY id DESC 
+      LIMIT 30;
+    `, [req.candidate.id]);
+
+    const unreadCount = notifs.filter(n => n.is_read === 0).length;
+    res.json({ unread_count: unreadCount, total: notifs.length, notifications: notifs });
+  } catch (err) {
+    console.error('[ERROR] [Candidate::Notifications]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * POST /api/candidate/notifications/:id/read
+ * Marks single notification as read.
+ */
+app.post('/api/candidate/notifications/:id/read', requireCandidate, async (req, res) => {
+  try {
+    await run('UPDATE notifications SET is_read = 1 WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/candidate/notifications/read-all
+ * Marks all notifications as read for the candidate.
+ */
+app.post('/api/candidate/notifications/read-all', requireCandidate, async (req, res) => {
+  try {
+    await run(
+      'UPDATE notifications SET is_read = 1 WHERE candidate_id = ? OR candidate_id IS NULL',
+      [req.candidate.id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/broadcast
+ * Lead broadcasts an announcement banner / notification to all candidate workstations.
+ */
+app.post('/api/admin/broadcast', requireAdmin, async (req, res) => {
+  try {
+    const { title, message, type } = req.body;
+
+    if (!title || !message) {
+      return res.status(400).json({ error: 'Validation Error', message: 'Title and message are required.' });
+    }
+
+    const notifType = ['info', 'warning', 'urgent', 'success'].includes(type) ? type : 'info';
+
+    const result = await run(`
+      INSERT INTO notifications (candidate_id, title, message, type)
+      VALUES (NULL, ?, ?, ?)
+    `, [title.trim(), message.trim(), notifType]);
+
+    await logAudit(null, 'ADMIN_BROADCAST_EMITTED', {
+      broadcastId: result.lastID,
+      title: title.trim(),
+      type: notifType
+    });
+
+    res.status(201).json({ message: 'Broadcast emitted to all workstations successfully.' });
+  } catch (err) {
+    console.error('[ERROR] [Admin::Broadcast]', err.message);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });

@@ -1,0 +1,44 @@
+services:
+  cyberforge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cyberforge:latest
+    container_name: cyberforge_governance_server
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_PATH=/data/cyberforge.db
+    volumes:
+      # Persistent SQLite volume for database file and WAL logs
+      - cyberforge_data:/data
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  cyberforge_data:
+    name: cyberforge_production_data

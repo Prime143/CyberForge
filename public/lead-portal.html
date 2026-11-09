@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberForge | Lead Governance Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #090a0f;
+      --bg-card: #11141e;
+      --bg-card-hover: #171b28;
+      --border: #1f2638;
+      --border-accent: #2e3852;
+      --text: #f0f3fa;
+      --text-muted: #8490ab;
+      --cyan: #00f2fe;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.25);
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Header & Navigation */
+    header {
+      background: rgba(17, 20, 30, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #000;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.35);
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge-sub {
+      font-size: 0.65rem;
+      background: rgba(0, 242, 254, 0.1);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      background: #1b2133;
+      color: var(--text);
+      border: 1px solid var(--border-accent);
+      padding: 0.5rem 0.95rem;
+      border-radius: 6px;
+      font-size: 0.825rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .btn:hover {
+      background: #232b42;
+      border-color: var(--cyan);
+      color: #fff;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0072ff, #00c6ff);
+      color: #fff;
+      border: none;
+      box-shadow: 0 2px 10px rgba(0, 198, 255, 0.25);
+    }
+    .btn-primary:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: var(--red);
+    }
+    .btn-danger:hover {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .btn-success {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: var(--green);
+    }
+    .btn-success:hover {
+      background: var(--green);
+      color: #fff;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Metric Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 2px;
+      background: var(--border-accent);
+    }
+
+    .metric-card.highlight-cyan::before { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+    .metric-card.highlight-green::before { background: var(--green); box-shadow: 0 0 10px var(--green); }
+    .metric-card.highlight-amber::before { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+    .metric-card.highlight-red::before { background: var(--red); box-shadow: 0 0 10px var(--red); }
+
+    .metric-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .metric-value {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .metric-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    /* Main Sections */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(31, 38, 56, 0.6);
+      font-size: 0.875rem;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(23, 27, 40, 0.6);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 0.725rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+
+    .badge-online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .badge-offline {
+      background: rgba(132, 144, 171, 0.1);
+      color: var(--text-muted);
+      border: 1px solid rgba(132, 144, 171, 0.2);
+    }
+
+    .badge-core {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .badge-junior {
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-overdue {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .token-box {
+      font-family: var(--font-mono);
+      background: #090a0f;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.775rem;
+      color: var(--cyan);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: color 0.15s;
+    }
+    .copy-btn:hover { color: #fff; }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    input, select, textarea {
+      background: #0d1017;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.65rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-family: var(--font-sans);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.15);
+    }
+
+    /* Terminal Window */
+    .terminal-box {
+      background: #07090e;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      height: 280px;
+      overflow-y: auto;
+    }
+
+    .log-line {
+      margin-bottom: 0.35rem;
+      display: flex;
+      gap: 0.65rem;
+      line-height: 1.4;
+    }
+
+    .log-time { color: var(--text-muted); }
+    .log-type { color: var(--cyan); font-weight: 600; }
+    .log-candidate { color: #c084fc; }
+    .log-details { color: #cbd5e1; }
+
+    /* Modals */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-accent);
+      border-radius: 12px;
+      max-width: 520px;
+      width: 90%;
+      padding: 1.75rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-title { font-size: 1.15rem; font-weight: 700; }
+    .modal-close {
+      background: none; border: none; color: var(--text-muted); font-size: 1.25rem; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="logo-icon">CF</div>
+      <div>
+        <div class="brand-title">CyberForge <span class="badge-sub">Lead Control</span></div>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn" id="keyAuthBtn" onclick="openKeyModal()">
+        <span id="keyIcon">🔑</span> <span id="adminKeyStatusLabel">Authenticate</span>
+      </button>
+      <button class="btn" onclick="triggerManualSweep()">
+        <span>⚡</span> Run Sweeper
+      </button>
+      <a href="/workstation" target="_blank" class="btn btn-primary" style="text-decoration:none;">
+        <span>💻</span> Workstation Portal ↗
+      </a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- KPI Grid -->
+    <div class="metric-grid">
+      <div class="metric-card highlight-cyan">
+        <div class="metric-title">Active Workstations</div>
+        <div class="metric-value" id="kpiActiveCandidates">
+          0 <span class="badge badge-online"><span class="pulse-dot"></span> Online</span>
+        </div>
+        <div class="metric-sub">Connected candidate heartbeat telemetry</div>
+      </div>
+      <div class="metric-card highlight-green">
+        <div class="metric-title">Total Registry</div>
+        <div class="metric-value" id="kpiTotalCandidates">0</div>
+        <div class="metric-sub">Provisioned candidates in cohort</div>
+      </div>
+      <div class="metric-card highlight-amber">
+        <div class="metric-title">Active Governance Tasks</div>
+        <div class="metric-value" id="kpiOpenTasks">0</div>
+        <div class="metric-sub">Tasks pending or in-progress</div>
+      </div>
+      <div class="metric-card highlight-red">
+        <div class="metric-title">Pending Reviews / Overdue</div>
+        <div class="metric-value" id="kpiAlertTasks">0</div>
+        <div class="metric-sub">Deliverables requiring lead decision</div>
+      </div>
+    </div>
+
+    <!-- Candidate Roster Section -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>👥</span> Candidate Activity & Heartbeat Matrix
+        </div>
+        <button class="btn btn-primary" onclick="openProvisionModal()">
+          <span>+</span> Provision Candidate
+        </button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Candidate</th>
+            <th>Role</th>
+            <th>Live Status</th>
+            <th>Active Time</th>
+            <th>Assigned Tasks</th>
+            <th>Bearer Token (Masked)</th>
+          </tr>
+        </thead>
+        <tbody id="candidateTableBody">
+          <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Awaiting authentication...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Task Governance & Assignment Section -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>📋</span> Task Assignment & Lifecycle Governance
+        </div>
+      </div>
+
+      <!-- Quick Task Creation Form -->
+      <form id="createTaskForm" onsubmit="handleCreateTask(event)">
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Task Title</label>
+            <input type="text" id="taskTitle" placeholder="e.g. Audit Express rate-limiting and OWASP headers" required />
+          </div>
+          <div class="form-group">
+            <label>Assign To Candidate</label>
+            <select id="taskAssignee" required>
+              <option value="">Select Candidate...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Deadline (UTC / Local)</label>
+            <input type="datetime-local" id="taskDeadline" required />
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Task Governance Brief / Requirements</label>
+            <textarea id="taskDesc" rows="2" placeholder="Specific deliverables, PR guidelines, and test requirements..."></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <span>➕</span> Assign Governance Task
+        </button>
+      </form>
+
+      <div style="margin-top: 2rem;">
+        <div class="section-title" style="font-size: 1rem; margin-bottom: 0.75rem;">
+          Governance Task Board
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Task Title</th>
+              <th>Assigned Candidate</th>
+              <th>Deadline</th>
+              <th>Status</th>
+              <th>Deliverable / Review</th>
+            </tr>
+          </thead>
+          <tbody id="taskTableBody">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Awaiting authentication...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Real-time DevSecOps Audit Trail -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🛡️</span> DevSecOps Immutable Audit Trail
+        </div>
+        <span style="font-size:0.75rem; color:var(--text-muted);" id="auditStatusLabel">Live Stream</span>
+      </div>
+      <div class="terminal-box" id="auditTerminal">
+        <div class="log-line"><span class="log-time">[SYSTEM]</span> Ready. Authenticate to stream telemetry.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Secure Key Authentication Modal -->
+  <div class="modal-backdrop" id="keyModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">🔐 DevSecOps Lead Authentication</div>
+        <button class="modal-close" onclick="closeKeyModal()">&times;</button>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 1rem;">
+        Enter your cryptographically secure <code>ADMIN_API_KEY</code>. Credentials are held strictly in temporary session memory and are never written to disk or exposed in URLs.
+      </p>
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label>Master Secret Key</label>
+        <input type="password" id="inputAdminKey" placeholder="Paste 64-character hex secret..." autocomplete="off" />
+      </div>
+      <div style="display:flex; justify-content:space-between; gap:0.5rem;">
+        <button class="btn btn-danger" type="button" onclick="clearAdminKey()">Clear / Lock</button>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn" type="button" onclick="closeKeyModal()">Cancel</button>
+          <button class="btn btn-primary" type="button" onclick="saveAdminKey()">Authorize Session</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Provision Candidate Modal -->
+  <div class="modal-backdrop" id="provisionModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Provision New Candidate</div>
+        <button class="modal-close" onclick="closeProvisionModal()">&times;</button>
+      </div>
+      <form onsubmit="handleProvisionCandidate(event)">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label>Full Name</label>
+          <input type="text" id="newCandName" placeholder="Candidate Name" required />
+        </div>
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label>Role</label>
+          <select id="newCandRole" required>
+            <option value="core">core (Lead track)</option>
+            <option value="junior">junior (Candidate)</option>
+          </select>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+          <button type="button" class="btn" onclick="closeProvisionModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate Credentials</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Review Deliverable Modal -->
+  <div class="modal-backdrop" id="reviewModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Governance Task Review</div>
+        <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+      </div>
+      <div id="reviewModalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // In-memory / session-only token (never stored in plaintext persistent localStorage)
+    let ADMIN_KEY = sessionStorage.getItem('cf_lead_session_key') || '';
+    let cachedCandidates = [];
+
+    function updateKeyStatus() {
+      const label = document.getElementById('adminKeyStatusLabel');
+      const icon = document.getElementById('keyIcon');
+      if (ADMIN_KEY) {
+        label.innerText = 'Authenticated';
+        icon.innerText = '🔒';
+      } else {
+        label.innerText = 'Authenticate';
+        icon.innerText = '🔑';
+      }
+    }
+
+    function openKeyModal() {
+      document.getElementById('inputAdminKey').value = '';
+      document.getElementById('keyModal').classList.add('open');
+    }
+
+    function closeKeyModal() {
+      document.getElementById('keyModal').classList.remove('open');
+    }
+
+    function saveAdminKey() {
+      const val = document.getElementById('inputAdminKey').value.trim();
+      if (!val) {
+        alert('Please enter your secret key.');
+        return;
+      }
+      ADMIN_KEY = val;
+      sessionStorage.setItem('cf_lead_session_key', ADMIN_KEY);
+      updateKeyStatus();
+      closeKeyModal();
+      refreshDashboard();
+    }
+
+    function clearAdminKey() {
+      ADMIN_KEY = '';
+      sessionStorage.removeItem('cf_lead_session_key');
+      updateKeyStatus();
+      closeKeyModal();
+      location.reload();
+    }
+
+    function openProvisionModal() {
+      if (!ADMIN_KEY) return openKeyModal();
+      document.getElementById('provisionModal').classList.add('open');
+    }
+
+    function closeProvisionModal() {
+      document.getElementById('provisionModal').classList.remove('open');
+    }
+
+    function closeReviewModal() {
+      document.getElementById('reviewModal').classList.remove('open');
+    }
+
+    async function apiFetch(endpoint, options = {}) {
+      if (!ADMIN_KEY) {
+        openKeyModal();
+        throw new Error('Authentication required');
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'x-admin-key': ADMIN_KEY,
+        ...(options.headers || {})
+      };
+
+      const res = await fetch(endpoint, { ...options, headers });
+      if (res.status === 401) {
+        sessionStorage.removeItem('cf_lead_session_key');
+        ADMIN_KEY = '';
+        updateKeyStatus();
+        openKeyModal();
+        throw new Error('Unauthorized: Invalid Admin Secret Key.');
+      }
+      return await res.json();
+    }
+
+    function copyToClipboard(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.innerText;
+        btn.innerText = '✓ Copied';
+        setTimeout(() => { btn.innerText = original; }, 1500);
+      });
+    }
+
+    function formatTime(seconds) {
+      if (!seconds || seconds <= 0) return '0m';
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    }
+
+    async function loadCandidates() {
+      try {
+        const data = await apiFetch('/api/admin/candidates');
+        cachedCandidates = data.candidates || [];
+
+        const total = cachedCandidates.length;
+        const active = cachedCandidates.filter(c => c.is_online === 1).length;
+        document.getElementById('kpiTotalCandidates').innerText = total;
+        document.getElementById('kpiActiveCandidates').innerHTML = `
+          ${active} <span class="badge ${active > 0 ? 'badge-online' : 'badge-offline'}"><span class="pulse-dot"></span> Online</span>
+        `;
+
+        const select = document.getElementById('taskAssignee');
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Select Candidate...</option>' + cachedCandidates.map(c => `
+          <option value="${c.id}" ${currentVal == c.id ? 'selected' : ''}>${c.name} (${c.role.toUpperCase()})</option>
+        `).join('');
+
+        const tbody = document.getElementById('candidateTableBody');
+        if (cachedCandidates.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No candidates registered.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = cachedCandidates.map(c => {
+          let statusBadge = '<span class="badge badge-offline">Offline</span>';
+          if (c.is_online === 1) {
+            statusBadge = '<span class="badge badge-online"><span class="pulse-dot"></span> Active</span>';
+          }
+
+          const roleBadge = c.role === 'core' 
+            ? '<span class="badge badge-core">CORE</span>' 
+            : '<span class="badge badge-junior">JUNIOR</span>';
+
+          return `
+            <tr>
+              <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.8rem;">#${c.id}</td>
+              <td><strong>${c.name}</strong></td>
+              <td>${roleBadge}</td>
+              <td>${statusBadge}</td>
+              <td style="font-family:var(--font-mono); font-weight:600;">${formatTime(c.total_active_seconds)}</td>
+              <td><span class="badge badge-junior">${c.assigned_tasks_count || 0} Tasks</span></td>
+              <td>
+                <div class="token-box">
+                  <span title="Click copy to retrieve full token">••••••••••••••••</span>
+                  <button class="copy-btn" onclick="copyToClipboard('${c.access_token}', this)">Copy Token</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.warn('Candidates loading suspended:', err.message);
+      }
+    }
+
+    async function loadTasks() {
+      try {
+        const data = await apiFetch('/api/admin/tasks');
+        const tasks = data.tasks || [];
+
+        const openCount = tasks.filter(t => ['pending', 'in_progress'].includes(t.status)).length;
+        const alertCount = tasks.filter(t => t.status === 'submitted' || t.is_overdue).length;
+        document.getElementById('kpiOpenTasks').innerText = openCount;
+        document.getElementById('kpiAlertTasks').innerText = alertCount;
+
+        const tbody = document.getElementById('taskTableBody');
+        if (tasks.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No governance tasks assigned.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = tasks.map(t => {
+          let statusBadge = `<span class="badge badge-junior">${t.status}</span>`;
+          if (t.is_overdue) {
+            statusBadge = '<span class="badge badge-overdue">OVERDUE</span>';
+          } else if (t.status === 'submitted') {
+            statusBadge = '<span class="badge badge-core"><span class="pulse-dot"></span> SUBMITTED</span>';
+          } else if (t.status === 'completed') {
+            statusBadge = '<span class="badge badge-online">COMPLETED</span>';
+          }
+
+          let actionCell = `<span style="color:var(--text-muted); font-size:0.75rem;">None</span>`;
+          if (t.status === 'submitted') {
+            actionCell = `
+              <button class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="openReviewModal(${t.id})">
+                Review Deliverable ↗
+              </button>
+            `;
+          } else if (t.submission_url) {
+            actionCell = `<a href="${t.submission_url}" target="_blank" style="color:var(--cyan); font-size:0.75rem;">View Artifact ↗</a>`;
+          }
+
+          return `
+            <tr>
+              <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.8rem;">#${t.id}</td>
+              <td>
+                <div><strong>${t.title}</strong></div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${t.description || 'No description provided'}</div>
+              </td>
+              <td><strong>${t.candidate_name || 'Unassigned'}</strong></td>
+              <td style="font-family:var(--font-mono); font-size:0.8rem; color:${t.is_overdue ? 'var(--red)' : 'var(--text)'};">
+                ${new Date(t.deadline).toLocaleString()}
+              </td>
+              <td>${statusBadge}</td>
+              <td>${actionCell}</td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.warn('Tasks loading suspended:', err.message);
+      }
+    }
+
+    async function loadAuditTrail() {
+      try {
+        const data = await apiFetch('/api/admin/audit');
+        const logs = data.audit_trail || [];
+
+        const terminal = document.getElementById('auditTerminal');
+        terminal.innerHTML = logs.map(e => `
+          <div class="log-line">
+            <span class="log-time">[${e.timestamp}]</span>
+            <span class="log-type">${e.event_type}</span>
+            <span class="log-candidate">${e.candidate_name ? '@' + e.candidate_name : '#SYSTEM'}</span>
+            <span class="log-details">${e.details || ''}</span>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.warn('Audit trail suspended:', err.message);
+      }
+    }
+
+    async function handleCreateTask(e) {
+      e.preventDefault();
+      const title = document.getElementById('taskTitle').value.trim();
+      const assigned_to = document.getElementById('taskAssignee').value;
+      const deadline = document.getElementById('taskDeadline').value;
+      const description = document.getElementById('taskDesc').value.trim();
+
+      if (!title || !deadline) return;
+
+      try {
+        await apiFetch('/api/tasks', {
+          method: 'POST',
+          body: JSON.stringify({
+            title,
+            description,
+            assigned_to: assigned_to ? parseInt(assigned_to) : null,
+            deadline: new Date(deadline).toISOString()
+          })
+        });
+
+        document.getElementById('createTaskForm').reset();
+        refreshDashboard();
+      } catch (err) {
+        alert('Failed to assign task: ' + err.message);
+      }
+    }
+
+    async function handleProvisionCandidate(e) {
+      e.preventDefault();
+      const name = document.getElementById('newCandName').value.trim();
+      const role = document.getElementById('newCandRole').value;
+
+      try {
+        const res = await apiFetch('/api/admin/candidates', {
+          method: 'POST',
+          body: JSON.stringify({ name, role })
+        });
+
+        closeProvisionModal();
+        document.getElementById('newCandName').value = '';
+        refreshDashboard();
+        alert(`Candidate ${name} provisioned!\nToken copied to clipboard.`);
+        navigator.clipboard.writeText(res.candidate.access_token);
+      } catch (err) {
+        alert('Provisioning failed: ' + err.message);
+      }
+    }
+
+    async function triggerManualSweep() {
+      try {
+        await apiFetch('/api/admin/sweeper/trigger', { method: 'POST' });
+        refreshDashboard();
+        alert('Governance Sweep complete.');
+      } catch (err) {
+        alert('Sweep failed: ' + err.message);
+      }
+    }
+
+    async function openReviewModal(taskId) {
+      const data = await apiFetch('/api/admin/tasks');
+      const task = (data.tasks || []).find(t => t.id === taskId);
+      if (!task) return;
+
+      const content = document.getElementById('reviewModalContent');
+      content.innerHTML = `
+        <div style="margin-bottom:1rem;">
+          <div style="font-size:0.8rem; color:var(--text-muted);">TASK #${task.id}</div>
+          <div style="font-size:1.1rem; font-weight:700;">${task.title}</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Candidate: <strong>${task.candidate_name}</strong></div>
+        </div>
+
+        <div style="background:#090a0f; border:1px solid var(--border); padding:0.75rem; border-radius:6px; margin-bottom:1rem;">
+          <label style="display:block; margin-bottom:0.25rem;">Submitted Work Artifact</label>
+          <a href="${task.submission_url}" target="_blank" style="color:var(--cyan); word-break:break-all; font-family:var(--font-mono); font-size:0.85rem;">
+            ${task.submission_url} ↗
+          </a>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label>Lead Remarks & Feedback</label>
+          <textarea id="reviewFeedback" rows="3" placeholder="Provide constructive feedback..."></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; gap:0.5rem;">
+          <button class="btn btn-danger" onclick="submitReviewDecision(${task.id}, 'in_progress')">
+            ✕ Reject / Revision Needed
+          </button>
+          <button class="btn btn-success" onclick="submitReviewDecision(${task.id}, 'completed')">
+            ✓ Approve / Complete
+          </button>
+        </div>
+      `;
+
+      document.getElementById('reviewModal').classList.add('open');
+    }
+
+    async function submitReviewDecision(taskId, status) {
+      const feedback = document.getElementById('reviewFeedback').value.trim();
+      try {
+        await apiFetch(`/api/tasks/${taskId}/review`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status, feedback })
+        });
+        closeReviewModal();
+        refreshDashboard();
+      } catch (err) {
+        alert('Review failed: ' + err.message);
+      }
+    }
+
+    function refreshDashboard() {
+      if (!ADMIN_KEY) return;
+      loadCandidates();
+      loadTasks();
+      loadAuditTrail();
+    }
+
+    // Lifecycle
+    updateKeyStatus();
+    if (!ADMIN_KEY) {
+      openKeyModal();
+    } else {
+      refreshDashboard();
+    }
+    setInterval(() => {
+      if (ADMIN_KEY) refreshDashboard();
+    }, 10000);
+  </script>
+</body>
+</html>
+

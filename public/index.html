@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberForge | Secure Workstation Gateway</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card: #11141e;
+      --border: #1f2638;
+      --text: #f0f3fa;
+      --text-muted: #8490ab;
+      --cyan: #00f2fe;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .hero {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 3rem 2.5rem;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    }
+    .logo {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #000;
+      font-size: 1.5rem;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.35);
+    }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 2rem; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #0072ff, #00c6ff);
+      color: #fff;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 0.85rem 1.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 6px 25px rgba(0, 198, 255, 0.45);
+    }
+    .footer-note {
+      margin-top: 1.75rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo">CF</div>
+    <h1>CyberForge Gateway</h1>
+    <p>Corporate Candidate Activity Governance & Workstation Infrastructure. Connect your workstation using your assigned cryptographic access token.</p>
+    <a href="/workstation" class="btn">Launch Candidate Workstation ➔</a>
+    <div class="footer-note">DEVSECOPS ENCLAVE · TLS ENCRYPTED</div>
+  </div>
+</body>
+</html>

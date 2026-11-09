@@ -1,0 +1,14 @@
+node_modules/
+npm-debug.log*
+.git
+.gitignore
+.env
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+bin/
+*.exe
+tests/test-sandbox.db
+README.md
+

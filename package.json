@@ -1,0 +1,30 @@
+{
+  "name": "cyberforge-backend",
+  "version": "1.0.0",
+  "description": "Corporate-grade candidate activity tracking and task governance backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "tunnel": "node scripts/tunnel.js",
+    "seed:tasks": "node scripts/seed-tasks.js",
+    "clean:db": "node scripts/clean-production.js",
+    "audit:security": "node scripts/audit-test.js",
+    "test": "node tests/ci-pipeline.test.js"
+  },
+  "keywords": [
+    "devsecops",
+    "governance",
+    "candidate-tracking",
+    "discord-webhook",
+    "sqlite"
+  ],
+  "author": "CyberForge DevSecOps Team",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "sqlite3": "^5.1.7"
+  }
+}

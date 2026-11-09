@@ -661,7 +661,7 @@
       <form onsubmit="handleCreateCandidate(event)">
         <div class="form-group">
           <label>Candidate Full Name</label>
-          <input type="text" id="newCandName" placeholder="e.g. Alex Mercer" required />
+          <input type="text" id="newCandName" placeholder="" required />
         </div>
         <div class="form-group">
           <label>Company Position / Designation</label>
@@ -682,11 +682,58 @@
         </div>
         <div id="customRoleGroup" class="form-group" style="display:none;">
           <label>Custom Position Title</label>
-          <input type="text" id="customRoleInput" placeholder="e.g. SOC Analyst, Incident Responder, Cloud Architect" />
+          <input type="text" id="customRoleInput" placeholder="" />
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeCandidateModal()">Cancel</button>
           <button type="submit" class="btn btn-primary">Create Candidate & Generate Token ➔</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Promote Candidate / Change Position (Admin Only) -->
+  <div id="promoteModal" class="modal-overlay">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+        <h3 style="font-size:1.15rem; font-weight:800;">🎖️ Candidate Promotion & Role Advancement</h3>
+        <button class="btn" onclick="closePromoteModal()">✕</button>
+      </div>
+      <form onsubmit="handlePromoteCandidate(event)">
+        <input type="hidden" id="promoteCandId" />
+        <div class="form-group">
+          <label>Candidate Name</label>
+          <div id="promoteCandName" style="font-size:1.1rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;"></div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Current Position: <span id="promoteCandCurrentRole" class="role-badge"></span></div>
+        </div>
+        <div class="form-group">
+          <label>Promote To / New Position</label>
+          <select id="promoteNewRole" onchange="togglePromoteCustomRole()" required>
+            <option value="tech_lead">⚡ Technical Lead / Systems Architect</option>
+            <option value="devsecops">🛡️ DevSecOps & Cloud Security Specialist</option>
+            <option value="security_analyst">🔍 Security Analyst & Penetration Tester</option>
+            <option value="senior_dev">💻 Senior Full-Stack Engineer</option>
+            <option value="backend_dev">⚙️ Backend & API Engineer</option>
+            <option value="frontend_dev">🎨 Frontend & UI/UX Engineer</option>
+            <option value="data_engineer">📊 Data & Telemetry Engineer</option>
+            <option value="qa_engineer">🧪 QA & Test Automation Specialist</option>
+            <option value="core">🚀 Core Developer</option>
+            <option value="junior">📘 Junior Software Engineer</option>
+            <option value="intern">🎓 Software Engineering Intern</option>
+            <option value="custom">➕ Custom Position...</option>
+          </select>
+        </div>
+        <div id="promoteCustomGroup" class="form-group" style="display:none;">
+          <label>Custom Position Title</label>
+          <input type="text" id="promoteCustomRole" placeholder="" />
+        </div>
+        <div class="form-group">
+          <label>Commendation Notes / Promotion Reason (Delivered to Workstation)</label>
+          <textarea id="promoteReason" rows="3" placeholder="" required></textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+          <button type="button" class="btn" onclick="closePromoteModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Authorize Promotion ➔</button>
         </div>
       </form>
     </div>
@@ -702,7 +749,7 @@
       <form onsubmit="handleSaveKey(event)">
         <div class="form-group">
           <label>Admin Secret Key (x-admin-key)</label>
-          <input type="password" id="adminKeyInput" placeholder="Enter ADMIN_API_KEY..." required />
+          <input type="password" id="adminKeyInput" placeholder="" required />
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeKeyModal()">Cancel</button>
@@ -722,11 +769,11 @@
       <form onsubmit="handleCreateTask(event)">
         <div class="form-group">
           <label>Deliverable Title</label>
-          <input type="text" id="taskTitle" placeholder="e.g. Implement Zero-Trust JWT Rotation" required />
+          <input type="text" id="taskTitle" placeholder="" required />
         </div>
         <div class="form-group">
           <label>Description & Acceptance Criteria</label>
-          <textarea id="taskDesc" rows="3" placeholder="Specify test requirements, compliance constraints, and expected artifact outputs..." required></textarea>
+          <textarea id="taskDesc" rows="3" placeholder="" required></textarea>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
@@ -775,31 +822,31 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
             <div class="form-group">
               <label>Overall Score (0-100)</label>
-              <input type="number" id="reviewScore" min="0" max="100" placeholder="e.g. 92" />
+              <input type="number" id="reviewScore" min="0" max="100" placeholder="" />
             </div>
             <div class="form-group">
               <label>Code Quality (/25)</label>
-              <input type="number" id="rubricQuality" min="0" max="25" placeholder="23" oninput="autoSumScore()" />
+              <input type="number" id="rubricQuality" min="0" max="25" placeholder="" oninput="autoSumScore()" />
             </div>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem;">
             <div class="form-group">
               <label>Security (/25)</label>
-              <input type="number" id="rubricSecurity" min="0" max="25" placeholder="24" oninput="autoSumScore()" />
+              <input type="number" id="rubricSecurity" min="0" max="25" placeholder="" oninput="autoSumScore()" />
             </div>
             <div class="form-group">
               <label>Architecture (/25)</label>
-              <input type="number" id="rubricArch" min="0" max="25" placeholder="23" oninput="autoSumScore()" />
+              <input type="number" id="rubricArch" min="0" max="25" placeholder="" oninput="autoSumScore()" />
             </div>
             <div class="form-group">
               <label>Timeliness (/25)</label>
-              <input type="number" id="rubricTime" min="0" max="25" placeholder="22" oninput="autoSumScore()" />
+              <input type="number" id="rubricTime" min="0" max="25" placeholder="" oninput="autoSumScore()" />
             </div>
           </div>
         </div>
         <div class="form-group">
           <label>Lead Review Feedback & Commendations</label>
-          <textarea id="reviewFeedback" rows="3" placeholder="Detail any security considerations, test performance, or code quality feedback..." required></textarea>
+          <textarea id="reviewFeedback" rows="3" placeholder="" required></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeReviewModal()">Cancel</button>
@@ -819,7 +866,7 @@
       <form onsubmit="handleBroadcast(event)">
         <div class="form-group">
           <label>Notification Title</label>
-          <input type="text" id="bcastTitle" placeholder="e.g. Cohort Architecture Sync" required />
+          <input type="text" id="bcastTitle" placeholder="" required />
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
@@ -840,7 +887,7 @@
         </div>
         <div class="form-group">
           <label>Broadcast Message</label>
-          <textarea id="bcastMessage" rows="3" placeholder="Enter message text delivered immediately to candidate workstations..." required></textarea>
+          <textarea id="bcastMessage" rows="3" placeholder="" required></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeBroadcastModal()">Cancel</button>
@@ -869,7 +916,7 @@
         </div>
         <div class="form-group">
           <label>Lead Response & Resolution Guidance</label>
-          <textarea id="resolveNotes" rows="4" placeholder="Provide troubleshooting steps or deadline extension confirmation..." required></textarea>
+          <textarea id="resolveNotes" rows="4" placeholder="" required></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeTicketModal()">Cancel</button>
@@ -1097,6 +1144,9 @@
               <td>${latestLogDisplay}</td>
               <td>
                 <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <button class="btn btn-outline" style="padding:0.25rem 0.5rem; font-size:0.7rem; border-color:rgba(0,242,254,0.4); color:var(--cyan);" onclick="openPromoteModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', '${c.role}')" title="Promote / Update Role">
+                    🎖️ Promote
+                  </button>
                   <div class="token-box">
                     <span>••••••••</span>
                     <button class="copy-btn" onclick="copyToClipboard('${c.access_token}', this)">Copy</button>
@@ -1260,6 +1310,56 @@
     function toggleCustomRoleInput() {
       const isCustom = document.getElementById('newCandRole').value === 'custom';
       document.getElementById('customRoleGroup').style.display = isCustom ? 'block' : 'none';
+    }
+
+    function openPromoteModal(id, name, currentRole) {
+      document.getElementById('promoteCandId').value = id;
+      document.getElementById('promoteCandName').innerText = `#${id} — ${name}`;
+      const badge = document.getElementById('promoteCandCurrentRole');
+      badge.className = 'role-badge role-' + currentRole;
+      badge.innerText = formatRoleName(currentRole);
+      
+      const select = document.getElementById('promoteNewRole');
+      select.value = currentRole === 'junior' ? 'core' : (currentRole === 'core' ? 'senior_dev' : 'tech_lead');
+      document.getElementById('promoteCustomGroup').style.display = 'none';
+      document.getElementById('promoteCustomRole').value = '';
+      document.getElementById('promoteReason').value = '';
+      document.getElementById('promoteModal').classList.add('open');
+    }
+
+    function closePromoteModal() {
+      document.getElementById('promoteModal').classList.remove('open');
+    }
+
+    function togglePromoteCustomRole() {
+      const isCustom = document.getElementById('promoteNewRole').value === 'custom';
+      document.getElementById('promoteCustomGroup').style.display = isCustom ? 'block' : 'none';
+    }
+
+    async function handlePromoteCandidate(e) {
+      e.preventDefault();
+      const id = document.getElementById('promoteCandId').value;
+      let role = document.getElementById('promoteNewRole').value;
+      if (role === 'custom') {
+        role = document.getElementById('promoteCustomRole').value.trim();
+        if (!role) {
+          alert('Please enter a custom position title.');
+          return;
+        }
+      }
+      const reason = document.getElementById('promoteReason').value.trim();
+
+      try {
+        const res = await apiFetch(`/api/admin/candidates/${id}/role`, {
+          method: 'PATCH',
+          body: JSON.stringify({ role, reason })
+        });
+        closePromoteModal();
+        loadCandidates();
+        alert(res.message || 'Candidate promoted successfully!');
+      } catch (err) {
+        alert('Failed to authorize promotion: ' + err.message);
+      }
     }
 
     async function handleCreateCandidate(e) {

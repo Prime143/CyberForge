@@ -42,50 +42,384 @@
         radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.04) 0%, transparent 45%);
     }
 
-    /* Auth Screen */
+    /* ==========================================================================
+       High-Tech Cyber Ingress Screen
+       ========================================================================== */
     .auth-wrapper {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1.5rem;
+      padding: 2rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #0d1527 0%, #060911 100%);
+    }
+
+    .auth-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(0, 242, 254, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 254, 0.035) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+      mask-image: radial-gradient(circle at 50% 50%, black 45%, transparent 85%);
+    }
+
+    .auth-glow-orb-1 {
+      position: absolute;
+      top: 15%;
+      left: 18%;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.16), transparent 70%);
+      filter: blur(65px);
+      pointer-events: none;
+      animation: orbFloat 10s ease-in-out infinite alternate;
+    }
+
+    .auth-glow-orb-2 {
+      position: absolute;
+      bottom: 12%;
+      right: 18%;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.14), transparent 70%);
+      filter: blur(75px);
+      pointer-events: none;
+      animation: orbFloat 13s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes orbFloat {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(35px, -25px) scale(1.12); }
     }
 
     .auth-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 16px;
-      padding: 2.75rem 2.25rem;
-      max-width: 480px;
+      background: rgba(14, 20, 32, 0.88);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      border-radius: 22px;
+      padding: 3rem 2.5rem;
+      max-width: 500px;
       width: 100%;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.88),
+        0 0 50px rgba(0, 242, 254, 0.09),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
       position: relative;
+      z-index: 10;
+      animation: cardEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .auth-card::before {
-      content: '';
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .auth-laser-beam {
       position: absolute;
-      top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--cyan), var(--blue), var(--purple));
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #00f2fe, #8b5cf6, transparent);
+      background-size: 200% 100%;
+      animation: laserSweep 3s linear infinite;
+      border-radius: 22px 22px 0 0;
     }
 
-    .brand-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, #00f2fe, #4facfe);
-      border-radius: 12px;
+    @keyframes laserSweep {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .auth-corner {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      pointer-events: none;
+    }
+    .auth-corner-tl { top: 8px; left: 8px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); border-top-left-radius: 4px; }
+    .auth-corner-tr { top: 8px; right: 8px; border-top: 2px solid var(--cyan); border-right: 2px solid var(--cyan); border-top-right-radius: 4px; }
+    .auth-corner-bl { bottom: 8px; left: 8px; border-bottom: 2px solid var(--cyan); border-left: 2px solid var(--cyan); border-bottom-left-radius: 4px; }
+    .auth-corner-br { bottom: 8px; right: 8px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); border-bottom-right-radius: 4px; }
+
+    .auth-terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.75rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .auth-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(0, 242, 254, 0.08);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--cyan);
+      letter-spacing: 0.06em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+
+    .auth-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 1.8s infinite;
+    }
+
+    .auth-live-clock {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    .auth-emblem-wrapper {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 1.25rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      color: #000;
-      font-size: 1.3rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 0 20px rgba(0, 242, 254, 0.35);
     }
 
-    .auth-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.35rem; }
-    .auth-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.75rem; }
+    .auth-emblem-ring {
+      position: absolute;
+      inset: -6px;
+      border: 2px dashed rgba(0, 242, 254, 0.35);
+      border-radius: 50%;
+      animation: emblemRotate 18s linear infinite;
+    }
+
+    @keyframes emblemRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .auth-emblem-icon {
+      width: 58px;
+      height: 58px;
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(99, 102, 241, 0.15));
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.25);
+    }
+
+    .auth-title-group {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .auth-main-title {
+      font-size: 1.85rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      background: linear-gradient(135deg, #ffffff 20%, #00f2fe 75%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.35rem;
+    }
+
+    .auth-tagline {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .auth-error-banner {
+      display: none;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.35rem;
+      font-size: 0.8rem;
+      color: #fca5a5;
+    }
+
+    .auth-error-banner.visible {
+      display: flex;
+      animation: shake 0.4s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .auth-field-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .auth-paste-btn {
+      background: transparent;
+      border: none;
+      color: var(--cyan);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0;
+      transition: color 0.2s ease;
+    }
+    .auth-paste-btn:hover { color: #fff; text-shadow: 0 0 8px var(--cyan); }
+
+    .auth-input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: rgba(10, 14, 23, 0.85);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      border-radius: 10px;
+      transition: all 0.25s ease;
+    }
+
+    .auth-input-container:focus-within {
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.35), inset 0 0 8px rgba(0, 242, 254, 0.05);
+    }
+
+    .auth-input-prefix {
+      padding-left: 0.9rem;
+      font-size: 1rem;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .auth-token-input {
+      flex: 1;
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      padding: 0.85rem 0.75rem !important;
+      font-family: var(--font-mono) !important;
+      font-size: 0.95rem !important;
+      letter-spacing: 0.12em !important;
+      color: #fff !important;
+      box-shadow: none !important;
+    }
+
+    .auth-eye-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 0.9rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-eye-btn:hover { color: #fff; }
+
+    .auth-helper-text {
+      margin-top: 0.45rem;
+      font-size: 0.72rem;
+      color: var(--text-faint);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .auth-connect-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 50%, #6366f1 100%);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 0.95rem 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 20px rgba(0, 242, 254, 0.35);
+      position: relative;
+      overflow: hidden;
+      margin-top: 0.75rem;
+    }
+
+    .auth-connect-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 242, 254, 0.55);
+      filter: brightness(1.08);
+    }
+
+    .auth-connect-btn:active {
+      transform: translateY(0);
+    }
+
+    .auth-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .auth-trust-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .auth-trust-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--text-faint);
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+    }
+
+    .auth-trust-item .trust-icon {
+      font-size: 0.9rem;
+    }
 
     .app-screen { display: none; }
     .app-screen.active { display: block; }
@@ -724,21 +1058,96 @@
 </head>
 <body>
 
-  <!-- Auth Screen -->
+  <!-- Auth Screen: High-Tech Cyber Zero-Trust Ingress Gateway -->
   <div id="authScreen" class="auth-wrapper">
+    <div class="auth-glow-orb-1"></div>
+    <div class="auth-glow-orb-2"></div>
     <div class="auth-card">
-      <div class="brand-icon">⚡</div>
-      <div class="auth-title">CyberForge Workstation</div>
-      <div class="auth-sub">Enter your authorized candidate token to initialize your monitored workstation environment.</div>
-      <form onsubmit="handleTokenLogin(event)">
-        <div class="form-group">
-          <label>Candidate Access Token</label>
-          <input type="password" id="tokenInput" placeholder="e.g. 04521968ccdc2d5bc71066dd3aed7f82" required />
+      <div class="auth-laser-beam"></div>
+      <div class="auth-corner auth-corner-tl"></div>
+      <div class="auth-corner auth-corner-tr"></div>
+      <div class="auth-corner auth-corner-bl"></div>
+      <div class="auth-corner auth-corner-br"></div>
+
+      <!-- Top Terminal Pill & Live Clock -->
+      <div class="auth-terminal-header">
+        <div class="auth-badge-pill">
+          <span class="auth-badge-dot"></span>
+          <span>ZERO-TRUST GATEWAY // SECURE INGRESS</span>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:0.75rem;">
-          Connect to Workstation ➔
+        <div id="authLiveClock" class="auth-live-clock">UTC --:--:--</div>
+      </div>
+
+      <!-- Cyber Shield Emblem & Title -->
+      <div class="auth-emblem-wrapper">
+        <div class="auth-emblem-ring"></div>
+        <div class="auth-emblem-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#shieldGrad)" stroke="#00f2fe" stroke-width="1.6"/>
+            <path d="M9 12l2 2 4-4" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(0, 242, 254, 0.35)"/>
+                <stop offset="100%" stop-color="rgba(99, 102, 241, 0.35)"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+
+      <div class="auth-title-group">
+        <h1 class="auth-main-title">CYBERFORGE</h1>
+        <div class="auth-tagline">Candidate Engineering Workstation & Telemetry Node</div>
+      </div>
+
+      <!-- High-Tech Inline Error Alert -->
+      <div id="authErrorBox" class="auth-error-banner">
+        <span style="font-size:1rem;">⚠️</span>
+        <span id="authErrorMsg">Access denied: Invalid candidate authorization token.</span>
+      </div>
+
+      <!-- Auth Form -->
+      <form onsubmit="handleTokenLogin(event)">
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem;">
+            <label class="auth-field-label">CRYPTOGRAPHIC ACCESS TOKEN</label>
+            <button type="button" class="auth-paste-btn" onclick="pasteTokenFromClipboard()" title="Paste token from clipboard">
+              📋 Paste
+            </button>
+          </div>
+          <div class="auth-input-container">
+            <span class="auth-input-prefix">🔑</span>
+            <input type="password" id="tokenInput" class="auth-token-input" placeholder="" autocomplete="off" spellcheck="false" required />
+            <button type="button" class="auth-eye-btn" onclick="toggleTokenVisibility()" title="Show/Hide Token">
+              <span id="authEyeIcon">👁️</span>
+            </button>
+          </div>
+          <div class="auth-helper-text">
+            <span>32-character hexadecimal key provided by your Lead</span>
+          </div>
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="auth-connect-btn">
+          <span id="authBtnSpinner" class="auth-spinner" style="display:none;"></span>
+          <span id="authBtnText">INITIALIZE WORKSTATION ➔</span>
         </button>
       </form>
+
+      <!-- Security Clearances Footer -->
+      <div class="auth-trust-grid">
+        <div class="auth-trust-item">
+          <span class="trust-icon">🔒</span>
+          <span>256-Bit Auth</span>
+        </div>
+        <div class="auth-trust-item">
+          <span class="trust-icon">🛡️</span>
+          <span>Telemetry Active</span>
+        </div>
+        <div class="auth-trust-item">
+          <span class="trust-icon">⚡</span>
+          <span>Zero-Trust Hub</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -824,7 +1233,7 @@
           <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Keeps leads updated on your progress across tabs/tools)</span>
         </div>
         <form class="checkin-form" onsubmit="handleQuickCheckin(event)">
-          <input type="text" id="quickLogMsg" class="checkin-input" placeholder="e.g. Pushed commit 4b9f2 - parameterized auth middleware, tested SQLite constraints..." required />
+          <input type="text" id="quickLogMsg" class="checkin-input" placeholder="" required />
           <select id="quickLogType" class="checkin-select">
             <option value="progress">Progress Milestone</option>
             <option value="git_commit">Git Commit SHA</option>
@@ -961,12 +1370,12 @@
         <input type="hidden" id="submitTaskId" />
         <div class="form-group">
           <label>Deliverable Artifact / GitHub PR URL</label>
-          <input type="url" id="submitUrl" placeholder="https://github.com/org/repo/pull/42" required />
+          <input type="url" id="submitUrl" placeholder="" required />
           <div style="font-size:0.7rem; color:var(--text-faint); margin-top:4px;">* Protected by Plagiarism Guard. Duplicate URLs across candidates are rejected.</div>
         </div>
         <div class="form-group">
           <label>Implementation Notes & Proof-of-Work Verification</label>
-          <textarea id="submitNotes" rows="4" placeholder="Detail the test cases passed, architectural decisions, and verification steps..."></textarea>
+          <textarea id="submitNotes" rows="4" placeholder=""></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeSubmitModal()">Cancel</button>
@@ -986,7 +1395,7 @@
       <form onsubmit="handleCreateTicket(event)">
         <div class="form-group">
           <label>Subject / Summary</label>
-          <input type="text" id="ticketSubject" placeholder="e.g. SQLite foreign key blocker or Render port binding" required />
+          <input type="text" id="ticketSubject" placeholder="" required />
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
@@ -1011,7 +1420,7 @@
         </div>
         <div class="form-group">
           <label>Detailed Description & Logs</label>
-          <textarea id="ticketDescription" rows="4" placeholder="Provide complete logs, reproduction steps, or context..." required></textarea>
+          <textarea id="ticketDescription" rows="4" placeholder="" required></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeRaiseTicketModal()">Cancel</button>
@@ -1053,12 +1462,49 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
+      updateAuthLiveClock();
+      setInterval(updateAuthLiveClock, 1000);
+
       if (TOKEN) {
         initWorkstation();
       }
       // Global countdown timer ticker
       setInterval(updateCountdowns, 1000);
     });
+
+    function updateAuthLiveClock() {
+      const el = document.getElementById('authLiveClock');
+      if (el) {
+        const now = new Date();
+        const parts = now.toUTCString().split(' ');
+        el.innerText = 'UTC ' + (parts[4] || now.toISOString().substring(11, 19));
+      }
+    }
+
+    function toggleTokenVisibility() {
+      const input = document.getElementById('tokenInput');
+      const icon = document.getElementById('authEyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerText = '🙈';
+      } else {
+        input.type = 'password';
+        icon.innerText = '👁️';
+      }
+    }
+
+    async function pasteTokenFromClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          const input = document.getElementById('tokenInput');
+          input.value = text.trim();
+          input.focus();
+        }
+      } catch (_) {
+        document.getElementById('tokenInput').focus();
+      }
+    }
 
     function updateTelemetryHUD() {
       const isVisible = !document.hidden;
@@ -1104,10 +1550,27 @@
     async function handleTokenLogin(e) {
       e.preventDefault();
       const token = document.getElementById('tokenInput').value.trim();
-      if (!token) return;
+      const errorBox = document.getElementById('authErrorBox');
+      const errorMsg = document.getElementById('authErrorMsg');
+      const submitBtn = document.getElementById('authSubmitBtn');
+      const spinner = document.getElementById('authBtnSpinner');
+      const btnText = document.getElementById('authBtnText');
+
+      errorBox.classList.remove('visible');
+
+      if (!token) {
+        errorMsg.innerText = 'Please enter your candidate authorization token.';
+        errorBox.classList.add('visible');
+        return;
+      }
 
       TOKEN = token;
       sessionStorage.setItem('cyberforge_candidate_token', TOKEN);
+
+      // Loading state
+      submitBtn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.innerText = 'VERIFYING CREDENTIALS...';
 
       try {
         const res = await fetch('/api/session/login', {
@@ -1119,10 +1582,17 @@
         });
 
         if (!res.ok) {
-          const err = await res.json();
-          alert('Authentication rejected: ' + (err.message || res.statusText));
+          const err = await res.json().catch(() => ({}));
           sessionStorage.removeItem('cyberforge_candidate_token');
           TOKEN = '';
+          submitBtn.disabled = false;
+          spinner.style.display = 'none';
+          btnText.innerText = 'INITIALIZE WORKSTATION ➔';
+          
+          errorMsg.innerText = err.message || 'Access denied: Invalid candidate authorization token.';
+          errorBox.classList.remove('visible');
+          void errorBox.offsetWidth; // trigger reflow for shake
+          errorBox.classList.add('visible');
           return;
         }
 
@@ -1132,9 +1602,17 @@
         roleBadge.innerText = (data.candidate.role || 'CANDIDATE').toUpperCase().replace(/_/g, ' ');
         roleBadge.className = 'role-badge role-' + data.candidate.role;
 
+        submitBtn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.innerText = 'INITIALIZE WORKSTATION ➔';
+
         initWorkstation();
       } catch (err) {
-        alert('Network failure connecting to gateway: ' + err.message);
+        submitBtn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.innerText = 'INITIALIZE WORKSTATION ➔';
+        errorMsg.innerText = 'Gateway Connection Error: ' + err.message;
+        errorBox.classList.add('visible');
       }
     }
 

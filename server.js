@@ -121,6 +121,68 @@ app.post('/api/admin/candidates', requireAdmin, async (req, res) => {
 });
 
 /**
+ * PATCH /api/admin/candidates/:id/role (Admin Only)
+ * Promotes or updates the role/position of an existing candidate.
+ */
+app.patch('/api/admin/candidates/:id/role', requireAdmin, async (req, res) => {
+  try {
+    const candidateId = req.params.id;
+    const { role, reason } = req.body;
+
+    if (!role || typeof role !== 'string' || !role.trim()) {
+      return res.status(400).json({ error: 'Validation Error', message: 'Target role or position is required.' });
+    }
+
+    const candidate = await get('SELECT * FROM candidates WHERE id = ?', [candidateId]);
+    if (!candidate) {
+      return res.status(404).json({ error: 'Not Found', message: `Candidate ID ${candidateId} not found.` });
+    }
+
+    const newRole = role.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_').substring(0, 50);
+    const oldRole = candidate.role;
+
+    if (newRole === oldRole) {
+      return res.status(400).json({ error: 'Validation Error', message: `Candidate is already in the '${oldRole}' position.` });
+    }
+
+    await run('UPDATE candidates SET role = ? WHERE id = ?', [newRole, candidateId]);
+
+    const readableNewRole = newRole.toUpperCase().replace(/_/g, ' ');
+    const readableOldRole = oldRole.toUpperCase().replace(/_/g, ' ');
+
+    // Send promotion notification directly to candidate's workstation hub
+    await run(
+      'INSERT INTO notifications (candidate_id, title, message, type) VALUES (?, ?, ?, ?)',
+      [
+        candidateId,
+        '🎖️ Official Promotion & Position Advancement',
+        `You have been promoted from ${readableOldRole} to ${readableNewRole}.${reason ? ` Commendation Notes: ${reason}` : ''}`,
+        'success'
+      ]
+    );
+
+    // Record immutable audit event
+    await logAudit(candidateId, 'CANDIDATE_PROMOTED', {
+      candidateId,
+      name: candidate.name,
+      oldRole,
+      newRole,
+      reason: reason || 'Executive promotion authorized by Lead Administrator'
+    });
+
+    const updatedCandidate = await get('SELECT id, name, role, access_token, is_online FROM candidates WHERE id = ?', [candidateId]);
+
+    res.json({
+      message: `Candidate ${candidate.name} promoted successfully to ${readableNewRole}.`,
+      candidate: updatedCandidate
+    });
+  } catch (err) {
+    console.error('[ERROR] [Admin::PromoteCandidate]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
  * DELETE /api/admin/candidates/:id (Admin Only)
  * Deletes a candidate and safely unassigns their tasks.
  */

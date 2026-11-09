@@ -60,10 +60,9 @@ function resolveColor(color) {
 async function sendAlert(title, message, color = 'info', fields = []) {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
-  // Verify webhook configuration
+  // Silent fallback when Discord webhook is unconfigured or not in use
   if (!webhookUrl || webhookUrl.includes('webhooks/...')) {
-    console.warn('[WARN] [Notifier] DISCORD_WEBHOOK_URL is not configured or using dummy placeholder. Skipping alert dispatch.');
-    return { success: false, error: 'DISCORD_WEBHOOK_URL not configured' };
+    return { success: false, reason: 'DISCORD_NOT_CONFIGURED' };
   }
 
   // Ensure title and description fit within Discord limits

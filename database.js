@@ -149,6 +149,10 @@ db.serialize(() => {
 
   // Safe schema migrations for existing database columns
   db.run(`ALTER TABLE tasks ADD COLUMN priority TEXT CHECK(priority IN ('critical', 'high', 'medium', 'low')) DEFAULT 'medium'`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN score INTEGER`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN grade TEXT`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN rubric_breakdown TEXT`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN review_feedback TEXT`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN workstation_seconds INTEGER DEFAULT 0`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN external_work_seconds INTEGER DEFAULT 0`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN idle_seconds INTEGER DEFAULT 0`, () => {});

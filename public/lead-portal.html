@@ -300,6 +300,27 @@
     .bar-seg-external { background: var(--green); }
     .bar-seg-idle { background: var(--amber); }
 
+    /* Countdowns */
+    .countdown-pill {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .cd-green { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .cd-amber { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .cd-urgent { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); animation: pulseAlert 1.5s infinite; }
+    .cd-expired { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid var(--red); }
+
+    @keyframes pulseAlert {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.03); opacity: 0.8; }
+    }
+
     /* Badges */
     .badge {
       font-size: 0.65rem;
@@ -402,7 +423,7 @@
       border: 1px solid var(--border-accent);
       border-radius: 16px;
       padding: 2rem;
-      max-width: 560px;
+      max-width: 580px;
       width: 100%;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
     }
@@ -446,7 +467,9 @@
     <div class="nav-actions">
       <button class="btn btn-success" onclick="openCandidateModal()">+ Provision Candidate / Role</button>
       <button class="btn btn-primary" onclick="openCreateTaskModal()">+ Assign New Task</button>
-      <button class="btn" onclick="openBroadcastModal()">📢 Broadcast Notification</button>
+      <button class="btn" onclick="exportExecutiveCSV()">📥 Export CSV</button>
+      <button class="btn" onclick="downloadBackup()">💾 Backup DB</button>
+      <button class="btn" onclick="openBroadcastModal()">📢 Broadcast</button>
       <div id="keyStatusBadge" class="token-box" onclick="openKeyModal()" style="cursor:pointer;" title="Configure Lead Key">
         <span>🔑 Admin Key</span>
       </div>
@@ -512,8 +535,9 @@
               Manages corporate positions, verifies direct workstation time vs external task work, and provides one-click lifecycle deletion.
             </p>
           </div>
-          <div style="display:flex; gap:0.5rem;">
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
             <button class="btn btn-success" onclick="openCandidateModal()">+ Add Position / Candidate</button>
+            <button class="btn" onclick="exportExecutiveCSV()">📥 Export CSV Report</button>
             <button class="btn" onclick="loadAllData()">↻ Refresh Roster</button>
           </div>
         </div>
@@ -525,6 +549,7 @@
                 <th>ID</th>
                 <th>Candidate & Position</th>
                 <th>Presence</th>
+                <th>Evaluation / Grade</th>
                 <th>Active Deliverable</th>
                 <th>Time Allocation (Total / External / Direct)</th>
                 <th>Focus Score</th>
@@ -533,7 +558,7 @@
               </tr>
             </thead>
             <tbody id="candidateTableBody">
-              <tr><td colspan="8" style="text-align:center;">Loading telemetry...</td></tr>
+              <tr><td colspan="9" style="text-align:center;">Loading telemetry...</td></tr>
             </tbody>
           </table>
         </div>
@@ -565,7 +590,7 @@
           <div>
             <div class="section-title">Deliverables & Review Queue</div>
             <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
-              Evaluate candidate submissions, verify artifact links, approve or delete unneeded tasks.
+              Assign deliverables from scratch, evaluate candidate submissions with rubric scoring, or delete obsolete tasks.
             </p>
           </div>
           <button class="btn btn-primary" onclick="openCreateTaskModal()">+ Create Deliverable</button>
@@ -578,8 +603,8 @@
                 <th>Deliverable</th>
                 <th>Priority</th>
                 <th>Assignee</th>
-                <th>Deadline</th>
-                <th>Status</th>
+                <th>Deadline / Countdown</th>
+                <th>Status / Score</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -730,7 +755,7 @@
     </div>
   </div>
 
-  <!-- Modal: Review Task -->
+  <!-- Modal: Review Task with Multi-Criteria Rubric Scoring -->
   <div id="reviewModal" class="modal-overlay">
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
@@ -741,14 +766,40 @@
         <input type="hidden" id="reviewTaskId" />
         <div class="form-group">
           <label>Evaluation Decision</label>
-          <select id="reviewDecision" required>
+          <select id="reviewDecision" onchange="toggleReviewRubric()" required>
             <option value="completed">✓ Approve & Mark Completed</option>
             <option value="in_progress">↺ Request Revision (Back to In-Progress)</option>
           </select>
         </div>
+        <div id="rubricSection">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div class="form-group">
+              <label>Overall Score (0-100)</label>
+              <input type="number" id="reviewScore" min="0" max="100" placeholder="e.g. 92" />
+            </div>
+            <div class="form-group">
+              <label>Code Quality (/25)</label>
+              <input type="number" id="rubricQuality" min="0" max="25" placeholder="23" oninput="autoSumScore()" />
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label>Security (/25)</label>
+              <input type="number" id="rubricSecurity" min="0" max="25" placeholder="24" oninput="autoSumScore()" />
+            </div>
+            <div class="form-group">
+              <label>Architecture (/25)</label>
+              <input type="number" id="rubricArch" min="0" max="25" placeholder="23" oninput="autoSumScore()" />
+            </div>
+            <div class="form-group">
+              <label>Timeliness (/25)</label>
+              <input type="number" id="rubricTime" min="0" max="25" placeholder="22" oninput="autoSumScore()" />
+            </div>
+          </div>
+        </div>
         <div class="form-group">
-          <label>Lead Feedback & Architectural Review Notes</label>
-          <textarea id="reviewFeedback" rows="4" placeholder="Detail any security considerations, test failures, or approval commendations..." required></textarea>
+          <label>Lead Review Feedback & Commendations</label>
+          <textarea id="reviewFeedback" rows="3" placeholder="Detail any security considerations, test performance, or code quality feedback..." required></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn" onclick="closeReviewModal()">Cancel</button>
@@ -831,11 +882,13 @@
   <script>
     let ADMIN_KEY = sessionStorage.getItem('cf_lead_session_key') || '4c2db3e43f43cb0342c88e1b8be5a37fd456c06bbf103a7e8e139c9b30f697ee';
     let cachedCandidates = [];
+    let cachedLeadTasks = [];
 
     window.addEventListener('DOMContentLoaded', () => {
       updateKeyStatus();
       loadAllData();
       setInterval(loadAllData, 20000);
+      setInterval(updateLeadCountdowns, 1000);
     });
 
     function updateKeyStatus() {
@@ -925,6 +978,28 @@
       return map[role] || (role || 'CANDIDATE').toUpperCase().replace(/_/g, ' ');
     }
 
+    function formatCountdown(deadlineStr, status) {
+      if (status === 'completed') return `<span class="countdown-pill cd-green">✓ Completed</span>`;
+      const diff = new Date(deadlineStr) - Date.now();
+      if (diff <= 0) return `<span class="countdown-pill cd-expired">⚠️ OVERDUE</span>`;
+
+      const hrs = Math.floor(diff / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      const timeText = `${String(hrs).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+
+      if (diff < 3600000) return `<span class="countdown-pill cd-urgent">⏳ ${timeText}</span>`;
+      if (diff < 21600000) return `<span class="countdown-pill cd-amber">⏳ ${timeText}</span>`;
+      return `<span class="countdown-pill cd-green">⏳ ${timeText}</span>`;
+    }
+
+    function updateLeadCountdowns() {
+      cachedLeadTasks.forEach(t => {
+        const el = document.getElementById(`lead-cd-${t.id}`);
+        if (el) el.innerHTML = formatCountdown(t.deadline, t.status);
+      });
+    }
+
     async function loadAllData() {
       await loadCandidates();
       await loadTasks();
@@ -956,7 +1031,7 @@
 
         const tbody = document.getElementById('candidateTableBody');
         if (cachedCandidates.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No candidates registered in database.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No candidates registered in database.</td></tr>';
           return;
         }
 
@@ -976,6 +1051,11 @@
             focusBadge = `<span class="badge badge-overdue" title="Over 50% idle without assigned deliverable">⚠️ ${focusScore}% Idle</span>`;
           }
 
+          let scoreBadge = `<span style="color:var(--text-faint); font-size:0.75rem;">Unrated</span>`;
+          if (c.avg_score !== null && c.avg_score !== undefined) {
+            scoreBadge = `<div style="font-family:var(--font-mono); font-size:0.85rem; font-weight:800; color:#fff;">${c.avg_score}/100 <span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399;">${c.overall_grade || 'A'}</span></div>`;
+          }
+
           let activeTaskDisplay = `<span style="color:var(--text-faint); font-size:0.8rem;">No active deliverable</span>`;
           if (c.active_task_title) {
             activeTaskDisplay = `<strong style="color:var(--cyan); font-size:0.825rem;">⚡ Task #${c.active_task_id}: ${c.active_task_title}</strong>`;
@@ -983,7 +1063,7 @@
 
           let latestLogDisplay = `<span style="color:var(--text-faint); font-size:0.75rem;">None</span>`;
           if (c.latest_work_log) {
-            latestLogDisplay = `<div style="max-width:240px; font-family:var(--font-mono); font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.latest_work_log}">${c.latest_work_log}</div>`;
+            latestLogDisplay = `<div style="max-width:220px; font-family:var(--font-mono); font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.latest_work_log}">${c.latest_work_log}</div>`;
           }
 
           return `
@@ -998,15 +1078,16 @@
                   ${c.is_online === 1 ? '<span class="pulse-dot"></span> Active' : 'Offline'}
                 </span>
               </td>
+              <td>${scoreBadge}</td>
               <td>${activeTaskDisplay}</td>
               <td>
                 <div style="font-family:var(--font-mono); font-size:0.85rem; font-weight:700;">
                   ${formatTime(c.total_active_seconds)} Active
                 </div>
                 <div style="font-size:0.7rem; color:var(--text-muted);">
-                  Ext Tabs: ${formatTime(extSec)} · Workstation: ${formatTime(workSec)}
+                  Ext: ${formatTime(extSec)} · WS: ${formatTime(workSec)}
                 </div>
-                <div class="telemetry-bar-container" title="Workstation: ${workPct}% | External Tasks: ${extPct}% | Idle: ${idlePct}%">
+                <div class="telemetry-bar-container" title="Workstation: ${workPct}% | External: ${extPct}% | Idle: ${idlePct}%">
                   <div class="bar-seg-workstation" style="width:${workPct}%"></div>
                   <div class="bar-seg-external" style="width:${extPct}%"></div>
                   <div class="bar-seg-idle" style="width:${idlePct}%"></div>
@@ -1021,7 +1102,7 @@
                     <button class="copy-btn" onclick="copyToClipboard('${c.access_token}', this)">Copy</button>
                   </div>
                   <button class="btn btn-danger" style="padding:0.25rem 0.5rem; font-size:0.7rem;" onclick="deleteCandidate(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Delete Candidate">
-                    🗑️ Delete
+                    🗑️
                   </button>
                 </div>
               </td>
@@ -1070,31 +1151,34 @@
     async function loadTasks() {
       try {
         const data = await apiFetch('/api/admin/tasks');
-        const tasks = data.tasks || [];
+        cachedLeadTasks = data.tasks || [];
 
-        const openCount = tasks.filter(t => ['pending', 'in_progress'].includes(t.status)).length;
+        const openCount = cachedLeadTasks.filter(t => ['pending', 'in_progress'].includes(t.status)).length;
         document.getElementById('kpiOpenTasks').innerText = openCount;
-        document.getElementById('tabTasksCount').innerText = tasks.length;
+        document.getElementById('tabTasksCount').innerText = cachedLeadTasks.length;
 
         const tbody = document.getElementById('taskTableBody');
-        if (tasks.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No governance deliverables configured.</td></tr>';
+        if (cachedLeadTasks.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:3rem; color:var(--text-muted);">No governance deliverables currently assigned. Click <strong>+ Create Deliverable</strong> to assign tasks from scratch!</td></tr>';
           return;
         }
 
-        tbody.innerHTML = tasks.map(t => {
+        tbody.innerHTML = cachedLeadTasks.map(t => {
           let statusBadge = `<span class="badge" style="background:rgba(255,255,255,0.06);">${t.status.toUpperCase()}</span>`;
           if (t.is_overdue) statusBadge = '<span class="badge badge-overdue">OVERDUE</span>';
-          else if (t.status === 'submitted') statusBadge = '<span class="badge badge-online">SUBMITTED</span>';
-          else if (t.status === 'completed') statusBadge = '<span class="badge badge-online">COMPLETED</span>';
+          else if (t.status === 'submitted') statusBadge = '<span class="badge badge-online">SUBMITTED (IN REVIEW)</span>';
+          else if (t.status === 'completed') {
+            const scoreTxt = t.score !== null ? `(${t.score}/100 · ${t.grade})` : '';
+            statusBadge = `<span class="badge badge-online">COMPLETED ${scoreTxt}</span>`;
+          }
 
           const prioBadge = `<span class="badge prio-${t.priority || 'medium'}">${(t.priority || 'medium').toUpperCase()}</span>`;
 
           let reviewBtn = '';
           if (t.status === 'submitted') {
-            reviewBtn = `<button class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="openReviewModal(${t.id})">Review ↗</button>`;
+            reviewBtn = `<button class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="openReviewModal(${t.id})">Review & Grade ↗</button>`;
           } else if (t.submission_url) {
-            reviewBtn = `<a href="${t.submission_url}" target="_blank" class="btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; color:var(--cyan);">View ↗</a>`;
+            reviewBtn = `<a href="${t.submission_url}" target="_blank" class="btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; color:var(--cyan);">Artifact ↗</a>`;
           }
 
           return `
@@ -1106,15 +1190,18 @@
               </td>
               <td>${prioBadge}</td>
               <td><strong>${t.candidate_name || 'Unassigned'}</strong></td>
-              <td style="font-family:var(--font-mono); font-size:0.8rem; color:${t.is_overdue ? 'var(--red)' : 'var(--text-main)'};">
-                ${new Date(t.deadline).toLocaleString()}
+              <td>
+                <div id="lead-cd-${t.id}">${formatCountdown(t.deadline, t.status)}</div>
+                <div style="font-size:0.7rem; color:var(--text-faint); font-family:var(--font-mono); margin-top:2px;">
+                  ${new Date(t.deadline).toLocaleString()}
+                </div>
               </td>
               <td>${statusBadge}</td>
               <td>
                 <div style="display:flex; align-items:center; gap:0.4rem;">
                   ${reviewBtn}
                   <button class="btn btn-danger" style="padding:0.3rem 0.55rem; font-size:0.75rem;" onclick="deleteTask(${t.id}, '${t.title.replace(/'/g, "\\'")}')" title="Delete Task">
-                    🗑️ Delete
+                    🗑️
                   </button>
                 </div>
               </td>
@@ -1265,28 +1352,97 @@
 
     function openReviewModal(taskId) {
       document.getElementById('reviewTaskId').value = taskId;
+      document.getElementById('reviewScore').value = '90';
+      document.getElementById('rubricQuality').value = '23';
+      document.getElementById('rubricSecurity').value = '23';
+      document.getElementById('rubricArch').value = '22';
+      document.getElementById('rubricTime').value = '22';
       document.getElementById('reviewFeedback').value = '';
       document.getElementById('reviewModal').classList.add('open');
     }
     function closeReviewModal() { document.getElementById('reviewModal').classList.remove('open'); }
 
+    function toggleReviewRubric() {
+      const isCompleted = document.getElementById('reviewDecision').value === 'completed';
+      document.getElementById('rubricSection').style.display = isCompleted ? 'block' : 'none';
+    }
+
+    function autoSumScore() {
+      const q = parseInt(document.getElementById('rubricQuality').value || 0, 10);
+      const s = parseInt(document.getElementById('rubricSecurity').value || 0, 10);
+      const a = parseInt(document.getElementById('rubricArch').value || 0, 10);
+      const t = parseInt(document.getElementById('rubricTime').value || 0, 10);
+      document.getElementById('reviewScore').value = Math.min(100, q + s + a + t);
+    }
+
     async function handleReviewSubmit(e) {
       e.preventDefault();
       const taskId = document.getElementById('reviewTaskId').value;
       const status = document.getElementById('reviewDecision').value;
+      const score = document.getElementById('reviewScore').value;
       const feedback = document.getElementById('reviewFeedback').value.trim();
+
+      const rubric = {
+        code_quality: parseInt(document.getElementById('rubricQuality').value || 0, 10),
+        security: parseInt(document.getElementById('rubricSecurity').value || 0, 10),
+        architecture: parseInt(document.getElementById('rubricArch').value || 0, 10),
+        timeliness: parseInt(document.getElementById('rubricTime').value || 0, 10)
+      };
 
       try {
         await apiFetch(`/api/tasks/${taskId}/review`, {
           method: 'PATCH',
-          body: JSON.stringify({ status, feedback })
+          body: JSON.stringify({ status, feedback, score: parseInt(score, 10), rubric })
         });
         closeReviewModal();
         loadTasks();
-        alert(`Deliverable #${taskId} evaluated as ${status.toUpperCase()}.`);
+        loadCandidates();
+        alert(`Deliverable #${taskId} evaluated as ${status.toUpperCase()} (Score: ${score}/100).`);
       } catch (err) {
         alert('Review error: ' + err.message);
       }
+    }
+
+    function exportExecutiveCSV() {
+      if (!ADMIN_KEY) return openKeyModal();
+      fetch('/api/admin/export/candidates-csv', {
+        headers: { 'x-admin-key': ADMIN_KEY }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to generate report');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cyberforge_executive_report_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      })
+      .catch(err => alert('CSV Export failed: ' + err.message));
+    }
+
+    function downloadBackup() {
+      if (!ADMIN_KEY) return openKeyModal();
+      fetch('/api/admin/backup', {
+        headers: { 'x-admin-key': ADMIN_KEY }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to create backup snapshot');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cyberforge_snapshot_${new Date().toISOString().slice(0, 10)}.db`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      })
+      .catch(err => alert('Backup failed: ' + err.message));
     }
 
     function openBroadcastModal() { document.getElementById('broadcastModal').classList.add('open'); }

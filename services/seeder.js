@@ -78,27 +78,8 @@ async function seedInitialCandidates() {
       console.log('='.repeat(80) + '\n');
     }
 
-    // 2. Seed Baseline Governance Tasks if empty
-    const existingTasks = await get('SELECT COUNT(*) AS count FROM tasks');
-    if (!existingTasks || existingTasks.count === 0) {
-      console.log('[DevSecOps] Initializing baseline cohort governance tasks...');
-      for (const task of INITIAL_TASKS) {
-        const candidate = await get('SELECT id FROM candidates WHERE name = ?', [task.candidateName]);
-        if (candidate) {
-          const insertRes = await run(`
-            INSERT INTO tasks (title, description, assigned_to, deadline, status)
-            VALUES (?, ?, ?, ?, 'pending')
-          `, [task.title, task.description, candidate.id, task.deadline]);
-
-          await logAudit(candidate.id, 'SEED_TASK_CREATED', {
-            taskId: insertRes.lastID,
-            title: task.title,
-            deadline: task.deadline
-          });
-        }
-      }
-      console.log('[DevSecOps] Baseline tasks auto-seeded successfully.');
-    }
+    // 2. Baseline Governance Tasks: Disabled so Admin can assign deliverables from scratch
+    console.log('[DevSecOps] Cohort candidate registry verified. Tasks table left clean for manual assignment.');
   } catch (err) {
     console.error('[ERROR] [Seeder] Failed to seed initial cohort / tasks:', err.message);
   }

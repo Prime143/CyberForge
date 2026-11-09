@@ -19,15 +19,6 @@ const { get, all, run, close } = require('../database');
 const BASE_URL = 'http://localhost:4000';
 const ADMIN_KEY = process.env.ADMIN_API_KEY;
 
-// Candidate credentials from cohort seed
-const CANDIDATE_KAIF = {
-  id: 2,
-  name: 'Kaif Pathan',
-  token: '04521968ccdc2d5bc71066dd3aed7f82',
-  taskId: 5
-};
-const TASK_NADIR_ID = 6;
-
 const auditResults = [];
 
 function recordResult(controlId, name, owasp, status, details) {
@@ -47,7 +38,42 @@ async function runPenetrationSuite() {
   console.log(' Local Time:     ' + new Date().toISOString());
   console.log('='.repeat(85) + '\n');
 
+  let createdTaskIds = [];
+  let kaif = null;
+  let nadir = null;
+
   try {
+    // Dynamically retrieve candidate credentials from database
+    kaif = await get("SELECT * FROM candidates WHERE name LIKE '%Kaif%' LIMIT 1");
+    if (!kaif) {
+      kaif = await get("SELECT * FROM candidates LIMIT 1");
+    }
+    nadir = await get("SELECT * FROM candidates WHERE name LIKE '%Nadir%' LIMIT 1");
+    if (!nadir) {
+      nadir = await get("SELECT * FROM candidates WHERE id != ? LIMIT 1", [kaif.id]);
+    }
+
+    if (!kaif || !nadir) {
+      throw new Error("Candidate fixtures not found in database. Please run auto-seeder first.");
+    }
+
+    const CANDIDATE_KAIF = {
+      id: kaif.id,
+      name: kaif.name,
+      token: kaif.access_token,
+      taskId: null
+    };
+
+    // Dynamically provision isolated test tasks to ensure 0-pollution in production
+    console.log('[AUDIT] Provisioning isolated test fixtures...');
+    const t1 = await run("INSERT INTO tasks (title, description, assigned_to, deadline, status) VALUES (?, ?, ?, datetime('now', '+2 days'), 'pending')", ['Audit Test Task 1', 'Test payload target', kaif.id]);
+    const t2 = await run("INSERT INTO tasks (title, description, assigned_to, deadline, status) VALUES (?, ?, ?, datetime('now', '+2 days'), 'pending')", ['Audit Test Task 2', 'Nadir test target', nadir.id]);
+    const t3 = await run("INSERT INTO tasks (title, description, assigned_to, deadline, status) VALUES (?, ?, ?, datetime('now', '+2 days'), 'pending')", ['Audit Test Task 3', 'Verification filler 1', kaif.id]);
+    const t4 = await run("INSERT INTO tasks (title, description, assigned_to, deadline, status) VALUES (?, ?, ?, datetime('now', '+2 days'), 'pending')", ['Audit Test Task 4', 'Verification filler 2', nadir.id]);
+
+    CANDIDATE_KAIF.taskId = t1.lastID;
+    const TASK_NADIR_ID = t2.lastID;
+    createdTaskIds = [t1.lastID, t2.lastID, t3.lastID, t4.lastID];
     // =========================================================================
     // Control 1: RBAC & Unauthorized Access (OWASP A01: Broken Access Control)
     // =========================================================================
@@ -320,11 +346,13 @@ async function runPenetrationSuite() {
     // Post-Audit Database Sanitization (Preserve clean state)
     // =========================================================================
     console.log('\n[AUDIT] Restoring pristine database state post-test...');
-    await run("UPDATE tasks SET status = 'pending', submission_url = NULL WHERE id = ?", [CANDIDATE_KAIF.taskId]);
+    if (createdTaskIds.length > 0) {
+      await run(`DELETE FROM tasks WHERE id IN (${createdTaskIds.join(',')})`);
+    }
     await run("DELETE FROM activity_logs WHERE candidate_id = ?", [CANDIDATE_KAIF.id]);
     await run("UPDATE candidates SET is_online = 0 WHERE id = ?", [CANDIDATE_KAIF.id]);
     await run("DELETE FROM audit_trail WHERE event_type NOT IN ('COHORT_AUTO_SEEDED', 'SEED_TASK_CREATED')");
-    console.log('[AUDIT] Database restored to clean production baseline.');
+    console.log('[AUDIT] Database restored to clean production baseline (0 test tasks).');
 
     // =========================================================================
     // Audit Report Presentation

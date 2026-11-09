@@ -508,10 +508,30 @@
       gap: 0.75rem;
     }
 
-    .deadline-text {
-      font-size: 0.775rem;
+    /* Live Deadline Countdowns */
+    .countdown-pill {
       font-family: var(--font-mono);
-      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .cd-green { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .cd-amber { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .cd-urgent { 
+      background: rgba(239, 68, 68, 0.2); 
+      color: #f87171; 
+      border: 1px solid rgba(239, 68, 68, 0.4); 
+      animation: pulseAlert 1.5s infinite; 
+    }
+    .cd-expired { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid var(--red); }
+
+    @keyframes pulseAlert {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.03); opacity: 0.8; }
     }
 
     /* Badges */
@@ -566,6 +586,31 @@
       font-size: 0.725rem;
       color: var(--text-faint);
       white-space: nowrap;
+    }
+
+    /* Scorecard Table */
+    .scorecard-banner {
+      background: linear-gradient(135deg, rgba(14, 18, 27, 0.95), rgba(21, 27, 40, 0.95));
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .grade-badge-huge {
+      font-size: 2.25rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 0.4rem 1.25rem;
+      border-radius: 12px;
     }
 
     /* Modals */
@@ -814,20 +859,20 @@
 
         <div class="metric-card">
           <div class="metric-header">
+            <span>Evaluation Grade</span>
+            <span>🏆</span>
+          </div>
+          <div id="gpaGradeDisplay" class="metric-val">N/A</div>
+          <div id="gpaScoreSub" class="metric-sub">Cumulative Cohort Score</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
             <span>Support Tickets</span>
             <span>🎫</span>
           </div>
           <div id="activeTicketsCount" class="metric-val">0</div>
           <div class="metric-sub">Open incident & blocker tickets</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <span>Work Log Milestones</span>
-            <span>📝</span>
-          </div>
-          <div id="workLogsCount" class="metric-val">0</div>
-          <div class="metric-sub">Verified proof-of-work entries</div>
         </div>
       </div>
 
@@ -836,6 +881,10 @@
         <button class="tab-btn active" onclick="switchTab('tasks')">
           Governance Tasks
           <span id="tabTaskCount" class="pill-counter">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('scorecard')">
+          Performance & Scorecard
+          <span id="tabScoreGrade" class="pill-counter">-</span>
         </button>
         <button class="tab-btn" onclick="switchTab('proof')">
           Proof-of-Work Stream
@@ -847,12 +896,34 @@
         </button>
       </div>
 
-      <!-- Tab 1: Tasks -->
+      <!-- Tab 1: Tasks with Live Countdowns -->
       <div id="tasksTab">
         <div id="tasksContainer"></div>
       </div>
 
-      <!-- Tab 2: Proof-of-Work Stream -->
+      <!-- Tab 2: Performance Scorecard -->
+      <div id="scorecardTab" style="display:none;">
+        <div class="scorecard-banner">
+          <div>
+            <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">EVALUATION SCORECARD</span>
+            <h2 style="font-size:1.4rem; font-weight:800; color:#fff; margin-top:0.25rem;">Candidate Cohort Standing</h2>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">
+              Formal lead reviews, rubric criteria evaluations, and code quality commendations.
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:1.25rem;">
+            <div style="text-align:right;">
+              <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">CUMULATIVE SCORE</div>
+              <div id="scorecardNumDisplay" style="font-size:1.75rem; font-weight:800; font-family:var(--font-mono); color:#fff;">-- / 100</div>
+            </div>
+            <div id="scorecardGradeDisplay" class="grade-badge-huge">N/A</div>
+          </div>
+        </div>
+
+        <div id="scorecardEvaluationsContainer"></div>
+      </div>
+
+      <!-- Tab 3: Proof-of-Work Stream -->
       <div id="proofTab" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
           <div>
@@ -864,7 +935,7 @@
         <div id="workLogsContainer" class="timeline-stream"></div>
       </div>
 
-      <!-- Tab 3: Tickets -->
+      <!-- Tab 4: Tickets -->
       <div id="ticketsTab" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
           <div>
@@ -891,6 +962,7 @@
         <div class="form-group">
           <label>Deliverable Artifact / GitHub PR URL</label>
           <input type="url" id="submitUrl" placeholder="https://github.com/org/repo/pull/42" required />
+          <div style="font-size:0.7rem; color:var(--text-faint); margin-top:4px;">* Protected by Plagiarism Guard. Duplicate URLs across candidates are rejected.</div>
         </div>
         <div class="form-group">
           <label>Implementation Notes & Proof-of-Work Verification</label>
@@ -956,6 +1028,7 @@
     let timerInterval = null;
     let deliverableTimerInterval = null;
     let heartbeatInterval = null;
+    let cachedTasks = [];
 
     // Active Task & Telemetry Sensor State
     let activeTaskId = null;
@@ -967,7 +1040,7 @@
     ['keydown', 'mousedown', 'scroll', 'touchstart'].forEach(evt => {
       window.addEventListener(evt, () => {
         const now = Date.now();
-        if (now - lastInputTime > 300) { // debounce to max ~3 per second
+        if (now - lastInputTime > 300) {
           interactionCounter++;
           lastInputTime = now;
         }
@@ -983,6 +1056,8 @@
       if (TOKEN) {
         initWorkstation();
       }
+      // Global countdown timer ticker
+      setInterval(updateCountdowns, 1000);
     });
 
     function updateTelemetryHUD() {
@@ -1017,10 +1092,12 @@
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('tasksTab').style.display = tab === 'tasks' ? 'block' : 'none';
+      document.getElementById('scorecardTab').style.display = tab === 'scorecard' ? 'block' : 'none';
       document.getElementById('proofTab').style.display = tab === 'proof' ? 'block' : 'none';
       document.getElementById('ticketsTab').style.display = tab === 'tickets' ? 'block' : 'none';
       event.currentTarget.classList.add('active');
 
+      if (tab === 'scorecard') loadScorecard();
       if (tab === 'proof') loadMyWorkLogs();
     }
 
@@ -1052,7 +1129,7 @@
         const data = await res.json();
         document.getElementById('userNameLabel').innerText = data.candidate.name;
         const roleBadge = document.getElementById('userRoleBadge');
-        roleBadge.innerText = data.candidate.role.toUpperCase();
+        roleBadge.innerText = (data.candidate.role || 'CANDIDATE').toUpperCase().replace(/_/g, ' ');
         roleBadge.className = 'role-badge role-' + data.candidate.role;
 
         initWorkstation();
@@ -1080,6 +1157,7 @@
       heartbeatInterval = setInterval(sendHeartbeat, 60000);
 
       loadMyTasks();
+      loadScorecard();
       loadMyTickets();
       loadMyWorkLogs();
       loadNotifications();
@@ -1091,7 +1169,7 @@
       if (!TOKEN) return;
       const isVisible = !document.hidden;
       const interactionsToSend = interactionCounter;
-      interactionCounter = 0; // reset counter for the next interval
+      interactionCounter = 0;
 
       try {
         const res = await fetch('/api/session/heartbeat', {
@@ -1150,7 +1228,7 @@
         `;
         document.getElementById('clockOutBtn').style.display = 'inline-flex';
 
-        // Start Deliverable Timer
+        // Deliverable Timer
         deliverableSeconds = 0;
         clearInterval(deliverableTimerInterval);
         deliverableTimerInterval = setInterval(() => {
@@ -1236,6 +1314,32 @@
       }
     }
 
+    function formatCountdown(deadlineStr, status) {
+      if (status === 'completed') return `<span class="countdown-pill cd-green">✓ Completed</span>`;
+      const diff = new Date(deadlineStr) - Date.now();
+      if (diff <= 0) return `<span class="countdown-pill cd-expired">⚠️ EXPIRED (Overdue)</span>`;
+
+      const hrs = Math.floor(diff / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+
+      const timeText = `${String(hrs).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s remaining`;
+
+      if (diff < 3600000) {
+        return `<span class="countdown-pill cd-urgent">⏳ ${timeText}</span>`;
+      } else if (diff < 21600000) {
+        return `<span class="countdown-pill cd-amber">⏳ ${timeText}</span>`;
+      }
+      return `<span class="countdown-pill cd-green">⏳ ${timeText}</span>`;
+    }
+
+    function updateCountdowns() {
+      cachedTasks.forEach(t => {
+        const el = document.getElementById(`cd-task-${t.id}`);
+        if (el) el.innerHTML = formatCountdown(t.deadline, t.status);
+      });
+    }
+
     async function loadMyTasks() {
       if (!TOKEN) return;
       try {
@@ -1245,22 +1349,22 @@
         if (!res.ok) return;
 
         const data = await res.json();
-        const tasks = data.tasks || [];
-        document.getElementById('assignedTasksCount').innerText = tasks.length;
-        document.getElementById('tabTaskCount').innerText = tasks.length;
+        cachedTasks = data.tasks || [];
+        document.getElementById('assignedTasksCount').innerText = cachedTasks.length;
+        document.getElementById('tabTaskCount').innerText = cachedTasks.length;
 
         const container = document.getElementById('tasksContainer');
-        if (tasks.length === 0) {
+        if (cachedTasks.length === 0) {
           container.innerHTML = `
             <div class="task-card" style="text-align:center; padding:3rem; color:var(--text-muted);">
-              No governance tasks currently assigned to your workstation.
+              No governance tasks currently assigned to your workstation. You will receive an in-app alert when a lead assigns deliverables.
             </div>
           `;
           return;
         }
 
         const now = new Date();
-        container.innerHTML = tasks.map(t => {
+        container.innerHTML = cachedTasks.map(t => {
           const deadlineDate = new Date(t.deadline);
           const isOverdue = t.is_overdue || (t.status !== 'completed' && deadlineDate < now);
           const isClockedIn = activeTaskId === t.id;
@@ -1286,7 +1390,8 @@
           if (t.status === 'submitted') {
             submitBtn = `<span style="font-size:0.8rem; color:#c084fc;">Artifact Under Lead Evaluation</span>`;
           } else if (t.status === 'completed') {
-            submitBtn = `<span style="font-size:0.8rem; color:#34d399;">✓ Approved & Completed</span>`;
+            const scoreLabel = t.score !== null ? `(${t.score}/100 · ${t.grade})` : '';
+            submitBtn = `<span style="font-size:0.8rem; color:#34d399;">✓ Approved & Evaluated ${scoreLabel}</span>`;
           }
 
           return `
@@ -1304,8 +1409,9 @@
               </div>
               <div class="task-desc">${t.description || 'No detailed instructions provided.'}</div>
               <div class="task-footer">
-                <div class="deadline-text" style="color: ${isOverdue ? 'var(--red)' : 'var(--text-muted)'};">
-                  📅 Deadline: ${deadlineDate.toLocaleString()} ${isOverdue ? '(EXPIRED)' : ''}
+                <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                  <span id="cd-task-${t.id}">${formatCountdown(t.deadline, t.status)}</span>
+                  <span style="font-size:0.725rem; color:var(--text-faint); font-family:var(--font-mono);">Deadline: ${deadlineDate.toLocaleString()}</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
                   ${clockBtn}
@@ -1321,6 +1427,92 @@
       }
     }
 
+    async function loadScorecard() {
+      if (!TOKEN) return;
+      try {
+        const res = await fetch('/api/candidate/scorecard', {
+          headers: { 'Authorization': `Bearer ${TOKEN}` }
+        });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const grade = data.overall_grade || 'N/A';
+        const score = data.cumulative_score || 0;
+
+        document.getElementById('gpaGradeDisplay').innerText = grade;
+        document.getElementById('gpaScoreSub').innerText = `Cohort Score: ${score}/100`;
+        document.getElementById('tabScoreGrade').innerText = grade;
+
+        document.getElementById('scorecardGradeDisplay').innerText = grade;
+        document.getElementById('scorecardNumDisplay').innerText = `${score} / 100`;
+
+        const container = document.getElementById('scorecardEvaluationsContainer');
+        const tasks = data.evaluated_tasks || [];
+
+        if (tasks.length === 0) {
+          container.innerHTML = `
+            <div class="task-card" style="text-align:center; padding:3rem; color:var(--text-muted);">
+              No deliverables have been formally evaluated by leads yet. Submit tasks to receive rubric ratings and grade reviews.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = tasks.map(t => {
+          let rubricHtml = '';
+          if (t.rubric_breakdown) {
+            try {
+              const r = JSON.parse(t.rubric_breakdown);
+              rubricHtml = `
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.5rem; margin-top:0.75rem;">
+                  <div style="background:var(--bg-surface-elevated); padding:0.5rem; border-radius:6px; font-size:0.725rem;">
+                    <div style="color:var(--text-muted);">Code Quality</div>
+                    <div style="font-weight:800; font-family:var(--font-mono); color:var(--cyan);">${r.code_quality || 0}/25</div>
+                  </div>
+                  <div style="background:var(--bg-surface-elevated); padding:0.5rem; border-radius:6px; font-size:0.725rem;">
+                    <div style="color:var(--text-muted);">Security (OWASP)</div>
+                    <div style="font-weight:800; font-family:var(--font-mono); color:var(--cyan);">${r.security || 0}/25</div>
+                  </div>
+                  <div style="background:var(--bg-surface-elevated); padding:0.5rem; border-radius:6px; font-size:0.725rem;">
+                    <div style="color:var(--text-muted);">Architecture</div>
+                    <div style="font-weight:800; font-family:var(--font-mono); color:var(--cyan);">${r.architecture || 0}/25</div>
+                  </div>
+                  <div style="background:var(--bg-surface-elevated); padding:0.5rem; border-radius:6px; font-size:0.725rem;">
+                    <div style="color:var(--text-muted);">Timeliness</div>
+                    <div style="font-weight:800; font-family:var(--font-mono); color:var(--cyan);">${r.timeliness || 0}/25</div>
+                  </div>
+                </div>
+              `;
+            } catch (_) {}
+          }
+
+          return `
+            <div class="task-card">
+              <div class="task-header">
+                <div>
+                  <div class="task-title">#${t.id}: ${t.title}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                  <span style="font-size:1.15rem; font-weight:800; font-family:var(--font-mono); color:#fff;">${t.score}/100</span>
+                  <span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399; font-size:0.8rem;">GRADE ${t.grade}</span>
+                </div>
+              </div>
+              ${rubricHtml}
+              ${t.review_feedback ? `
+                <div style="margin-top:0.75rem; padding:0.75rem 1rem; background:rgba(0,242,254,0.05); border-left:3px solid var(--cyan); border-radius:4px; font-size:0.825rem;">
+                  <strong style="color:var(--cyan); display:block; margin-bottom:0.25rem;">Lead Engineer Review Feedback:</strong>
+                  ${t.review_feedback}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Failed to load scorecard:', err);
+      }
+    }
+
     async function loadMyWorkLogs() {
       if (!TOKEN) return;
       try {
@@ -1331,7 +1523,6 @@
 
         const data = await res.json();
         const logs = data.logs || [];
-        document.getElementById('workLogsCount').innerText = logs.length;
         document.getElementById('tabStreamCount').innerText = logs.length;
 
         const container = document.getElementById('workLogsContainer');
@@ -1494,6 +1685,7 @@
         closeSubmitModal();
         loadMyTasks();
         loadMyWorkLogs();
+        loadScorecard();
         alert('Deliverable submitted successfully for lead evaluation!');
       } catch (err) {
         alert('Submission failed: ' + err.message);

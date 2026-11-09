@@ -178,6 +178,8 @@ app.get('/api/admin/candidates', requireAdmin, async (req, res) => {
         COALESCE(SUM(al.idle_seconds), 0) AS idle_seconds,
         COALESCE(SUM(al.total_interactions), 0) AS total_interactions,
         (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = c.id) AS assigned_tasks_count,
+        (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = c.id AND t.status = 'completed') AS completed_tasks_count,
+        ROUND((SELECT AVG(score) FROM tasks WHERE assigned_to = c.id AND status = 'completed' AND score IS NOT NULL), 1) AS avg_score,
         (SELECT t.title FROM activity_logs al_cur 
          LEFT JOIN tasks t ON al_cur.active_task_id = t.id 
          WHERE al_cur.candidate_id = c.id AND al_cur.status = 'active' 
@@ -197,15 +199,24 @@ app.get('/api/admin/candidates', requireAdmin, async (req, res) => {
       ORDER BY c.id ASC;
     `);
 
-    // Enhance with computed focus score percentage
+    // Enhance with computed focus score percentage and grade
     const enriched = candidates.map(cand => {
       const active = cand.total_active_seconds || 0;
       const idle = cand.idle_seconds || 0;
       const totalSession = active + idle;
       const focusScore = totalSession > 0 ? Math.round((active / totalSession) * 100) : (cand.is_online ? 100 : 0);
+      let grade = 'N/A';
+      if (cand.avg_score !== null) {
+        if (cand.avg_score >= 90) grade = 'A+';
+        else if (cand.avg_score >= 80) grade = 'A';
+        else if (cand.avg_score >= 70) grade = 'B';
+        else if (cand.avg_score >= 60) grade = 'C';
+        else grade = 'F';
+      }
       return {
         ...cand,
-        focus_score: focusScore
+        focus_score: focusScore,
+        overall_grade: grade
       };
     });
 
@@ -596,7 +607,7 @@ app.get('/api/candidate/tasks', requireCandidate, async (req, res) => {
 
 /**
  * POST /api/tasks/:id/submit (Candidate Auth)
- * Submits work artifact URL for review.
+ * Submits work artifact URL for review with automated anti-plagiarism duplicate detection.
  */
 app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
   try {
@@ -608,6 +619,8 @@ app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
       return res.status(400).json({ error: 'Validation Error', message: 'submission_url string is required.' });
     }
 
+    const trimmedUrl = submission_url.trim();
+
     const task = await get('SELECT * FROM tasks WHERE id = ?', [taskId]);
 
     if (!task) {
@@ -618,16 +631,29 @@ app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
       return res.status(403).json({ error: 'Forbidden', message: 'You are not assigned to this task.' });
     }
 
+    // Plagiarism Guard: Prevent two candidates from submitting the same GitHub / repository URL
+    const duplicate = await get(
+      "SELECT id, assigned_to, title FROM tasks WHERE LOWER(TRIM(submission_url)) = LOWER(?) AND id != ? AND status IN ('submitted', 'completed')",
+      [trimmedUrl, taskId]
+    );
+
+    if (duplicate && duplicate.assigned_to !== candidate.id) {
+      return res.status(400).json({
+        error: 'Duplicate Artifact Rejected',
+        message: `Plagiarism Guard: This repository/PR artifact URL has already been submitted for deliverable #${duplicate.id} ("${duplicate.title}"). Duplicate submissions are rejected.`
+      });
+    }
+
     await run(`
       UPDATE tasks 
       SET submission_url = ?, status = 'submitted' 
       WHERE id = ?
-    `, [submission_url.trim(), taskId]);
+    `, [trimmedUrl, taskId]);
 
     await logAudit(candidate.id, 'TASK_SUBMITTED_FOR_REVIEW', {
       taskId,
       title: task.title,
-      submission_url: submission_url.trim(),
+      submission_url: trimmedUrl,
       notes: notes || null
     });
 
@@ -638,7 +664,7 @@ app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
       [
         { name: 'Task ID', value: String(taskId), inline: true },
         { name: 'Candidate', value: candidate.name, inline: true },
-        { name: 'Artifact URL', value: submission_url.trim(), inline: false },
+        { name: 'Artifact URL', value: trimmedUrl, inline: false },
         { name: 'Notes', value: notes || 'None provided', inline: false }
       ]
     );
@@ -656,12 +682,12 @@ app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
 
 /**
  * PATCH /api/tasks/:id/review (Admin Only)
- * Review submitted task: accepts 'completed' or pushes back to 'in_progress'.
+ * Review submitted task with multi-criteria rubric evaluation and 0-100 scoring.
  */
 app.patch('/api/tasks/:id/review', requireAdmin, async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { status, feedback } = req.body;
+    const { status, feedback, score, rubric } = req.body;
 
     if (!['completed', 'in_progress'].includes(status)) {
       return res.status(400).json({
@@ -681,22 +707,53 @@ app.patch('/api/tasks/:id/review', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Not Found', message: 'Task not found.' });
     }
 
-    await run('UPDATE tasks SET status = ? WHERE id = ?', [status, taskId]);
+    let finalScore = null;
+    let finalGrade = null;
+    let rubricStr = null;
+
+    if (status === 'completed') {
+      if (score !== undefined && score !== null && !isNaN(parseInt(score, 10))) {
+        finalScore = Math.max(0, Math.min(100, parseInt(score, 10)));
+        if (finalScore >= 90) finalGrade = 'A+';
+        else if (finalScore >= 80) finalGrade = 'A';
+        else if (finalScore >= 70) finalGrade = 'B';
+        else if (finalScore >= 60) finalGrade = 'C';
+        else finalGrade = 'F';
+      }
+      if (rubric && typeof rubric === 'object') {
+        rubricStr = JSON.stringify(rubric);
+      } else if (typeof rubric === 'string') {
+        rubricStr = rubric;
+      }
+    }
+
+    await run(`
+      UPDATE tasks 
+      SET status = ?, 
+          score = ?, 
+          grade = ?, 
+          rubric_breakdown = ?, 
+          review_feedback = ? 
+      WHERE id = ?
+    `, [status, finalScore, finalGrade, rubricStr, feedback || null, taskId]);
 
     await logAudit(task.assigned_to, 'TASK_REVIEW_DECISION', {
       taskId,
       status,
+      score: finalScore,
+      grade: finalGrade,
       feedback: feedback || null
     });
 
     const isCompleted = status === 'completed';
 
-    // In-app notification for candidate
+    // In-app notification for candidate with evaluation scorecard
     if (task.assigned_to) {
+      const gradeText = finalGrade ? ` · Grade: ${finalGrade} (${finalScore}/100)` : '';
       await createNotification(
         task.assigned_to,
-        isCompleted ? 'Deliverable Approved' : 'Task Revision Requested',
-        `Task "${task.title}" updated to ${status.toUpperCase()}. Remarks: ${feedback || 'No remarks provided.'}`,
+        isCompleted ? 'Deliverable Evaluated & Approved' : 'Task Revision Requested',
+        `Task "${task.title}" updated to ${status.toUpperCase()}${gradeText}. Remarks: ${feedback || 'No remarks provided.'}`,
         isCompleted ? 'success' : 'warning'
       );
     }
@@ -706,11 +763,12 @@ app.patch('/api/tasks/:id/review', requireAdmin, async (req, res) => {
 
     await sendAlert(
       alertTitle,
-      `Task **"${task.title}"** assigned to **${task.candidate_name || 'Unassigned'}** was updated to **${status.toUpperCase()}**.`,
+      `Task **"${task.title}"** assigned to **${task.candidate_name || 'Unassigned'}** was updated to **${status.toUpperCase()}**${finalGrade ? ` (Score: ${finalScore}/100, Grade: ${finalGrade})` : ''}.`,
       alertColor,
       [
         { name: 'Task ID', value: String(taskId), inline: true },
         { name: 'Status', value: status.toUpperCase(), inline: true },
+        { name: 'Score / Grade', value: finalScore !== null ? `${finalScore}/100 (${finalGrade})` : 'Unscored', inline: true },
         { name: 'Lead Feedback', value: feedback || 'No additional remarks.', inline: false }
       ]
     );
@@ -722,6 +780,142 @@ app.patch('/api/tasks/:id/review', requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('[ERROR] [Tasks::Review]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * GET /api/candidate/scorecard (Candidate Auth)
+ * Returns the candidate's personal performance scorecard, cumulative GPA, and rubric ratings.
+ */
+app.get('/api/candidate/scorecard', requireCandidate, async (req, res) => {
+  try {
+    const candidate = req.candidate;
+
+    const evaluatedTasks = await all(`
+      SELECT id, title, description, deadline, status, score, grade, rubric_breakdown, review_feedback, created_at
+      FROM tasks 
+      WHERE assigned_to = ? AND status = 'completed' AND score IS NOT NULL
+      ORDER BY id DESC
+    `, [candidate.id]);
+
+    const stats = await get(`
+      SELECT 
+        COUNT(*) AS total_tasks,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_tasks,
+        SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) AS submitted_tasks,
+        ROUND(AVG(score), 1) AS avg_score
+      FROM tasks 
+      WHERE assigned_to = ?
+    `, [candidate.id]);
+
+    const avgScore = stats.avg_score || 0;
+    let overallGrade = 'N/A';
+    if (evaluatedTasks.length > 0) {
+      if (avgScore >= 90) overallGrade = 'A+';
+      else if (avgScore >= 80) overallGrade = 'A';
+      else if (avgScore >= 70) overallGrade = 'B';
+      else if (avgScore >= 60) overallGrade = 'C';
+      else overallGrade = 'F';
+    }
+
+    res.json({
+      candidate: { id: candidate.id, name: candidate.name, role: candidate.role },
+      total_assigned: stats.total_tasks || 0,
+      completed_count: stats.completed_tasks || 0,
+      submitted_count: stats.submitted_tasks || 0,
+      cumulative_score: avgScore,
+      overall_grade: overallGrade,
+      evaluated_tasks: evaluatedTasks
+    });
+  } catch (err) {
+    console.error('[ERROR] [Candidate::Scorecard]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * GET /api/admin/export/candidates-csv (Admin Only)
+ * Generates and streams an executive CSV report of candidate performance, telemetry, and scores.
+ */
+app.get('/api/admin/export/candidates-csv', requireAdmin, async (req, res) => {
+  try {
+    const candidates = await all(`
+      SELECT 
+        c.id,
+        c.name,
+        c.role,
+        c.access_token,
+        c.is_online,
+        c.created_at,
+        COALESCE(SUM(al.active_seconds), 0) AS total_active_seconds,
+        COALESCE(SUM(al.workstation_seconds), 0) AS workstation_seconds,
+        COALESCE(SUM(al.external_work_seconds), 0) AS external_work_seconds,
+        COALESCE(SUM(al.idle_seconds), 0) AS idle_seconds,
+        (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = c.id) AS assigned_tasks_count,
+        (SELECT COUNT(*) FROM tasks t WHERE t.assigned_to = c.id AND t.status = 'completed') AS completed_tasks_count,
+        ROUND((SELECT AVG(score) FROM tasks WHERE assigned_to = c.id AND status = 'completed' AND score IS NOT NULL), 1) AS avg_score
+      FROM candidates c
+      LEFT JOIN activity_logs al ON c.id = al.candidate_id
+      GROUP BY c.id
+      ORDER BY c.id ASC;
+    `);
+
+    let csv = 'Candidate ID,Name,Position,Status,Total Active Hours,External Work Hours,Workstation Hours,Idle Hours,Focus Rate %,Assigned Tasks,Completed Tasks,Avg Score,Overall Grade,Token,Registered At\r\n';
+
+    for (const c of candidates) {
+      const totalSec = (c.total_active_seconds || 0) + (c.idle_seconds || 0);
+      const activeHrs = (c.total_active_seconds / 3600).toFixed(2);
+      const extHrs = (c.external_work_seconds / 3600).toFixed(2);
+      const workHrs = (c.workstation_seconds / 3600).toFixed(2);
+      const idleHrs = (c.idle_seconds / 3600).toFixed(2);
+      const focusRate = totalSec > 0 ? Math.round((c.total_active_seconds / totalSec) * 100) : (c.is_online ? 100 : 0);
+      const score = c.avg_score !== null ? c.avg_score : 'N/A';
+      let grade = 'N/A';
+      if (c.avg_score !== null) {
+        if (c.avg_score >= 90) grade = 'A+';
+        else if (c.avg_score >= 80) grade = 'A';
+        else if (c.avg_score >= 70) grade = 'B';
+        else if (c.avg_score >= 60) grade = 'C';
+        else grade = 'F';
+      }
+      const onlineStatus = c.is_online === 1 ? 'Online' : 'Offline';
+
+      csv += `"${c.id}","${c.name}","${c.role}","${onlineStatus}",${activeHrs},${extHrs},${workHrs},${idleHrs},${focusRate}%,${c.assigned_tasks_count},${c.completed_tasks_count},"${score}","${grade}","${c.access_token}","${c.created_at}"\r\n`;
+    }
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="cyberforge_executive_report_${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.send(csv);
+  } catch (err) {
+    console.error('[ERROR] [Admin::ExportCSV]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * GET /api/admin/backup (Admin Only)
+ * Creates a point-in-time atomic SQLite database snapshot and streams it to lead.
+ */
+app.get('/api/admin/backup', requireAdmin, async (req, res) => {
+  try {
+    const backupDir = path.resolve(process.cwd(), 'backups');
+    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupFilename = `cyberforge-snapshot-${timestamp}.db`;
+    const backupPath = path.join(backupDir, backupFilename);
+
+    await run(`VACUUM INTO ?`, [backupPath]);
+
+    await logAudit(null, 'ADMIN_DATABASE_BACKUP_CREATED', {
+      filename: backupFilename,
+      sizeBytes: fs.statSync(backupPath).size
+    });
+
+    res.download(backupPath, backupFilename);
+  } catch (err) {
+    console.error('[ERROR] [Admin::Backup]', err.message);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });

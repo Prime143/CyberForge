@@ -86,25 +86,23 @@ app.post('/api/admin/candidates', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Validation Error', message: 'Candidate name is required.' });
     }
 
-    if (!role || !['core', 'junior'].includes(role)) {
-      return res.status(400).json({
-        error: 'Validation Error',
-        message: "Candidate role must be either 'core' or 'junior'."
-      });
-    }
+    // Support standard company hierarchy positions & custom company roles
+    const candidateRole = (role && typeof role === 'string' && role.trim())
+      ? role.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_').substring(0, 50)
+      : 'junior';
 
     // Cryptographically secure 32-character random hex token
     const token = crypto.randomBytes(16).toString('hex');
 
     const result = await run(
       'INSERT INTO candidates (name, role, access_token, is_online) VALUES (?, ?, ?, 0)',
-      [name.trim(), role, token]
+      [name.trim(), candidateRole, token]
     );
 
     await logAudit(result.lastID, 'ADMIN_CANDIDATE_CREATED', {
       adminAction: 'create',
       candidateName: name.trim(),
-      role
+      role: candidateRole
     });
 
     const newCandidate = await get(
@@ -118,6 +116,41 @@ app.post('/api/admin/candidates', requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('[ERROR] [Admin::CreateCandidate]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * DELETE /api/admin/candidates/:id (Admin Only)
+ * Deletes a candidate and safely unassigns their tasks.
+ */
+app.delete('/api/admin/candidates/:id', requireAdmin, async (req, res) => {
+  try {
+    const candidateId = req.params.id;
+    const candidate = await get('SELECT * FROM candidates WHERE id = ?', [candidateId]);
+    if (!candidate) {
+      return res.status(404).json({ error: 'Not Found', message: `Candidate ID ${candidateId} not found.` });
+    }
+
+    // 1. Unassign tasks assigned to this candidate
+    await run('UPDATE tasks SET assigned_to = NULL WHERE assigned_to = ?', [candidateId]);
+
+    // 2. Delete candidate (cascades delete activity_logs, work_logs, tickets, notifications)
+    await run('DELETE FROM candidates WHERE id = ?', [candidateId]);
+
+    // 3. Record audit trail
+    await logAudit(null, 'ADMIN_CANDIDATE_DELETED', {
+      deletedCandidateId: candidate.id,
+      name: candidate.name,
+      role: candidate.role
+    });
+
+    res.json({
+      message: `Candidate #${candidate.id} (${candidate.name}) deleted successfully.`,
+      deleted_id: candidate.id
+    });
+  } catch (err) {
+    console.error('[ERROR] [Admin::DeleteCandidate]', err.message);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
@@ -488,6 +521,42 @@ app.post('/api/tasks', requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('[ERROR] [Tasks::Create]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * DELETE /api/tasks/:id (Admin Only)
+ * Deletes obsolete or unneeded task and unbinds active tracking sessions.
+ */
+app.delete('/api/tasks/:id', requireAdmin, async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const task = await get('SELECT * FROM tasks WHERE id = ?', [taskId]);
+    if (!task) {
+      return res.status(404).json({ error: 'Not Found', message: `Task ID ${taskId} not found.` });
+    }
+
+    // Clear active_task_id in activity_logs if any candidate is currently clocked in
+    await run('UPDATE activity_logs SET active_task_id = NULL WHERE active_task_id = ?', [taskId]);
+
+    // Unlink task_id in work_logs
+    await run('UPDATE work_logs SET task_id = NULL WHERE task_id = ?', [taskId]);
+
+    // Delete the task
+    await run('DELETE FROM tasks WHERE id = ?', [taskId]);
+
+    await logAudit(task.assigned_to, 'ADMIN_TASK_DELETED', {
+      taskId: task.id,
+      title: task.title
+    });
+
+    res.json({
+      message: `Deliverable #${task.id} ("${task.title}") deleted successfully.`,
+      deleted_id: task.id
+    });
+  } catch (err) {
+    console.error('[ERROR] [Tasks::Delete]', err.message);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
@@ -1070,6 +1139,35 @@ app.patch('/api/admin/tickets/:id', requireAdmin, async (req, res) => {
     res.json({ message: 'Ticket updated successfully.', ticket: updated });
   } catch (err) {
     console.error('[ERROR] [Admin::TicketUpdate]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * DELETE /api/admin/tickets/:id (Admin Only)
+ * Deletes resolved or obsolete support ticket.
+ */
+app.delete('/api/admin/tickets/:id', requireAdmin, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const ticket = await get('SELECT * FROM tickets WHERE id = ?', [ticketId]);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Not Found', message: `Ticket ID ${ticketId} not found.` });
+    }
+
+    await run('DELETE FROM tickets WHERE id = ?', [ticketId]);
+
+    await logAudit(ticket.candidate_id, 'ADMIN_TICKET_DELETED', {
+      ticketId: ticket.id,
+      subject: ticket.subject
+    });
+
+    res.json({
+      message: `Support ticket #${ticket.id} deleted successfully.`,
+      deleted_id: ticket.id
+    });
+  } catch (err) {
+    console.error('[ERROR] [Admin::DeleteTicket]', err.message);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });

@@ -48,7 +48,7 @@ async function runTestSuite() {
       CREATE TABLE candidates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        role TEXT CHECK(role IN ('lead', 'core', 'junior')) DEFAULT 'junior',
+        role TEXT DEFAULT 'junior',
         access_token TEXT UNIQUE NOT NULL,
         is_online INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP

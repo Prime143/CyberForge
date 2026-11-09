@@ -43,12 +43,12 @@ db.serialize(() => {
   db.run('PRAGMA synchronous = NORMAL;');
   db.run('PRAGMA busy_timeout = 5000;');
 
-  // Table 1: candidates
+  // Table 1: candidates (Positions & Roles Support)
   db.run(`
     CREATE TABLE IF NOT EXISTS candidates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      role TEXT CHECK(role IN ('lead', 'core', 'junior')) DEFAULT 'junior',
+      role TEXT DEFAULT 'junior',
       access_token TEXT UNIQUE NOT NULL,
       is_online INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -171,6 +171,31 @@ db.serialize(() => {
   db.run(`CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_work_logs_candidate_id ON work_logs(candidate_id);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_work_logs_task_id ON work_logs(task_id);`);
+
+  // Safe migration: Expand role/position constraint to allow full company hierarchy
+  db.get("SELECT sql FROM sqlite_master WHERE type='table' AND name='candidates'", (err, row) => {
+    if (row && row.sql && row.sql.includes("CHECK(role IN")) {
+      db.serialize(() => {
+        db.run("PRAGMA foreign_keys = OFF;");
+        db.run(`
+          CREATE TABLE IF NOT EXISTS candidates_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            role TEXT DEFAULT 'junior',
+            access_token TEXT UNIQUE NOT NULL,
+            is_online INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        db.run("INSERT OR IGNORE INTO candidates_new SELECT id, name, role, access_token, is_online, created_at FROM candidates;");
+        db.run("DROP TABLE candidates;");
+        db.run("ALTER TABLE candidates_new RENAME TO candidates;");
+        db.run("CREATE INDEX IF NOT EXISTS idx_candidates_access_token ON candidates(access_token);");
+        db.run("PRAGMA foreign_keys = ON;");
+        console.log('[INFO] [DevSecOps] Migrated candidates table to support enterprise company positions.');
+      });
+    }
+  });
 
   console.log('[INFO] [DevSecOps] Database schema and indexes verified successfully.');
 });

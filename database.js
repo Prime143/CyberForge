@@ -154,6 +154,25 @@ db.serialize(() => {
   db.run(`ALTER TABLE tasks ADD COLUMN rubric_breakdown TEXT`, () => {});
   db.run(`ALTER TABLE tasks ADD COLUMN review_feedback TEXT`, () => {});
   db.run(`ALTER TABLE tasks ADD COLUMN submission_notes TEXT`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN task_category TEXT DEFAULT 'general'`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN file_url TEXT`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN file_name TEXT`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN file_size INTEGER`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN submission_file_url TEXT`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN submission_file_name TEXT`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN is_archived INTEGER DEFAULT 0`, () => {});
+
+  db.run(`ALTER TABLE tickets ADD COLUMN is_archived INTEGER DEFAULT 0`, () => {});
+
+  db.run(`ALTER TABLE candidates ADD COLUMN default_token TEXT`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN custom_token_set INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN custom_token_created_at DATETIME`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN token_reset_requested INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN token_reset_reason TEXT`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN token_entropy_score TEXT`, () => {});
+
+  db.run(`UPDATE candidates SET default_token = access_token WHERE default_token IS NULL;`, () => {});
+
   db.run(`ALTER TABLE activity_logs ADD COLUMN workstation_seconds INTEGER DEFAULT 0`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN external_work_seconds INTEGER DEFAULT 0`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN idle_seconds INTEGER DEFAULT 0`, () => {});

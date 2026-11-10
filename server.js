@@ -13,6 +13,7 @@ const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const { db, run, get, all, logAudit, createNotification } = require('./database');
@@ -23,6 +24,54 @@ const { seedInitialCandidates } = require('./services/seeder');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+// Ensure upload directory exists for task specifications & candidate deliverables
+const UPLOADS_DIR = path.join(__dirname, 'uploads', 'tasks');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+/**
+ * Enterprise Token Entropy & Defense Evaluation Engine
+ * Evaluates Shannon Entropy bits, character distribution, and cryptographic resilience.
+ */
+function evaluateTokenEntropy(token) {
+  if (!token || typeof token !== 'string') {
+    return { score: 'Weak', rating: 'critical', entropy_bits: 0, length: 0, details: 'Weak (0 bits)' };
+  }
+  const len = token.length;
+  let charsetSize = 0;
+  if (/[a-z]/.test(token)) charsetSize += 26;
+  if (/[A-Z]/.test(token)) charsetSize += 26;
+  if (/[0-9]/.test(token)) charsetSize += 10;
+  if (/[^a-zA-Z0-9]/.test(token)) charsetSize += 32;
+
+  const bits = charsetSize > 0 ? Math.round(len * Math.log2(charsetSize)) : 0;
+
+  let score = 'Weak';
+  let rating = 'critical';
+  if (bits >= 90 && len >= 14 && charsetSize >= 50) {
+    score = 'Defense-Grade';
+    rating = 'defense';
+  } else if (bits >= 65 && len >= 10 && charsetSize >= 36) {
+    score = 'Strong';
+    rating = 'strong';
+  } else if (bits >= 45 && len >= 8) {
+    score = 'Moderate';
+    rating = 'moderate';
+  } else {
+    score = 'Weak';
+    rating = 'weak';
+  }
+
+  return {
+    score,
+    rating,
+    entropy_bits: bits,
+    length: len,
+    details: `${score} (${bits} bits entropy, ${len} chars)`
+  };
+}
 
 // ============================================================================
 // Security & Ingress Middlewares
@@ -35,6 +84,52 @@ app.use(cors({
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+/**
+ * POST /api/upload
+ * Supports file uploads (documents, specifications, archives, deliverables).
+ * Uses dedicated 10MB parser to protect general endpoints under 1MB DoS bound.
+ */
+app.post('/api/upload', express.json({ limit: '10mb' }), async (req, res) => {
+  try {
+    const { filename, file_data } = req.body;
+    if (!filename || !file_data) {
+      return res.status(400).json({ error: 'Validation Error', message: 'filename and file_data (base64) are required.' });
+    }
+
+    const ext = path.extname(filename).toLowerCase();
+    const forbiddenExts = ['.exe', '.bat', '.cmd', '.sh', '.vbs', '.js', '.mjs', '.com', '.pif', '.scr', '.hta', '.cpl', '.jar'];
+    if (forbiddenExts.includes(ext)) {
+      return res.status(400).json({ error: 'Security Guard Triggered', message: `Execution guard: File type "${ext}" is blocked for infrastructure safety.` });
+    }
+
+    const base64Data = file_data.replace(/^data:.*?;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(413).json({ error: 'Payload Too Large', message: 'Maximum file size is 10 MB.' });
+    }
+
+    const safeBasename = path.basename(filename, ext).replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 50);
+    const uniqueFilename = `${Date.now()}-${safeBasename}${ext || '.bin'}`;
+    const targetPath = path.join(UPLOADS_DIR, uniqueFilename);
+
+    fs.writeFileSync(targetPath, buffer);
+
+    const fileUrl = `/uploads/tasks/${uniqueFilename}`;
+
+    res.status(201).json({
+      success: true,
+      file_url: fileUrl,
+      file_name: filename,
+      file_size: buffer.length
+    });
+  } catch (err) {
+    console.error('[ERROR] [Upload]', err.message);
+    res.status(500).json({ error: 'Upload Failed', message: err.message });
+  }
+});
 
 // Request Telemetry & Audit Logger
 app.use((req, res, next) => {
@@ -93,20 +188,22 @@ app.post('/api/admin/candidates', requireAdmin, async (req, res) => {
 
     // Cryptographically secure 32-character random hex token
     const token = crypto.randomBytes(16).toString('hex');
+    const entropy = evaluateTokenEntropy(token);
 
     const result = await run(
-      'INSERT INTO candidates (name, role, access_token, is_online) VALUES (?, ?, ?, 0)',
-      [name.trim(), candidateRole, token]
+      'INSERT INTO candidates (name, role, access_token, default_token, custom_token_set, token_entropy_score, is_online) VALUES (?, ?, ?, ?, 0, ?, 0)',
+      [name.trim(), candidateRole, token, token, entropy.details]
     );
 
     await logAudit(result.lastID, 'ADMIN_CANDIDATE_CREATED', {
       adminAction: 'create',
       candidateName: name.trim(),
-      role: candidateRole
+      role: candidateRole,
+      entropy: entropy.score
     });
 
     const newCandidate = await get(
-      'SELECT id, name, role, access_token, is_online, created_at FROM candidates WHERE id = ?',
+      'SELECT id, name, role, access_token, default_token, custom_token_set, token_entropy_score, is_online, created_at FROM candidates WHERE id = ?',
       [result.lastID]
     );
 
@@ -230,6 +327,12 @@ app.get('/api/admin/candidates', requireAdmin, async (req, res) => {
         c.name,
         c.role,
         c.access_token,
+        c.default_token,
+        c.custom_token_set,
+        c.custom_token_created_at,
+        c.token_reset_requested,
+        c.token_reset_reason,
+        c.token_entropy_score,
         c.is_online,
         c.created_at,
         COALESCE(SUM(al.active_seconds), 0) AS total_active_seconds,
@@ -275,8 +378,11 @@ app.get('/api/admin/candidates', requireAdmin, async (req, res) => {
         else if (cand.avg_score >= 60) grade = 'C';
         else grade = 'F';
       }
+      const entropy = evaluateTokenEntropy(cand.access_token);
       return {
         ...cand,
+        token_entropy_details: entropy,
+        token_entropy_score: cand.token_entropy_score || entropy.details,
         focus_score: focusScore,
         overall_grade: grade
       };
@@ -288,6 +394,60 @@ app.get('/api/admin/candidates', requireAdmin, async (req, res) => {
     });
   } catch (err) {
     console.error('[ERROR] [Admin::ListCandidates]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * GET /api/admin/candidates/:id/history (Admin Only)
+ * Comprehensive lifetime audit records, sessions, submissions, tickets and work logs for a specific candidate.
+ */
+app.get('/api/admin/candidates/:id/history', requireAdmin, async (req, res) => {
+  try {
+    const candidateId = req.params.id;
+    const candidate = await get(
+      'SELECT id, name, role, is_online, custom_token_set, token_entropy_score, access_token, default_token, token_reset_requested, token_reset_reason, created_at FROM candidates WHERE id = ?',
+      [candidateId]
+    );
+    if (!candidate) {
+      return res.status(404).json({ error: 'Not Found', message: `Candidate #${candidateId} not found.` });
+    }
+
+    const workLogs = await all(
+      'SELECT id, log_type, message, task_id, created_at FROM work_logs WHERE candidate_id = ? ORDER BY id DESC LIMIT 100',
+      [candidateId]
+    );
+
+    const tasks = await all(
+      'SELECT id, title, task_category, priority, status, score, deadline, file_name, file_url, submission_url, submission_file_name, submission_file_url, is_archived, created_at FROM tasks WHERE assigned_to = ? ORDER BY id DESC',
+      [candidateId]
+    );
+
+    const tickets = await all(
+      'SELECT id, subject, category, priority, status, admin_notes, is_archived, created_at FROM tickets WHERE candidate_id = ? ORDER BY id DESC',
+      [candidateId]
+    );
+
+    const telemetrySummary = await get(`
+      SELECT 
+        COALESCE(SUM(active_seconds), 0) AS total_active_seconds,
+        COALESCE(SUM(workstation_seconds), 0) AS workstation_seconds,
+        COALESCE(SUM(external_work_seconds), 0) AS external_work_seconds,
+        COALESCE(SUM(idle_seconds), 0) AS idle_seconds,
+        COALESCE(SUM(total_interactions), 0) AS total_interactions,
+        COUNT(id) AS total_sessions
+      FROM activity_logs WHERE candidate_id = ?
+    `, [candidateId]);
+
+    res.json({
+      candidate,
+      telemetry: telemetrySummary,
+      work_logs: workLogs,
+      tasks,
+      tickets
+    });
+  } catch (err) {
+    console.error('[ERROR] [Admin::CandidateHistory]', err.message);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
@@ -344,7 +504,10 @@ app.post('/api/session/login', requireCandidate, async (req, res) => {
         id: candidate.id,
         name: candidate.name,
         role: candidate.role,
-        is_online: 1
+        is_online: 1,
+        custom_token_set: candidate.custom_token_set || 0,
+        token_reset_requested: candidate.token_reset_requested || 0,
+        token_entropy_score: candidate.token_entropy_score || null
       }
     });
   } catch (err) {
@@ -519,6 +682,248 @@ app.post('/api/session/logout', requireCandidate, async (req, res) => {
 });
 
 // ============================================================================
+// Candidate Token Self-Provisioning & Security Governance
+// ============================================================================
+
+/**
+ * POST /api/candidate/custom-token (Candidate Auth)
+ * Allows candidate to configure their personalized access key.
+ * Strictly permitted only ONCE per candidate lifecycle.
+ */
+app.post('/api/candidate/custom-token', requireCandidate, async (req, res) => {
+  try {
+    const candidate = req.candidate;
+    const { token } = req.body;
+
+    if (!token || typeof token !== 'string' || token.trim().length < 8) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Personal access token must be at least 8 characters long.'
+      });
+    }
+
+    const newKey = token.trim();
+
+    // Check if candidate already set custom token once
+    const current = await get('SELECT custom_token_set FROM candidates WHERE id = ?', [candidate.id]);
+    if (current && current.custom_token_set === 1) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'Custom token already created. Candidates may configure a custom token only once. If you need to reset it, please submit a token reset request to lead administration.'
+      });
+    }
+
+    // Verify uniqueness across all candidates
+    const inUse = await get('SELECT id FROM candidates WHERE access_token = ? AND id != ?', [newKey, candidate.id]);
+    if (inUse) {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'This access key is already in use by another candidate. Please choose a different unique key.'
+      });
+    }
+
+    const entropy = evaluateTokenEntropy(newKey);
+
+    await run(`
+      UPDATE candidates 
+      SET access_token = ?, 
+          custom_token_set = 1, 
+          custom_token_created_at = CURRENT_TIMESTAMP, 
+          token_entropy_score = ?, 
+          token_reset_requested = 0, 
+          token_reset_reason = NULL 
+      WHERE id = ?
+    `, [newKey, entropy.details, candidate.id]);
+
+    await logAudit(candidate.id, 'CANDIDATE_CUSTOM_TOKEN_PROVISIONED', {
+      entropy: entropy.score,
+      bits: entropy.entropy_bits,
+      length: entropy.length
+    });
+
+    await sendAlert(
+      'Candidate Configured Custom Key',
+      `Candidate **${candidate.name}** configured their custom token (Entropy: ${entropy.score}, ${entropy.entropy_bits} bits)`,
+      'info',
+      [
+        { name: 'Candidate', value: candidate.name, inline: true },
+        { name: 'Entropy Rating', value: entropy.score, inline: true },
+        { name: 'Bit Strength', value: `${entropy.entropy_bits} bits`, inline: true }
+      ]
+    );
+
+    res.status(200).json({
+      message: 'Custom access credential provisioned successfully. You can now use this key.',
+      token: newKey,
+      custom_token_set: 1,
+      entropy
+    });
+  } catch (err) {
+    console.error('[ERROR] [Candidate::CustomToken]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * POST /api/candidate/request-token-reset (Candidate Auth)
+ * Logged-in candidate requests admin assistance to reset / rotate their locked token.
+ */
+app.post('/api/candidate/request-token-reset', requireCandidate, async (req, res) => {
+  try {
+    const candidate = req.candidate;
+    const { reason } = req.body;
+
+    await run(`
+      UPDATE candidates 
+      SET token_reset_requested = 1, 
+          token_reset_reason = ? 
+      WHERE id = ?
+    `, [reason ? String(reason).trim() : 'Candidate requested token reset assistance', candidate.id]);
+
+    await logAudit(candidate.id, 'CANDIDATE_TOKEN_RESET_REQUESTED', {
+      reason: reason || 'General reset'
+    });
+
+    await sendAlert(
+      '⚠️ Token Reset Requested',
+      `Candidate **${candidate.name}** has requested a token reset.\n**Reason:** ${reason || 'No explanation provided.'}`,
+      'warning',
+      [
+        { name: 'Candidate ID', value: String(candidate.id), inline: true },
+        { name: 'Candidate Name', value: candidate.name, inline: true },
+        { name: 'Current Role', value: candidate.role.toUpperCase(), inline: true }
+      ]
+    );
+
+    res.json({ message: 'Token reset request delivered to lead governance administrators.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/auth/request-token-reset (Unauthenticated Ingress)
+ * Allows forgotten or locked-out candidates to file a reset request from the login screen.
+ */
+app.post('/api/auth/request-token-reset', async (req, res) => {
+  try {
+    const { candidate_identifier, reason } = req.body;
+    if (!candidate_identifier || typeof candidate_identifier !== 'string' || !candidate_identifier.trim()) {
+      return res.status(400).json({ error: 'Validation Error', message: 'Candidate identifier (name or ID) is required.' });
+    }
+
+    const ident = candidate_identifier.trim();
+    let candidate = null;
+
+    if (/^\d+$/.test(ident)) {
+      candidate = await get('SELECT id, name, role FROM candidates WHERE id = ?', [parseInt(ident)]);
+    }
+    if (!candidate) {
+      candidate = await get('SELECT id, name, role FROM candidates WHERE LOWER(TRIM(name)) = LOWER(?)', [ident]);
+    }
+
+    if (!candidate) {
+      return res.status(200).json({
+        message: 'If the provided candidate record matches our proving ground registry, your reset request has been logged for lead review.'
+      });
+    }
+
+    await run(`
+      UPDATE candidates 
+      SET token_reset_requested = 1, 
+          token_reset_reason = ? 
+      WHERE id = ?
+    `, [reason ? String(reason).trim() : 'External reset request via ingress screen', candidate.id]);
+
+    await logAudit(candidate.id, 'CANDIDATE_TOKEN_RESET_REQUEST_INGRESS', {
+      candidateName: candidate.name,
+      reason: reason || null
+    });
+
+    await sendAlert(
+      '⚠️ Ingress Token Reset Requested',
+      `External token reset request submitted for **${candidate.name}** (Candidate #${candidate.id})\n**Reason:** ${reason || 'Candidate reported forgotten/lost token.'}`,
+      'warning',
+      [
+        { name: 'Candidate', value: candidate.name, inline: true },
+        { name: 'Candidate ID', value: String(candidate.id), inline: true }
+      ]
+    );
+
+    res.status(200).json({
+      message: 'Token reset request logged successfully. Contact your lead engineer for verification.'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/candidates/:id/reset-token (Admin Only)
+ * Allows administrator to unlock candidate for self-creation or assign a fresh token.
+ */
+app.post('/api/admin/candidates/:id/reset-token', requireAdmin, async (req, res) => {
+  try {
+    const candidateId = req.params.id;
+    const { action, custom_new_token } = req.body;
+
+    const candidate = await get('SELECT * FROM candidates WHERE id = ?', [candidateId]);
+    if (!candidate) {
+      return res.status(404).json({ error: 'Not Found', message: `Candidate ID ${candidateId} not found.` });
+    }
+
+    if (action === 'unlock_self_gen') {
+      await run(`
+        UPDATE candidates 
+        SET custom_token_set = 0, 
+            token_reset_requested = 0, 
+            token_reset_reason = NULL 
+        WHERE id = ?
+      `, [candidateId]);
+
+      await logAudit(candidateId, 'ADMIN_UNLOCKED_CANDIDATE_TOKEN_GENERATION', {
+        adminAction: 'unlock_self_gen'
+      });
+
+      return res.json({
+        message: `Candidate ${candidate.name} has been unlocked. They can now configure a new custom access key on their workstation.`,
+        candidate: { ...candidate, custom_token_set: 0, token_reset_requested: 0 }
+      });
+    }
+
+    const newToken = custom_new_token && custom_new_token.trim().length >= 8
+      ? custom_new_token.trim()
+      : crypto.randomBytes(16).toString('hex');
+
+    const entropy = evaluateTokenEntropy(newToken);
+
+    await run(`
+      UPDATE candidates 
+      SET access_token = ?, 
+          default_token = ?, 
+          custom_token_set = 0, 
+          token_reset_requested = 0, 
+          token_reset_reason = NULL, 
+          token_entropy_score = ? 
+      WHERE id = ?
+    `, [newToken, newToken, entropy.details, candidateId]);
+
+    await logAudit(candidateId, 'ADMIN_RESET_CANDIDATE_TOKEN', {
+      adminAction: 'issue_new_token',
+      entropy: entropy.score
+    });
+
+    res.json({
+      message: `Token reset complete for ${candidate.name}. New credential generated and candidate unlocked for self-rotation.`,
+      new_token: newToken,
+      entropy: entropy.details
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================================
 // Task Lifecycle Governance
 // ============================================================================
 
@@ -528,7 +933,7 @@ app.post('/api/session/logout', requireCandidate, async (req, res) => {
  */
 app.post('/api/tasks', requireAdmin, async (req, res) => {
   try {
-    const { title, description, assigned_to, deadline, priority } = req.body;
+    const { title, description, assigned_to, deadline, priority, category, file_url, file_name, file_size } = req.body;
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return res.status(400).json({ error: 'Validation Error', message: 'Task title is required.' });
@@ -542,6 +947,7 @@ app.post('/api/tasks', requireAdmin, async (req, res) => {
     }
 
     const taskPriority = ['critical', 'high', 'medium', 'low'].includes(priority) ? priority : 'medium';
+    const taskCategory = category && typeof category === 'string' && category.trim() ? category.trim() : 'general';
 
     let candidate = null;
     if (assigned_to) {
@@ -552,15 +958,27 @@ app.post('/api/tasks', requireAdmin, async (req, res) => {
     }
 
     const result = await run(`
-      INSERT INTO tasks (title, description, assigned_to, deadline, status, priority)
-      VALUES (?, ?, ?, ?, 'pending', ?)
-    `, [title.trim(), description ? description.trim() : null, assigned_to || null, deadline, taskPriority]);
+      INSERT INTO tasks (title, description, assigned_to, deadline, status, priority, task_category, file_url, file_name, file_size)
+      VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+    `, [
+      title.trim(),
+      description ? description.trim() : null,
+      assigned_to || null,
+      deadline,
+      taskPriority,
+      taskCategory,
+      file_url || null,
+      file_name || null,
+      file_size ? parseInt(file_size) : null
+    ]);
 
     await logAudit(assigned_to || null, 'ADMIN_TASK_CREATED', {
       taskId: result.lastID,
       title: title.trim(),
       deadline,
-      priority: taskPriority
+      priority: taskPriority,
+      category: taskCategory,
+      hasAttachment: !!file_url
     });
 
     // In-app notification for candidate
@@ -658,7 +1076,14 @@ app.get('/api/candidate/tasks', requireCandidate, async (req, res) => {
 
     res.json({
       total: enrichedTasks.length,
-      candidate: { id: candidate.id, name: candidate.name },
+      candidate: {
+        id: candidate.id,
+        name: candidate.name,
+        role: candidate.role,
+        custom_token_set: candidate.custom_token_set,
+        token_reset_requested: candidate.token_reset_requested,
+        token_entropy_score: candidate.token_entropy_score
+      },
       tasks: enrichedTasks
     });
   } catch (err) {
@@ -674,14 +1099,15 @@ app.get('/api/candidate/tasks', requireCandidate, async (req, res) => {
 app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { submission_url, notes } = req.body;
+    const { submission_url, notes, submission_file_url, submission_file_name } = req.body;
     const candidate = req.candidate;
 
-    if (!submission_url || typeof submission_url !== 'string') {
-      return res.status(400).json({ error: 'Validation Error', message: 'submission_url string is required.' });
-    }
+    const trimmedUrl = (submission_url && typeof submission_url === 'string') ? submission_url.trim() : null;
+    const trimmedFileUrl = (submission_file_url && typeof submission_file_url === 'string') ? submission_file_url.trim() : null;
 
-    const trimmedUrl = submission_url.trim();
+    if (!trimmedUrl && !trimmedFileUrl) {
+      return res.status(400).json({ error: 'Validation Error', message: 'Either an artifact repository URL or an attached deliverable file is required.' });
+    }
 
     const task = await get('SELECT * FROM tasks WHERE id = ?', [taskId]);
 
@@ -693,29 +1119,36 @@ app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
       return res.status(403).json({ error: 'Forbidden', message: 'You are not assigned to this task.' });
     }
 
-    // Plagiarism Guard: Prevent two candidates from submitting the same GitHub / repository URL
-    const duplicate = await get(
-      "SELECT id, assigned_to, title FROM tasks WHERE LOWER(TRIM(submission_url)) = LOWER(?) AND id != ? AND status IN ('submitted', 'completed')",
-      [trimmedUrl, taskId]
-    );
+    if (trimmedUrl) {
+      // Plagiarism Guard: Prevent two candidates from submitting the same GitHub / repository URL
+      const duplicate = await get(
+        "SELECT id, assigned_to, title FROM tasks WHERE LOWER(TRIM(submission_url)) = LOWER(?) AND id != ? AND status IN ('submitted', 'completed')",
+        [trimmedUrl, taskId]
+      );
 
-    if (duplicate && duplicate.assigned_to !== candidate.id) {
-      return res.status(400).json({
-        error: 'Duplicate Artifact Rejected',
-        message: `Plagiarism Guard: This repository/PR artifact URL has already been submitted for deliverable #${duplicate.id} ("${duplicate.title}"). Duplicate submissions are rejected.`
-      });
+      if (duplicate && duplicate.assigned_to !== candidate.id) {
+        return res.status(400).json({
+          error: 'Duplicate Artifact Rejected',
+          message: `Plagiarism Guard: This repository/PR artifact URL has already been submitted for deliverable #${duplicate.id} ("${duplicate.title}"). Duplicate submissions are rejected.`
+        });
+      }
     }
 
     await run(`
       UPDATE tasks 
-      SET submission_url = ?, submission_notes = ?, status = 'submitted' 
+      SET submission_url = ?, 
+          submission_notes = ?, 
+          submission_file_url = ?, 
+          submission_file_name = ?, 
+          status = 'submitted' 
       WHERE id = ?
-    `, [trimmedUrl, notes || null, taskId]);
+    `, [trimmedUrl, notes || null, trimmedFileUrl, submission_file_name || null, taskId]);
 
     await logAudit(candidate.id, 'TASK_SUBMITTED_FOR_REVIEW', {
       taskId,
       title: task.title,
       submission_url: trimmedUrl,
+      submission_file_url: trimmedFileUrl,
       notes: notes || null
     });
 
@@ -726,7 +1159,8 @@ app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
       [
         { name: 'Task ID', value: String(taskId), inline: true },
         { name: 'Candidate', value: candidate.name, inline: true },
-        { name: 'Artifact URL', value: trimmedUrl, inline: false },
+        { name: 'Artifact URL', value: trimmedUrl || 'Attached File', inline: false },
+        { name: 'Deliverable File', value: submission_file_name || 'None', inline: true },
         { name: 'Notes', value: notes || 'None provided', inline: false }
       ]
     );
@@ -739,6 +1173,46 @@ app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
   } catch (err) {
     console.error('[ERROR] [Tasks::Submit]', err.message);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * PATCH /api/admin/tasks/:id/archive (Admin Only)
+ * Toggles task archival for permanent historical retention.
+ */
+app.patch('/api/admin/tasks/:id/archive', requireAdmin, async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const task = await get('SELECT * FROM tasks WHERE id = ?', [taskId]);
+    if (!task) return res.status(404).json({ error: 'Not Found', message: 'Task not found.' });
+
+    const newArchived = task.is_archived === 1 ? 0 : 1;
+    await run('UPDATE tasks SET is_archived = ? WHERE id = ?', [newArchived, taskId]);
+    await logAudit(task.assigned_to, 'TASK_ARCHIVE_TOGGLED', { taskId, is_archived: newArchived });
+
+    res.json({ message: newArchived ? 'Task archived to historical records.' : 'Task unarchived.', is_archived: newArchived });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * PATCH /api/admin/tickets/:id/archive (Admin Only)
+ * Toggles ticket archival for permanent historical retention.
+ */
+app.patch('/api/admin/tickets/:id/archive', requireAdmin, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const ticket = await get('SELECT * FROM tickets WHERE id = ?', [ticketId]);
+    if (!ticket) return res.status(404).json({ error: 'Not Found', message: 'Ticket not found.' });
+
+    const newArchived = ticket.is_archived === 1 ? 0 : 1;
+    await run('UPDATE tickets SET is_archived = ? WHERE id = ?', [newArchived, ticketId]);
+    await logAudit(ticket.candidate_id, 'TICKET_ARCHIVE_TOGGLED', { ticketId, is_archived: newArchived });
+
+    res.json({ message: newArchived ? 'Ticket archived to historical records.' : 'Ticket unarchived.', is_archived: newArchived });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -908,6 +1382,12 @@ app.get('/api/admin/export/candidates-csv', requireAdmin, async (req, res) => {
         c.name,
         c.role,
         c.access_token,
+        c.default_token,
+        c.custom_token_set,
+        c.custom_token_created_at,
+        c.token_reset_requested,
+        c.token_reset_reason,
+        c.token_entropy_score,
         c.is_online,
         c.created_at,
         COALESCE(SUM(al.active_seconds), 0) AS total_active_seconds,
@@ -1241,7 +1721,7 @@ app.post('/api/candidate/tickets', requireCandidate, async (req, res) => {
       return res.status(400).json({ error: 'Validation Error', message: 'Description is required.' });
     }
 
-    const validCategories = ['technical', 'task_blocker', 'access_issue', 'extension_request', 'general'];
+    const validCategories = ['technical', 'task_blocker', 'access_issue', 'extension_request', 'infrastructure', 'security_incident', 'code_review', 'general'];
     const validPriorities = ['critical', 'high', 'medium', 'low'];
 
     const cat = validCategories.includes(category) ? category : 'technical';

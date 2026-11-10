@@ -14,6 +14,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 require('dotenv').config();
 
 const { db, run, get, all, logAudit, createNotification } = require('./database');
@@ -26,9 +27,27 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Ensure upload directory exists for task specifications & candidate deliverables
-const UPLOADS_DIR = path.join(__dirname, 'uploads', 'tasks');
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+let UPLOADS_BASE = path.join(__dirname, 'uploads');
+let UPLOADS_DIR = path.join(UPLOADS_BASE, 'tasks');
+
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+  const probeFile = path.join(UPLOADS_DIR, '.probe_write');
+  fs.writeFileSync(probeFile, 'probe');
+  fs.unlinkSync(probeFile);
+} catch (err) {
+  console.warn('[WARN] [DevSecOps] Local upload directory unwritable or permission denied. Falling back to OS tmpdir:', err.message);
+  UPLOADS_BASE = path.join(os.tmpdir(), 'cyberforge_uploads');
+  UPLOADS_DIR = path.join(UPLOADS_BASE, 'tasks');
+  try {
+    if (!fs.existsSync(UPLOADS_DIR)) {
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    }
+  } catch (tmpErr) {
+    console.error('[ERROR] [DevSecOps] Could not initialize tmp uploads directory:', tmpErr.message);
+  }
 }
 
 /**
@@ -84,7 +103,7 @@ app.use(cors({
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(UPLOADS_BASE));
 
 /**
  * POST /api/upload

@@ -668,12 +668,13 @@
                   <th style="width:100px;">Priority</th>
                   <th style="width:100px;">Status</th>
                   <th>Lead Resolution Guidance</th>
-                  <th style="width:140px;">Updated</th>
+                  <th style="width:130px;">Updated</th>
+                  <th style="width:90px; text-align:right;">Action</th>
                 </tr>
               </thead>
               <tbody id="ticketsTableBody">
                 <tr>
-                  <td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                  <td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">
                     No open technical blocker tickets.
                   </td>
                 </tr>
@@ -858,6 +859,76 @@
   </div>
 
   <!-- ======================================================================
+       MODAL: VIEW SUBMISSION DETAILS
+       ====================================================================== -->
+  <div id="viewSubmissionModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:640px;">
+      <div class="modal-header">
+        <div class="modal-title" id="viewSubModalTitle">Deliverable Submission Record</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeViewSubmissionModal()">✕</button>
+      </div>
+      <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <span style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Status</span>
+          <span id="viewSubStatusBadge" class="badge">Submitted</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-top:0.5rem;">Artifact Repository / PR URL:</div>
+        <div style="margin-top:2px;">
+          <a id="viewSubUrlLink" href="#" target="_blank" rel="noopener noreferrer" style="font-family:var(--font-mono); font-size:12px; color:var(--accent-blue); word-break:break-all;"></a>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-top:0.75rem;">Submitted Engineering Remarks:</div>
+        <div id="viewSubRemarks" style="font-size:12px; color:var(--text-secondary); margin-top:2px; font-family:var(--font-mono); white-space:pre-wrap; background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:3px;"></div>
+      </div>
+
+      <div id="viewSubReviewSection" style="display:none; background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-primary);">Lead Evaluator Review</span>
+          <span id="viewSubScoreDisplay" style="font-family:var(--font-mono); font-size:14px; font-weight:800; color:var(--status-green);">— / 100</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Feedback Guidance:</div>
+        <div id="viewSubFeedback" style="font-size:12px; color:var(--text-secondary); margin-top:2px; line-height:1.5;"></div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeViewSubmissionModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: TICKET DETAILS
+       ====================================================================== -->
+  <div id="ticketDetailModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:640px;">
+      <div class="modal-header">
+        <div class="modal-title" id="ticketDetailModalTitle">Escalation Ticket Details</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeTicketDetailModal()">✕</button>
+      </div>
+      <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <div style="display:flex; gap:0.4rem;">
+            <span id="ticketDetailCategory" class="badge badge-medium">technical</span>
+            <span id="ticketDetailPriority" class="badge badge-high">medium</span>
+          </div>
+          <span id="ticketDetailStatus" class="badge">open</span>
+        </div>
+        <div id="ticketDetailSubject" style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;"></div>
+        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Technical Details & Reproduction Logs:</div>
+        <div id="ticketDetailDescription" style="font-size:11px; color:var(--text-secondary); font-family:var(--font-mono); white-space:pre-wrap; background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:3px; max-height:160px; overflow-y:auto; margin-top:2px;"></div>
+      </div>
+
+      <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-primary); margin-bottom:0.35rem;">Lead Engineering Guidance:</div>
+        <div id="ticketDetailGuidance" style="font-size:12px; color:var(--text-secondary); line-height:1.5;"></div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeTicketDetailModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
        CLIENT LOGIC & TELEMETRY CONTROLLER
        ====================================================================== -->
   <script>
@@ -867,7 +938,9 @@
     let timerInterval = null;
     let deliverableTimerInterval = null;
     let heartbeatInterval = null;
+    let syncInterval = null;
     let cachedTasks = [];
+    let cachedTickets = [];
     let activeTaskId = null;
 
     // Direct Interaction Monitoring
@@ -1026,6 +1099,16 @@
       sendHeartbeat();
       heartbeatInterval = setInterval(sendHeartbeat, 15000);
 
+      // Start periodic 20-second background data sync (tasks, alerts, tickets)
+      clearInterval(syncInterval);
+      syncInterval = setInterval(() => {
+        if (TOKEN) {
+          loadMyTasks();
+          loadNotifications();
+          loadMyTickets();
+        }
+      }, 20000);
+
       loadMyTasks();
       loadMyWorkLogs();
       loadMyTickets();
@@ -1082,9 +1165,18 @@
 
           let actionButtons = '';
           if (t.status === 'completed') {
-            actionButtons = `<span style="color:var(--status-green); font-weight:600; font-size:11px;">✓ Approved (${t.score || 0}/100)</span>`;
+            actionButtons = `
+              <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
+                <button class="btn btn-secondary btn-sm" onclick="openViewSubmissionModal(${t.id})">View Submission</button>
+                <button class="btn btn-secondary btn-sm" onclick="switchTab('scorecard')">Scorecard (${t.score || 0})</button>
+              </div>
+            `;
           } else if (t.status === 'submitted') {
-            actionButtons = `<span style="color:var(--status-amber); font-size:11px; font-weight:600;">Pending Lead Review</span>`;
+            actionButtons = `
+              <div style="display:flex; justify-content:flex-end; gap:0.4rem; align-items:center;">
+                <button class="btn btn-secondary btn-sm" onclick="openViewSubmissionModal(${t.id})">View Submission</button>
+              </div>
+            `;
           } else {
             actionButtons = `
               <div style="display:flex; justify-content:flex-end; gap:0.4rem;">
@@ -1099,12 +1191,27 @@
             `;
           }
 
+          let artifactSnippet = '';
+          if (t.submission_url) {
+            artifactSnippet = `
+              <div style="font-size:11px; margin-top:3px;">
+                <span style="color:var(--text-muted); font-weight:600;">Artifact:</span> 
+                <a href="${escapeHtml(t.submission_url)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-blue); font-family:var(--font-mono); text-decoration:underline;">
+                  ${escapeHtml(t.submission_url)}
+                </a>
+              </div>
+            `;
+          }
+
           return `
             <tr>
               <td style="font-family:var(--font-mono); color:var(--text-muted);">#${t.id}</td>
               <td>
                 <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(t.title)}</div>
                 <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${escapeHtml(t.description || 'No additional specifications provided.')}</div>
+                ${artifactSnippet}
+              </td>
+              <td><span class="badge ${priorityClass}">${t.priority}</span></td>
               </td>
               <td><span class="badge ${priorityClass}">${t.priority}</span></td>
               <td>
@@ -1315,14 +1422,14 @@
         if (!res.ok) return;
 
         const data = await res.json();
-        const tickets = data.tickets || [];
-        document.getElementById('tabCountTickets').innerText = tickets.filter(t => t.status !== 'closed' && t.status !== 'resolved').length;
+        cachedTickets = data.tickets || [];
+        document.getElementById('tabCountTickets').innerText = cachedTickets.filter(t => t.status !== 'closed' && t.status !== 'resolved').length;
 
         const tbody = document.getElementById('ticketsTableBody');
-        if (tickets.length === 0) {
+        if (cachedTickets.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">
+              <td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">
                 No technical blocker tickets filed. Use the escalation form if encountering infrastructure or specification blockers.
               </td>
             </tr>
@@ -1330,7 +1437,7 @@
           return;
         }
 
-        tbody.innerHTML = tickets.map(t => `
+        tbody.innerHTML = cachedTickets.map(t => `
           <tr>
             <td style="font-family:var(--font-mono); color:var(--text-muted);">#${t.id}</td>
             <td>
@@ -1348,9 +1455,59 @@
               ${t.admin_notes ? escapeHtml(t.admin_notes) : '— Pending Lead Review —'}
             </td>
             <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${formatTimestamp(t.updated_at || t.created_at)}</td>
+            <td style="text-align:right;">
+              <button class="btn btn-secondary btn-sm" onclick="openTicketDetailModal(${t.id})">Details</button>
+            </td>
           </tr>
         `).join('');
       } catch (_) {}
+    }
+
+    function openViewSubmissionModal(id) {
+      const t = cachedTasks.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById('viewSubModalTitle').innerText = `Deliverable #${t.id} — ${t.title}`;
+      const badge = document.getElementById('viewSubStatusBadge');
+      badge.className = `badge ${t.status === 'completed' ? 'badge-online' : 'badge-external'}`;
+      badge.innerText = t.status.toUpperCase();
+
+      const link = document.getElementById('viewSubUrlLink');
+      link.href = t.submission_url || '#';
+      link.innerText = t.submission_url || '—';
+
+      document.getElementById('viewSubRemarks').innerText = t.submission_notes || 'No remarks provided.';
+
+      const reviewSec = document.getElementById('viewSubReviewSection');
+      if (t.status === 'completed' || t.score !== null || t.review_feedback) {
+        reviewSec.style.display = 'block';
+        document.getElementById('viewSubScoreDisplay').innerText = `${t.score !== null ? t.score : '—'} / 100`;
+        document.getElementById('viewSubFeedback').innerText = t.review_feedback || 'Rubric approved by lead evaluator.';
+      } else {
+        reviewSec.style.display = 'none';
+      }
+
+      document.getElementById('viewSubmissionModal').classList.add('open');
+    }
+    function closeViewSubmissionModal() {
+      document.getElementById('viewSubmissionModal').classList.remove('open');
+    }
+
+    function openTicketDetailModal(id) {
+      const t = cachedTickets.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById('ticketDetailModalTitle').innerText = `Ticket #${t.id} — ${t.subject}`;
+      document.getElementById('ticketDetailCategory').innerText = t.category;
+      document.getElementById('ticketDetailPriority').innerText = t.priority;
+      document.getElementById('ticketDetailPriority').className = `badge ${t.priority === 'critical' ? 'badge-critical' : 'badge-high'}`;
+      document.getElementById('ticketDetailStatus').innerText = t.status.toUpperCase();
+      document.getElementById('ticketDetailStatus').className = `badge ${t.status === 'resolved' ? 'badge-online' : (t.status === 'in_progress' ? 'badge-external' : 'badge-medium')}`;
+      document.getElementById('ticketDetailSubject').innerText = t.subject;
+      document.getElementById('ticketDetailDescription').innerText = t.description || 'No logs provided.';
+      document.getElementById('ticketDetailGuidance').innerText = t.admin_notes || '— Pending lead review and architectural triage —';
+      document.getElementById('ticketDetailModal').classList.add('open');
+    }
+    function closeTicketDetailModal() {
+      document.getElementById('ticketDetailModal').classList.remove('open');
     }
 
     function openRaiseTicketModal() { document.getElementById('ticketModal').classList.add('open'); }
@@ -1506,9 +1663,12 @@
       clearInterval(timerInterval);
       clearInterval(deliverableTimerInterval);
       clearInterval(heartbeatInterval);
+      clearInterval(syncInterval);
       sessionStorage.removeItem('cyberforge_candidate_token');
       TOKEN = '';
       activeTaskId = null;
+      cachedTasks = [];
+      cachedTickets = [];
       document.getElementById('appScreen').classList.remove('active');
       document.getElementById('authScreen').style.display = 'flex';
       document.getElementById('tokenInput').value = '';

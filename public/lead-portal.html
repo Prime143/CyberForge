@@ -429,8 +429,9 @@
         <span>
           Server Uptime: <span id="sysUptime" style="color:var(--text-primary);">—</span>
         </span>
-        <span>
+        <span style="display:inline-flex; align-items:center; gap:0.4rem;">
           Governance Daemon: <span style="color:var(--status-green);">Sweeper 60s Active</span>
+          <button class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="triggerSweeper()" id="btnSweeper">Run Sweep</button>
         </span>
         <span>
           Engine: <span style="color:var(--text-primary);">SQLite WAL (FK: ON)</span>
@@ -535,9 +536,19 @@
             <span class="panel-title">Sprint Task Queue</span>
             <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Deploy and track engineering deliverables across the candidate fleet</div>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()">
-            + Assign Task
-          </button>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <div class="filter-bar" style="margin-bottom:0;">
+              <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Filter:</span>
+              <button class="filter-btn active" id="taskFilterAll" onclick="filterTasks('all', this)">All</button>
+              <button class="filter-btn" id="taskFilterSubmitted" onclick="filterTasks('submitted', this)">Review Required</button>
+              <button class="filter-btn" id="taskFilterInProgress" onclick="filterTasks('in_progress', this)">In Progress</button>
+              <button class="filter-btn" id="taskFilterCompleted" onclick="filterTasks('completed', this)">Completed</button>
+              <button class="filter-btn" id="taskFilterOverdue" onclick="filterTasks('overdue', this)">Overdue</button>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()">
+              + Assign Task
+            </button>
+          </div>
         </div>
 
         <div class="table-container">
@@ -643,10 +654,43 @@
         </form>
       </div>
 
+      <!-- Real-Time Fleet Work Stream -->
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <div class="panel-header">
+          <div>
+            <span class="panel-title">Real-Time Fleet Work Stream</span>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Live feed of candidate milestone checkpoints, commit SHAs, and proof-of-work</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="loadWorkStream()">Refresh Stream</button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:160px;">Timestamp (UTC)</th>
+                <th style="width:180px;">Candidate</th>
+                <th style="width:120px;">Type</th>
+                <th style="width:180px;">Bound Deliverable</th>
+                <th>Milestone Details / Commit Reference</th>
+              </tr>
+            </thead>
+            <tbody id="workStreamTableBody">
+              <tr>
+                <td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                  Loading live engineering work stream...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="panel">
         <div class="panel-header">
           <span class="panel-title">Immutable System & Compliance Audit Trail</span>
-          <div style="display:flex; gap:0.5rem;">
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <input type="text" id="auditSearchInput" class="form-input form-input-mono" placeholder="Filter audit trail..." style="width:220px; padding:0.25rem 0.5rem; font-size:11px;" oninput="filterAuditTrail()" />
             <button class="btn btn-secondary btn-sm" onclick="loadAuditTrail()">Refresh Audit Log</button>
           </div>
         </div>
@@ -882,13 +926,26 @@
        MODAL: RESOLVE TICKET
        ====================================================================== -->
   <div id="ticketModal" class="modal-overlay">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width:640px;">
       <div class="modal-header">
-        <div class="modal-title">Resolve Escalation Ticket</div>
+        <div class="modal-title" id="resolveModalTitle">Resolve Escalation Ticket</div>
         <button class="btn btn-secondary btn-sm" onclick="closeTicketModal()">✕</button>
       </div>
       <form onsubmit="handleResolveTicket(event)">
         <input type="hidden" id="resolveTicketId" />
+
+        <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <div style="font-size:12px; font-weight:700; color:var(--text-primary);" id="resolveTicketCandidate">Candidate</div>
+            <div style="display:flex; gap:0.4rem;">
+              <span id="resolveTicketCategory" class="badge badge-medium">technical</span>
+              <span id="resolveTicketPriority" class="badge badge-high">medium</span>
+            </div>
+          </div>
+          <div style="font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:0.35rem;" id="resolveTicketSubject">Subject</div>
+          <div style="font-size:11px; color:var(--text-secondary); max-height:140px; overflow-y:auto; font-family:var(--font-mono); white-space:pre-wrap; background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:3px;" id="resolveTicketDesc">Description</div>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Ticket Status</label>
           <select id="resolveStatus" class="form-select" required>
@@ -898,7 +955,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Lead Resolution Guidance</label>
+          <label class="form-label">Lead Resolution Guidance & Action Plan</label>
           <textarea id="resolveNotes" class="form-textarea form-input-mono" rows="4" placeholder="" required></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
@@ -939,7 +996,10 @@
     let cachedCandidates = [];
     let cachedTasks = [];
     let cachedTickets = [];
+    let cachedAuditTrail = [];
+    let cachedWorkStream = [];
     let activeFilter = 'all';
+    let activeTaskFilter = 'all';
 
     window.addEventListener('DOMContentLoaded', () => {
       updateKeyDisplay();
@@ -958,6 +1018,23 @@
         if (ADMIN_KEY) loadAllData();
       }, 30000);
     });
+
+    async function triggerSweeper() {
+      const btn = document.getElementById('btnSweeper');
+      const orig = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = 'Sweeping...';
+      try {
+        const res = await apiFetch('/api/admin/sweeper/trigger', { method: 'POST' });
+        alert(res.message || 'Governance sweep executed successfully.');
+        loadAllData();
+      } catch (err) {
+        alert('Sweeper trigger failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = orig;
+      }
+    }
 
     function updateUtcClock() {
       const now = new Date();
@@ -997,6 +1074,8 @@
       cachedCandidates = [];
       cachedTasks = [];
       cachedTickets = [];
+      cachedAuditTrail = [];
+      cachedWorkStream = [];
 
       // Reset KPI displays
       document.getElementById('kpiTotalTime').innerText = '00:00:00';
@@ -1020,6 +1099,10 @@
       document.getElementById('auditTableBody').innerHTML = `
         <tr><td colspan="4" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Console locked. Please authenticate using your Lead Secret Key.</td></tr>
       `;
+      const wsBody = document.getElementById('workStreamTableBody');
+      if (wsBody) {
+        wsBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Console locked. Please authenticate using your Lead Secret Key.</td></tr>`;
+      }
 
       openKeyModal();
     }
@@ -1054,7 +1137,7 @@
 
       if (tab === 'tasks') loadTasks();
       if (tab === 'tickets') loadTickets();
-      if (tab === 'audit') loadAuditTrail();
+      if (tab === 'audit') { loadAuditTrail(); loadWorkStream(); }
       if (tab === 'roster') loadCandidates();
     }
 
@@ -1200,6 +1283,13 @@
       }).join('');
     }
 
+    function filterTasks(filter, btn) {
+      activeTaskFilter = filter;
+      document.querySelectorAll('#leadPaneTasks .filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderTasksTable();
+    }
+
     async function loadTasks() {
       try {
         const data = await apiFetch('/api/admin/tasks');
@@ -1212,48 +1302,84 @@
         const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
         document.getElementById('kpiDeliveryRate').innerText = `${rate}% (${completed}/${total})`;
 
-        const tbody = document.getElementById('tasksTableBody');
-        if (cachedTasks.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2.5rem; color:var(--text-muted);">No deliverables assigned. Use the Deploy panel above.</td></tr>`;
-          return;
+        renderTasksTable();
+      } catch (_) {}
+    }
+
+    function renderTasksTable() {
+      const tbody = document.getElementById('tasksTableBody');
+      const now = new Date();
+
+      let list = cachedTasks;
+      if (activeTaskFilter === 'submitted') {
+        list = list.filter(t => t.status === 'submitted');
+      } else if (activeTaskFilter === 'in_progress') {
+        list = list.filter(t => t.status === 'in_progress' || t.status === 'pending');
+      } else if (activeTaskFilter === 'completed') {
+        list = list.filter(t => t.status === 'completed');
+      } else if (activeTaskFilter === 'overdue') {
+        list = list.filter(t => t.status !== 'completed' && new Date(t.deadline) < now);
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2.5rem; color:var(--text-muted);">${cachedTasks.length === 0 ? 'No deliverables in sprint queue. Click "+ Assign Task" above to deploy tasks.' : 'No tasks match the selected filter.'}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(t => {
+        const priorityClass = t.priority === 'critical' ? 'badge-critical' : (t.priority === 'high' ? 'badge-high' : 'badge-medium');
+
+        let actions = '<div style="display:flex; justify-content:flex-end; gap:0.35rem; align-items:center;">';
+        if (t.status === 'submitted') {
+          actions += `<button class="btn btn-primary btn-sm" onclick="openReviewModal(${t.id})">Evaluate Rubric</button>`;
+        } else if (t.status === 'completed') {
+          actions += `<button class="btn btn-secondary btn-sm" onclick="openReviewModal(${t.id})">View Evaluation</button>`;
+        } else {
+          actions += `<button class="btn btn-secondary btn-sm" onclick="openReviewModal(${t.id})">Score / Review</button>`;
         }
 
-        tbody.innerHTML = cachedTasks.map(t => {
-          const priorityClass = t.priority === 'critical' ? 'badge-critical' : (t.priority === 'high' ? 'badge-high' : 'badge-medium');
+        actions += `<button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id}, '${escapeHtml(t.title).replace(/'/g, "\\'")}')">Delete</button></div>`;
 
-          let actions = '';
-          if (t.status === 'submitted') {
-            actions = `<button class="btn btn-primary btn-sm" onclick="openReviewModal(${t.id})">Evaluate Rubric</button>`;
-          } else if (t.status === 'completed') {
-            actions = `<span style="color:var(--status-green); font-size:11px; font-weight:600;">✓ Approved (${t.score || 0})</span>`;
-          }
-
-          actions += ` <button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id}, '${escapeHtml(t.title).replace(/'/g, "\\'")}')">Delete</button>`;
-
-          return `
-            <tr>
-              <td style="font-family:var(--font-mono); color:var(--text-muted);">#${t.id}</td>
-              <td>
-                <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(t.title)}</div>
-                <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${escapeHtml(t.description || '—')}</div>
-              </td>
-              <td>
-                <span style="font-weight:500;">${escapeHtml(t.candidate_name || t.assignee_name || 'Unassigned')}</span>
-              </td>
-              <td><span class="badge ${priorityClass}">${t.priority}</span></td>
-              <td>
-                <span class="badge ${t.status === 'completed' ? 'badge-online' : (t.status === 'submitted' ? 'badge-critical' : 'badge-medium')}">
-                  ${t.status}
-                </span>
-              </td>
-              <td style="font-family:var(--font-mono); font-size:11px;" id="admin-countdown-${t.id}">
-                ${formatDeadlineCountdown(t.deadline)}
-              </td>
-              <td style="text-align:right;">${actions}</td>
-            </tr>
+        let artifactSnippet = '';
+        if (t.submission_url) {
+          artifactSnippet = `
+            <div style="font-size:11px; margin-top:4px;">
+              <span style="color:var(--text-muted); font-weight:600;">Artifact:</span> 
+              <a href="${escapeHtml(t.submission_url)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-blue); font-family:var(--font-mono); text-decoration:underline;">
+                ${escapeHtml(t.submission_url)}
+              </a>
+            </div>
           `;
-        }).join('');
-      } catch (_) {}
+        }
+        if (t.submission_notes) {
+          artifactSnippet += `<div style="font-size:11px; color:var(--text-secondary); margin-top:2px; font-family:var(--font-mono);">Remarks: ${escapeHtml(t.submission_notes)}</div>`;
+        }
+
+        return `
+          <tr>
+            <td style="font-family:var(--font-mono); color:var(--text-muted);">#${t.id}</td>
+            <td>
+              <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(t.title)}</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${escapeHtml(t.description || '—')}</div>
+              ${artifactSnippet}
+            </td>
+            <td>
+              <span style="font-weight:500;">${escapeHtml(t.candidate_name || t.assignee_name || 'Unassigned')}</span>
+            </td>
+            <td><span class="badge ${priorityClass}">${t.priority}</span></td>
+            <td>
+              <span class="badge ${t.status === 'completed' ? 'badge-online' : (t.status === 'submitted' ? 'badge-critical' : 'badge-medium')}">
+                ${t.status}
+              </span>
+              ${t.score !== null && t.score !== undefined && t.status === 'completed' ? `<div style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono); margin-top:2px;">Score: ${t.score}/100</div>` : ''}
+            </td>
+            <td style="font-family:var(--font-mono); font-size:11px;" id="admin-countdown-${t.id}">
+              ${formatDeadlineCountdown(t.deadline)}
+            </td>
+            <td style="text-align:right;">${actions}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function formatDeadlineCountdown(deadlineStr) {
@@ -1312,8 +1438,40 @@
               </span>
             </td>
             <td style="text-align:right;">
-              <button class="btn btn-primary btn-sm" onclick="openResolveModal(${t.id}, '${escapeHtml(t.admin_notes || '')}')">Resolve</button>
+              <button class="btn btn-primary btn-sm" onclick="openResolveModal(${t.id})">Resolve</button>
               <button class="btn btn-danger btn-sm" onclick="deleteTicket(${t.id})">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (_) {}
+    }
+
+    async function loadWorkStream() {
+      try {
+        const data = await apiFetch('/api/admin/work-stream');
+        cachedWorkStream = data.stream || [];
+        const tbody = document.getElementById('workStreamTableBody');
+        if (!tbody) return;
+        if (cachedWorkStream.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">No milestone checkpoints logged by fleet yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = cachedWorkStream.map(w => `
+          <tr>
+            <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${formatTimestamp(w.created_at)}</td>
+            <td>
+              <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(w.candidate_name)}</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">
+                <span class="badge badge-${(w.candidate_role || 'junior').toLowerCase()}">${formatRoleName(w.candidate_role)}</span>
+              </div>
+            </td>
+            <td><span class="badge badge-medium">${escapeHtml(w.log_type)}</span></td>
+            <td style="font-size:11px; font-weight:500;">
+              ${w.task_title ? `<span style="font-weight:600; color:var(--text-primary);">#${w.task_id}</span> ${escapeHtml(w.task_title)}` : '<span style="color:var(--text-muted);">Workstation Session</span>'}
+            </td>
+            <td style="font-family:var(--font-mono); font-size:12px; color:var(--text-primary); word-break:break-all;">
+              ${escapeHtml(w.message)}
             </td>
           </tr>
         `).join('');
@@ -1323,25 +1481,44 @@
     async function loadAuditTrail() {
       try {
         const data = await apiFetch('/api/admin/audit');
-        const list = data.audit_trail || [];
-
-        const tbody = document.getElementById('auditTableBody');
-        if (list.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--text-muted);">No audit records registered.</td></tr>`;
-          return;
-        }
-
-        tbody.innerHTML = list.map(a => `
-          <tr>
-            <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${formatTimestamp(a.created_at)}</td>
-            <td><span class="badge badge-medium">${escapeHtml(a.event_type)}</span></td>
-            <td style="font-family:var(--font-mono); font-size:11px;">${a.candidate_id ? '#' + a.candidate_id : 'System'}</td>
-            <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); word-break:break-all;">
-              ${escapeHtml(typeof a.metadata === 'string' ? a.metadata : JSON.stringify(a.metadata))}
-            </td>
-          </tr>
-        `).join('');
+        cachedAuditTrail = data.audit_trail || [];
+        renderAuditTrailTable();
       } catch (_) {}
+    }
+
+    function filterAuditTrail() {
+      renderAuditTrailTable();
+    }
+
+    function renderAuditTrailTable() {
+      const q = (document.getElementById('auditSearchInput')?.value || '').toLowerCase().trim();
+      let list = cachedAuditTrail;
+      if (q) {
+        list = list.filter(a => {
+          const evt = (a.event_type || '').toLowerCase();
+          const cand = (a.candidate_id ? String(a.candidate_id) : 'system').toLowerCase();
+          const meta = (typeof a.metadata === 'string' ? a.metadata : JSON.stringify(a.metadata || '')).toLowerCase();
+          return evt.includes(q) || cand.includes(q) || meta.includes(q);
+        });
+      }
+
+      const tbody = document.getElementById('auditTableBody');
+      if (!tbody) return;
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--text-muted);">${cachedAuditTrail.length === 0 ? 'No audit records registered.' : 'No audit records matching search query.'}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(a => `
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${formatTimestamp(a.created_at)}</td>
+          <td><span class="badge badge-medium">${escapeHtml(a.event_type)}</span></td>
+          <td style="font-family:var(--font-mono); font-size:11px;">${a.candidate_id ? '#' + a.candidate_id : 'System'}</td>
+          <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); word-break:break-all;">
+            ${escapeHtml(typeof a.metadata === 'string' ? a.metadata : JSON.stringify(a.metadata))}
+          </td>
+        </tr>
+      `).join('');
     }
 
     // Modal Actions
@@ -1469,21 +1646,42 @@
       if (!task) return;
 
       document.getElementById('reviewTaskId').value = taskId;
-      document.getElementById('reviewModalTitle').innerText = `Evaluate Deliverable #${taskId} — ${task.title}`;
+      document.getElementById('reviewModalTitle').innerText = `Evaluate Deliverable #${taskId} — ${task.title}` + (task.status === 'completed' ? ' (Completed)' : '');
       document.getElementById('reviewArtifactUrl').innerText = task.submission_url || '—';
       document.getElementById('reviewCandidateNotes').innerText = task.submission_notes || 'No remarks provided.';
 
-      document.getElementById('reviewScore').value = '';
-      document.getElementById('rubricSecurity').value = '';
-      document.getElementById('rubricQuality').value = '';
-      document.getElementById('rubricArch').value = '';
-      document.getElementById('rubricTime').value = '';
-      document.getElementById('reviewFeedback').value = '';
-      document.getElementById('reviewGradeDisplay').value = 'A';
+      let rubric = null;
+      if (task.rubric_breakdown) {
+        try {
+          rubric = typeof task.rubric_breakdown === 'string' ? JSON.parse(task.rubric_breakdown) : task.rubric_breakdown;
+        } catch (_) {}
+      }
+
+      document.getElementById('reviewDecision').value = task.status === 'completed' ? 'completed' : 'completed';
+      document.getElementById('reviewScore').value = (task.score !== null && task.score !== undefined) ? task.score : '';
+      document.getElementById('rubricSecurity').value = rubric ? (rubric.security ?? '') : '';
+      document.getElementById('rubricQuality').value = rubric ? (rubric.quality ?? '') : '';
+      document.getElementById('rubricArch').value = rubric ? (rubric.arch ?? '') : '';
+      document.getElementById('rubricTime').value = rubric ? (rubric.time ?? '') : '';
+      document.getElementById('reviewFeedback').value = task.review_feedback || '';
+
+      const total = parseInt(task.score) || 0;
+      let grade = 'Needs Revision';
+      if (total >= 95) grade = 'A+';
+      else if (total >= 85) grade = 'A';
+      else if (total >= 75) grade = 'B';
+      else if (total >= 65) grade = 'C';
+      document.getElementById('reviewGradeDisplay').value = grade;
 
       document.getElementById('reviewModal').classList.add('open');
     }
     function closeReviewModal() { document.getElementById('reviewModal').classList.remove('open'); }
+
+    function toggleReviewRubric() {
+      const decision = document.getElementById('reviewDecision').value;
+      const rubricSec = document.getElementById('rubricSection');
+      if (rubricSec) rubricSec.style.display = decision === 'in_progress' ? 'none' : 'block';
+    }
 
     function autoSumScore() {
       const s1 = parseInt(document.getElementById('rubricSecurity').value) || 0;
@@ -1527,9 +1725,21 @@
       } catch (err) { alert(err.message); }
     }
 
-    function openResolveModal(id, notes) {
-      document.getElementById('resolveTicketId').value = id;
-      document.getElementById('resolveNotes').value = notes;
+    function openResolveModal(id) {
+      const ticket = cachedTickets.find(t => t.id === id);
+      if (!ticket) return;
+
+      document.getElementById('resolveTicketId').value = ticket.id;
+      document.getElementById('resolveModalTitle').innerText = `Resolve Escalation Ticket #${ticket.id}`;
+      document.getElementById('resolveTicketCandidate').innerText = `${ticket.candidate_name} (Candidate #${ticket.candidate_id})`;
+      document.getElementById('resolveTicketCategory').innerText = ticket.category;
+      document.getElementById('resolveTicketPriority').innerText = ticket.priority;
+      document.getElementById('resolveTicketPriority').className = `badge ${ticket.priority === 'critical' ? 'badge-critical' : 'badge-high'}`;
+      document.getElementById('resolveTicketSubject').innerText = ticket.subject;
+      document.getElementById('resolveTicketDesc').innerText = ticket.description || 'No description logs provided.';
+
+      document.getElementById('resolveStatus').value = (ticket.status === 'in_progress' || ticket.status === 'closed') ? ticket.status : 'resolved';
+      document.getElementById('resolveNotes').value = ticket.admin_notes || '';
       document.getElementById('ticketModal').classList.add('open');
     }
     function closeTicketModal() { document.getElementById('ticketModal').classList.remove('open'); }

@@ -413,6 +413,9 @@
         <button class="btn btn-secondary btn-sm" onclick="openCandidateModal()">
           + Provision Candidate
         </button>
+        <button class="btn btn-danger btn-sm" onclick="handleAdminLogout()" title="Lock Lead Console & Clear Session Key">
+          Log Out
+        </button>
       </div>
     </div>
 
@@ -981,6 +984,44 @@
       updateKeyDisplay();
       closeKeyModal();
       loadAllData();
+    }
+
+    function handleAdminLogout() {
+      if (!confirm('Log out and lock Lead Governance Console? Your administrative session key will be cleared.')) return;
+
+      ADMIN_KEY = '';
+      localStorage.removeItem('cyberforge_admin_key');
+      document.getElementById('adminKeyInput').value = '';
+      updateKeyDisplay();
+
+      cachedCandidates = [];
+      cachedTasks = [];
+      cachedTickets = [];
+
+      // Reset KPI displays
+      document.getElementById('kpiTotalTime').innerText = '00:00:00';
+      document.getElementById('kpiActiveWorkstations').innerText = '0 / 0';
+      document.getElementById('kpiDeliveryRate').innerText = '0%';
+      document.getElementById('kpiOpenTickets').innerText = '0';
+      document.getElementById('tabCountRoster').innerText = '0';
+      document.getElementById('tabCountTasks').innerText = '0';
+      document.getElementById('tabCountTickets').innerText = '0';
+
+      // Clear tables
+      document.getElementById('candidateTableBody').innerHTML = `
+        <tr><td colspan="8" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Console locked. Please authenticate using your Lead Secret Key.</td></tr>
+      `;
+      document.getElementById('tasksTableBody').innerHTML = `
+        <tr><td colspan="7" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Console locked. Please authenticate using your Lead Secret Key.</td></tr>
+      `;
+      document.getElementById('ticketsTableBody').innerHTML = `
+        <tr><td colspan="7" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Console locked. Please authenticate using your Lead Secret Key.</td></tr>
+      `;
+      document.getElementById('auditTableBody').innerHTML = `
+        <tr><td colspan="4" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Console locked. Please authenticate using your Lead Secret Key.</td></tr>
+      `;
+
+      openKeyModal();
     }
 
     async function apiFetch(url, opts = {}) {

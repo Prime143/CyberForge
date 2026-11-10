@@ -3,1334 +3,1337 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CyberForge | DevSecOps Lead Control Center</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>CyberForge | Lead Operations Console</title>
   <style>
     :root {
-      --bg-base: #07090e;
-      --bg-surface: #0e121b;
-      --bg-surface-elevated: #151b28;
-      --bg-surface-hover: #1c2436;
-      --border-subtle: rgba(255, 255, 255, 0.07);
-      --border-accent: rgba(255, 255, 255, 0.15);
-      --text-main: #f3f6fc;
-      --text-muted: #8a96ad;
-      --text-faint: #526079;
-      --cyan: #00f2fe;
-      --blue: #3b82f6;
-      --purple: #8b5cf6;
-      --green: #10b981;
-      --amber: #f59e0b;
-      --red: #ef4444;
-      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
-      --font-mono: 'Fira Code', monospace;
+      --bg-root: #0b0f19;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1f2937;
+      --bg-surface-hover: #263346;
+      --border-subtle: #1f2937;
+      --border-strong: #374151;
+      --border-focus: #2563eb;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --accent-blue: #2563eb;
+      --accent-blue-hover: #1d4ed8;
+      --status-green: #059669;
+      --status-green-bg: rgba(5, 150, 105, 0.15);
+      --status-amber: #d97706;
+      --status-amber-bg: rgba(217, 119, 6, 0.15);
+      --status-red: #dc2626;
+      --status-red-bg: rgba(220, 38, 38, 0.15);
+      --status-blue: #2563eb;
+      --status-blue-bg: rgba(37, 99, 235, 0.15);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, Consolas, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg-base);
-      color: var(--text-main);
+      background-color: var(--bg-root);
+      color: var(--text-primary);
       font-family: var(--font-sans);
-      min-height: 100vh;
+      font-size: 13px;
       line-height: 1.5;
-      font-variant-numeric: tabular-nums;
-      background-image: 
-        radial-gradient(circle at 10% 10%, rgba(0, 242, 254, 0.03) 0%, transparent 40%),
-        radial-gradient(circle at 90% 90%, rgba(139, 92, 246, 0.03) 0%, transparent 40%);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Navigation Header */
-    header {
-      background: rgba(14, 18, 27, 0.9);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border-subtle);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      padding: 0.75rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-    }
-
-    .logo-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, #00f2fe, #4facfe);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      color: #000;
-      box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-    }
-
-    .brand-title {
-      font-size: 1.15rem;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .badge-sub {
-      font-size: 0.65rem;
-      background: rgba(0, 242, 254, 0.08);
-      color: var(--cyan);
-      border: 1px solid rgba(0, 242, 254, 0.25);
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
+    /* Common Components */
+    a { color: var(--accent-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
     .btn {
-      background: var(--bg-surface-elevated);
-      color: var(--text-main);
-      border: 1px solid var(--border-accent);
-      padding: 0.5rem 0.95rem;
-      border-radius: 8px;
-      font-size: 0.825rem;
-      font-weight: 600;
-      cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.4rem;
-      transition: all 0.2s ease;
-      font-family: var(--font-sans);
-    }
-
-    .btn:hover {
-      background: var(--bg-surface-hover);
-      border-color: var(--cyan);
-      color: #fff;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #0072ff, #00c6ff);
-      color: #fff;
-      border: none;
-      box-shadow: 0 2px 10px rgba(0, 198, 255, 0.3);
-    }
-    .btn-primary:hover {
-      filter: brightness(1.15);
-      box-shadow: 0 4px 15px rgba(0, 198, 255, 0.45);
-    }
-
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.4);
-      color: var(--red);
-    }
-    .btn-danger:hover { background: var(--red); color: #fff; }
-
-    .btn-success {
-      background: rgba(16, 185, 129, 0.15);
-      border-color: rgba(16, 185, 129, 0.4);
-      color: var(--green);
-    }
-    .btn-success:hover { background: var(--green); color: #fff; }
-
-    /* Container */
-    .container {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
-
-    /* KPI Grid */
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2rem;
-    }
-
-    .metric-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-      position: relative;
-    }
-
-    .metric-title {
-      font-size: 0.725rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 700;
-      margin-bottom: 0.4rem;
-    }
-
-    .metric-value {
-      font-size: 1.85rem;
-      font-weight: 800;
-      color: #fff;
-      font-family: var(--font-mono);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .metric-sub { font-size: 0.75rem; color: var(--text-faint); margin-top: 0.35rem; }
-
-    /* Tab Navigation */
-    .tab-bar {
-      display: flex;
-      gap: 0.5rem;
-      border-bottom: 1px solid var(--border-subtle);
-      margin-bottom: 2rem;
-      overflow-x: auto;
-    }
-
-    .tab-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 0.875rem;
-      font-weight: 600;
-      font-family: var(--font-sans);
-      padding: 0.75rem 1.25rem;
+      padding: 0.4rem 0.8rem;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 4px;
+      border: 1px solid transparent;
       cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-blue);
+    }
+    .btn-primary:hover { background: var(--accent-blue-hover); }
+    .btn-secondary {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+    .btn-secondary:hover { background: var(--bg-surface-hover); }
+    .btn-danger {
+      background: transparent;
+      color: var(--status-red);
+      border-color: var(--border-strong);
+    }
+    .btn-danger:hover { background: var(--status-red-bg); border-color: var(--status-red); }
+    .btn-success {
+      background: var(--status-green);
+      color: #fff;
+      border-color: var(--status-green);
+    }
+    .btn-sm { padding: 0.25rem 0.5rem; font-size: 11px; }
+
+    .form-group { margin-bottom: 0.9rem; }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      margin-bottom: 0.35rem;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: var(--bg-root);
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 0.45rem 0.65rem;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+    }
+    .form-input-mono { font-family: var(--font-mono); }
+
+    .badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-    }
-    .tab-btn:hover { color: #fff; }
-    .tab-btn.active {
-      color: var(--cyan);
-      border-bottom-color: var(--cyan);
-    }
-
-    .tab-counter {
-      background: rgba(255, 255, 255, 0.08);
-      font-size: 0.7rem;
+      gap: 0.3rem;
       padding: 2px 7px;
-      border-radius: 9999px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
       font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border: 1px solid transparent;
     }
+    .badge-devsecops { background: rgba(220, 38, 38, 0.15); color: #f87171; border-color: rgba(220, 38, 38, 0.3); }
+    .badge-core { background: rgba(37, 99, 235, 0.15); color: #60a5fa; border-color: rgba(37, 99, 235, 0.3); }
+    .badge-junior { background: rgba(156, 163, 175, 0.15); color: #d1d5db; border-color: rgba(156, 163, 175, 0.3); }
+    .badge-online { background: var(--status-green-bg); color: #34d399; border-color: rgba(5, 150, 105, 0.3); }
+    .badge-offline { background: rgba(156, 163, 175, 0.1); color: #9ca3af; border-color: var(--border-strong); }
+    .badge-idle { background: var(--status-amber-bg); color: #fbbf24; border-color: rgba(217, 119, 6, 0.3); }
+    .badge-critical { background: var(--status-red-bg); color: #f87171; border-color: var(--status-red); }
+    .badge-high { background: var(--status-amber-bg); color: #fbbf24; border-color: var(--status-amber); }
+    .badge-medium { background: rgba(37, 99, 235, 0.15); color: #93c5fd; border-color: var(--border-strong); }
+    .badge-low { background: rgba(156, 163, 175, 0.15); color: #9ca3af; border-color: var(--border-strong); }
 
-    /* Cards & Tables */
-    .card {
-      background: var(--bg-surface);
+    /* Tables */
+    .table-container {
       border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      background: var(--bg-surface);
     }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.25rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .section-title {
-      font-size: 1.15rem;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
     }
-
     th {
-      font-size: 0.725rem;
-      color: var(--text-muted);
+      background: var(--bg-surface-elevated);
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--border-subtle);
-      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 0.55rem 0.85rem;
+      border-bottom: 1px solid var(--border-strong);
     }
-
     td {
-      padding: 1rem;
+      padding: 0.55rem 0.85rem;
       border-bottom: 1px solid var(--border-subtle);
-      font-size: 0.85rem;
+      color: var(--text-primary);
       vertical-align: middle;
     }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-surface-hover); }
 
-    tr:hover td {
-      background-color: rgba(255, 255, 255, 0.015);
-    }
-
-    /* Segmented Activity Bar */
+    /* Telemetry Horizontal Stacked Bar */
     .telemetry-bar-container {
-      width: 140px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 4px;
+      width: 100%;
+      height: 6px;
+      background: var(--bg-surface-elevated);
+      border-radius: 2px;
       overflow: hidden;
       display: flex;
       margin-top: 4px;
     }
-    .bar-seg-workstation { background: var(--cyan); }
-    .bar-seg-external { background: var(--green); }
-    .bar-seg-idle { background: var(--amber); }
+    .bar-seg-ws { background: #3b82f6; }
+    .bar-seg-ext { background: #059669; }
+    .bar-seg-idle { background: #d97706; }
 
-    /* Countdowns */
-    .countdown-pill {
+    /* Header & System Strip */
+    .lead-header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-strong);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-primary-row {
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .header-system-strip {
+      padding: 0.4rem 1.5rem;
+      background: var(--bg-root);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 11px;
+      color: var(--text-secondary);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
+    }
+    .sys-indicator {
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
     }
-    .cd-green { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .cd-amber { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .cd-urgent { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); animation: pulseAlert 1.5s infinite; }
-    .cd-expired { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid var(--red); }
-
-    @keyframes pulseAlert {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.03); opacity: 0.8; }
-    }
-
-    /* Badges */
-    .badge {
-      font-size: 0.65rem;
-      font-family: var(--font-mono);
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-online { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .badge-offline { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); border: 1px solid var(--border-subtle); }
-    .badge-overdue { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-
-    /* Position & Role Badges */
-    .role-badge {
-      font-size: 0.65rem;
-      font-family: var(--font-mono);
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .role-tech_lead, .role-lead { background: rgba(0, 242, 254, 0.15); color: #00f2fe; border: 1px solid rgba(0, 242, 254, 0.35); }
-    .role-devsecops { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
-    .role-security_analyst { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
-    .role-senior_dev { background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.35); }
-    .role-backend_dev { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35); }
-    .role-frontend_dev { background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.35); }
-    .role-data_engineer { background: rgba(20, 184, 166, 0.15); color: #2dd4bf; border: 1px solid rgba(20, 184, 166, 0.35); }
-    .role-qa_engineer { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.35); }
-    .role-core { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
-    .role-junior { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.35); }
-    .role-intern { background: rgba(251, 146, 60, 0.15); color: #fdba74; border: 1px solid rgba(251, 146, 60, 0.35); }
-
-    .pulse-dot {
+    .sys-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 8px currentColor;
+      background: var(--status-green);
     }
 
-    .token-box {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      background: var(--bg-surface-elevated);
-      padding: 0.35rem 0.6rem;
-      border-radius: 6px;
+    /* KPI Cards Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .kpi-card {
+      background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 1rem 1.25rem;
+    }
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      margin-top: 0.35rem;
+    }
+
+    /* Main Container */
+    .lead-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem;
+    }
+
+    /* Nav Tabs */
+    .tab-bar {
+      display: flex;
+      gap: 0.25rem;
+      border-bottom: 1px solid var(--border-strong);
+      margin-bottom: 1.25rem;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      color: var(--text-secondary);
+      padding: 0.55rem 0.95rem;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
+      border-radius: 4px 4px 0 0;
+      font-family: inherit;
     }
-
-    .copy-btn {
-      background: none;
-      border: none;
-      color: var(--cyan);
-      cursor: pointer;
-      font-size: 0.7rem;
+    .tab-btn:hover { color: var(--text-primary); background: var(--bg-surface-elevated); }
+    .tab-btn.active {
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border-color: var(--border-strong);
+      border-bottom: 1px solid var(--bg-surface);
+      margin-bottom: -1px;
+    }
+    .tab-counter {
+      background: var(--bg-surface-elevated);
+      color: var(--text-secondary);
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 9999px;
       font-family: var(--font-mono);
     }
-    .copy-btn:hover { text-decoration: underline; }
 
-    /* Stream Card */
-    .stream-card {
-      background: var(--bg-surface-elevated);
+    /* Panels */
+    .panel {
+      background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 0.75rem;
+      border-radius: 4px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .panel-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 1rem;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
-    /* Modal */
+    /* Filter Controls Strip */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .filter-btn {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    /* Modals */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(2px);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 100;
       padding: 1rem;
     }
     .modal-overlay.open { display: flex; }
-
-    .modal-content {
+    .modal-box {
       background: var(--bg-surface);
-      border: 1px solid var(--border-accent);
-      border-radius: 16px;
-      padding: 2rem;
-      max-width: 580px;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      max-width: 620px;
       width: 100%;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      padding: 1.5rem;
+      max-height: 90vh;
+      overflow-y: auto;
     }
-
-    .form-group { margin-bottom: 1.25rem; }
-    .form-group label {
-      display: block;
-      font-size: 0.75rem;
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .modal-title {
+      font-size: 14px;
       font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 0.4rem;
-    }
-    .form-group input, .form-group textarea, .form-group select {
-      width: 100%;
-      background: var(--bg-surface-elevated);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 0.75rem;
-      color: #fff;
-      font-family: inherit;
-      font-size: 0.875rem;
-      outline: none;
-    }
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-      border-color: var(--cyan);
+      color: var(--text-primary);
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Header -->
-  <header>
-    <div class="brand">
-      <div class="logo-icon">⚡</div>
-      <div class="brand-title">
-        <span>CyberForge</span>
-        <span class="badge-sub">Lead Mission Control</span>
+  <!-- ======================================================================
+       LEAD HEADER & MISSION-CRITICAL SYSTEM STRIP
+       ====================================================================== -->
+  <header class="lead-header">
+    <div class="header-primary-row">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <span style="font-size:15px; font-weight:700; color:var(--text-primary); letter-spacing:0.02em;">
+          CyberForge Operations Console
+        </span>
+        <span style="color:var(--text-muted); font-size:12px; font-family:var(--font-mono); border-left:1px solid var(--border-strong); padding-left:0.75rem;">
+          Lead Governance Hub
+        </span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <button class="btn btn-secondary btn-sm" onclick="openKeyModal()">
+          🔑 Key: <span id="keyStatusDisplay" style="font-family:var(--font-mono);">Not Set</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCandidatesCSV()">
+          Export CSV Report
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="triggerDatabaseBackup()">
+          Atomic DB Snapshot
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()">
+          + Deploy Deliverable
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="openCandidateModal()">
+          + Provision Candidate
+        </button>
       </div>
     </div>
-    <div class="nav-actions">
-      <button class="btn btn-success" onclick="openCandidateModal()">+ Provision Candidate / Role</button>
-      <button class="btn btn-primary" onclick="openCreateTaskModal()">+ Assign New Task</button>
-      <button class="btn" onclick="exportExecutiveCSV()">📥 Export CSV</button>
-      <button class="btn" onclick="downloadBackup()">💾 Backup DB</button>
-      <button class="btn" onclick="openBroadcastModal()">📢 Broadcast</button>
-      <div id="keyStatusBadge" class="token-box" onclick="openKeyModal()" style="cursor:pointer;" title="Configure Lead Key">
-        <span>🔑 Admin Key</span>
+
+    <!-- Live Telemetry Health Bar -->
+    <div class="header-system-strip">
+      <div style="display:flex; align-items:center; gap:1.25rem;">
+        <span class="sys-indicator">
+          <span class="sys-dot"></span>
+          <span style="color:var(--text-primary);">Gateway Ingress:</span> <span id="sysGatewayStatus">UP</span>
+        </span>
+        <span>
+          Server Uptime: <span id="sysUptime" style="color:var(--text-primary);">—</span>
+        </span>
+        <span>
+          Governance Daemon: <span style="color:var(--status-green);">Sweeper 60s Active</span>
+        </span>
+        <span>
+          Engine: <span style="color:var(--text-primary);">SQLite WAL (FK: ON)</span>
+        </span>
+      </div>
+      <div>
+        Proving Ground Time: <span id="sysUtcClock" style="color:var(--text-primary);">UTC --:--:--</span>
       </div>
     </div>
   </header>
 
-  <div class="container">
-    
-    <!-- KPI Header Cards -->
-    <div class="metric-grid">
-      <div class="metric-card">
-        <div class="metric-title">Candidates Onboarded</div>
-        <div id="kpiTotalCandidates" class="metric-value">0</div>
-        <div class="metric-sub">Active cohort candidate count</div>
-      </div>
+  <!-- ======================================================================
+       MAIN OPERATIONS CONSOLE
+       ====================================================================== -->
+  <div class="lead-container">
 
-      <div class="metric-card">
-        <div class="metric-title">Live Online Presence</div>
-        <div id="kpiActiveCandidates" class="metric-value">0</div>
-        <div class="metric-sub">Currently connected to workstations</div>
+    <!-- KPI Metric Strip -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Tracked Engineering Time</div>
+        <div class="kpi-value" id="kpiTotalTime">00:00:00</div>
       </div>
-
-      <div class="metric-card">
-        <div class="metric-title">Open Deliverables</div>
-        <div id="kpiOpenTasks" class="metric-value">0</div>
-        <div class="metric-sub">Pending and active governance tasks</div>
+      <div class="kpi-card">
+        <div class="kpi-label">Active Workstations</div>
+        <div class="kpi-value" id="kpiActiveWorkstations">0 / 0</div>
       </div>
-
-      <div class="metric-card">
-        <div class="metric-title">Support Tickets</div>
-        <div id="kpiOpenTickets" class="metric-value">0</div>
-        <div class="metric-sub">Open blockers requiring lead action</div>
+      <div class="kpi-card">
+        <div class="kpi-label">Sprint Delivery Rate</div>
+        <div class="kpi-value" id="kpiDeliveryRate">0%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Unresolved Escalation Tickets</div>
+        <div class="kpi-value" id="kpiOpenTickets" style="color:var(--text-primary);">0</div>
       </div>
     </div>
 
-    <!-- Tab Navigation -->
-    <div class="tab-bar">
+    <!-- Operations Navigation Tabs -->
+    <nav class="tab-bar">
       <button class="tab-btn active" onclick="switchLeadTab('roster')">
-        Candidate Telemetry & Positions
-        <span id="tabRosterCount" class="tab-counter">0</span>
-      </button>
-      <button class="tab-btn" onclick="switchLeadTab('stream')">
-        Live Proof-of-Work Activity Stream
-        <span id="tabStreamCount" class="tab-counter">LIVE</span>
+        Candidate Fleet Management <span id="tabCountRoster" class="tab-counter">0</span>
       </button>
       <button class="tab-btn" onclick="switchLeadTab('tasks')">
-        Deliverable Governance Board
-        <span id="tabTasksCount" class="tab-counter">0</span>
+        Sprint Task Queue & Review <span id="tabCountTasks" class="tab-counter">0</span>
       </button>
       <button class="tab-btn" onclick="switchLeadTab('tickets')">
-        Support Desk Queue
-        <span id="tabTicketsCount" class="tab-counter">0</span>
+        Escalation Tickets & Support <span id="tabCountTickets" class="tab-counter">0</span>
       </button>
-    </div>
+      <button class="tab-btn" onclick="switchLeadTab('audit')">
+        Telemetry & Compliance Audit
+      </button>
+    </nav>
 
-    <!-- TAB 1: Candidates Roster with Delete & Hierarchy Support -->
-    <div id="rosterTab">
-      <div class="card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Cohort Candidate Telemetry & Hierarchy</div>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
-              Manages corporate positions, verifies direct workstation time vs external task work, and provides one-click lifecycle deletion.
-            </p>
-          </div>
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-            <button class="btn btn-success" onclick="openCandidateModal()">+ Add Position / Candidate</button>
-            <button class="btn" onclick="exportExecutiveCSV()">📥 Export CSV Report</button>
-            <button class="btn" onclick="loadAllData()">↻ Refresh Roster</button>
+    <!-- ====================================================================
+         TAB 1: CANDIDATE FLEET MANAGEMENT
+         ==================================================================== -->
+    <section id="leadPaneRoster">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Active Candidate Fleet Telemetry</span>
+          <div class="filter-bar" style="margin-bottom:0;">
+            <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Filter:</span>
+            <button class="filter-btn active" onclick="filterCandidates('all', this)">All</button>
+            <button class="filter-btn" onclick="filterCandidates('active', this)">Active</button>
+            <button class="filter-btn" onclick="filterCandidates('idle', this)">Idle</button>
+            <button class="filter-btn" onclick="filterCandidates('offline', this)">Offline</button>
           </div>
         </div>
 
-        <div style="overflow-x:auto;">
+        <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Candidate & Position</th>
-                <th>Presence</th>
-                <th>Evaluation / Grade</th>
-                <th>Active Deliverable</th>
-                <th>Time Allocation (Total / External / Direct)</th>
-                <th>Focus Score</th>
-                <th>Latest Proof-of-Work Log</th>
-                <th>Token & Lifecycle Actions</th>
+                <th style="width:60px;">ID</th>
+                <th>Candidate Name & Position</th>
+                <th style="width:110px;">Status</th>
+                <th style="width:100px;">Focus %</th>
+                <th style="width:220px;">Tracked Engineering Time</th>
+                <th style="width:120px;">Evaluation</th>
+                <th style="width:150px;">Access Credential</th>
+                <th style="width:160px; text-align:right;">Actions</th>
               </tr>
             </thead>
             <tbody id="candidateTableBody">
-              <tr><td colspan="9" style="text-align:center;">Loading telemetry...</td></tr>
+              <tr>
+                <td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                  Loading candidate fleet registry...
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- TAB 2: Live Proof-of-Work Activity Stream -->
-    <div id="streamTab" style="display:none;">
-      <div class="card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Live Cohort Proof-of-Work Stream</div>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
-              Non-repudiation timeline of all candidate git commits, clock-ins, blockers, and milestone check-ins.
-            </p>
+    <!-- ====================================================================
+         TAB 2: SPRINT TASK QUEUE & REVIEW
+         ==================================================================== -->
+    <section id="leadPaneTasks" style="display:none;">
+      
+      <!-- Collapsible Deploy Panel -->
+      <div class="panel" style="background:var(--bg-surface-elevated); margin-bottom:1.5rem;">
+        <div class="panel-header">
+          <span class="panel-title">Deploy Engineering Deliverable</span>
+          <span style="font-size:11px; color:var(--text-muted);">Assign live-fire infrastructure tasks with enforced deadlines</span>
+        </div>
+        <form onsubmit="handleCreateTask(event)">
+          <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+            <div>
+              <label class="form-label">Deliverable Title</label>
+              <input type="text" id="taskTitle" class="form-input" placeholder="" required />
+            </div>
+            <div>
+              <label class="form-label">Assignee Candidate</label>
+              <select id="taskAssignee" class="form-select" required></select>
+            </div>
+            <div>
+              <label class="form-label">Priority Level</label>
+              <select id="taskPriority" class="form-select" required>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
           </div>
-          <button class="btn" onclick="loadWorkStream()">↻ Refresh Stream</button>
-        </div>
-        <div id="workStreamContainer">
-          <div style="text-align:center; padding:2rem; color:var(--text-muted);">Fetching stream...</div>
-        </div>
+          <div style="display:grid; grid-template-columns: 1fr 240px; gap:0.75rem; margin-bottom:0.75rem;">
+            <div>
+              <label class="form-label">Technical Specification & Verification Criteria</label>
+              <textarea id="taskDesc" class="form-textarea form-input-mono" rows="2" placeholder="" required></textarea>
+            </div>
+            <div>
+              <label class="form-label">Delivery Deadline (UTC)</label>
+              <input type="datetime-local" id="taskDeadline" class="form-input" required />
+              <div style="display:flex; justify-content:flex-end; margin-top:0.75rem;">
+                <button type="submit" class="btn btn-primary" style="width:100%;">
+                  Deploy to Candidate
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
-    </div>
 
-    <!-- TAB 3: Tasks Governance Board with Delete Support -->
-    <div id="tasksTab" style="display:none;">
-      <div class="card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Deliverables & Review Queue</div>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
-              Assign deliverables from scratch, evaluate candidate submissions with rubric scoring, or delete obsolete tasks.
-            </p>
-          </div>
-          <button class="btn btn-primary" onclick="openCreateTaskModal()">+ Create Deliverable</button>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Sprint Deliverable Queue</span>
+          <span style="font-size:11px; color:var(--text-muted);">Submissions require lead rubric evaluation for certificate grading</span>
         </div>
-        <div style="overflow-x:auto;">
+
+        <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Deliverable</th>
-                <th>Priority</th>
-                <th>Assignee</th>
-                <th>Deadline / Countdown</th>
-                <th>Status / Score</th>
-                <th>Actions</th>
+                <th style="width:60px;">ID</th>
+                <th>Deliverable Specification</th>
+                <th style="width:160px;">Assignee</th>
+                <th style="width:90px;">Priority</th>
+                <th style="width:110px;">Status</th>
+                <th style="width:160px;">Deadline Countdown</th>
+                <th style="width:180px; text-align:right;">Actions</th>
               </tr>
             </thead>
-            <tbody id="taskTableBody">
-              <tr><td colspan="7" style="text-align:center;">Loading tasks...</td></tr>
+            <tbody id="tasksTableBody">
+              <tr>
+                <td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                  No deliverables in sprint queue. Use the deployment form above to assign work.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- TAB 4: Support Desk Queue with Delete Support -->
-    <div id="ticketsTab" style="display:none;">
-      <div class="card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Support & Incident Tickets</div>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem;">
-              Technical issues and blockers filed by candidates. Resolve, respond, or delete completed tickets.
-            </p>
-          </div>
-          <button class="btn" onclick="loadTickets()">↻ Refresh Queue</button>
+    <!-- ====================================================================
+         TAB 3: ESCALATION TICKETS & SUPPORT
+         ==================================================================== -->
+    <section id="leadPaneTickets" style="display:none;">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Technical Blocker Triage Queue</span>
+          <span style="font-size:11px; color:var(--text-muted);">Respond with architectural guidance or troubleshooting steps</span>
         </div>
-        <div style="overflow-x:auto;">
+
+        <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>Ticket ID</th>
-                <th>Candidate</th>
-                <th>Subject & Description</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th style="width:60px;">ID</th>
+                <th style="width:140px;">Candidate</th>
+                <th>Blocker Summary & Logs</th>
+                <th style="width:120px;">Category</th>
+                <th style="width:90px;">Priority</th>
+                <th style="width:100px;">Status</th>
+                <th style="width:140px; text-align:right;">Actions</th>
               </tr>
             </thead>
-            <tbody id="ticketTableBody">
-              <tr><td colspan="7" style="text-align:center;">Loading tickets...</td></tr>
+            <tbody id="ticketsTableBody">
+              <tr>
+                <td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                  No open escalation tickets.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 4: TELEMETRY & COMPLIANCE AUDIT
+         ==================================================================== -->
+    <section id="leadPaneAudit" style="display:none;">
+      
+      <!-- Cohort Broadcast Strip -->
+      <div class="panel" style="background:var(--bg-surface-elevated); margin-bottom:1.5rem;">
+        <div class="panel-header">
+          <span class="panel-title">Dispatch System Announcement / Operational Broadcast</span>
+          <span style="font-size:11px; color:var(--text-muted);">Delivers instant notifications to active candidate workstation HUDs</span>
+        </div>
+        <form onsubmit="handleBroadcast(event)" style="display:grid; grid-template-columns: 2fr 1fr 1fr 120px; gap:0.75rem;">
+          <div>
+            <label class="form-label">Broadcast Title</label>
+            <input type="text" id="bcastTitle" class="form-input" placeholder="" required />
+          </div>
+          <div>
+            <label class="form-label">Target Fleet</label>
+            <select id="bcastCandidateId" class="form-select">
+              <option value="">All Candidates (Cohort-Wide)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Urgency Level</label>
+            <select id="bcastType" class="form-select">
+              <option value="info">Informational</option>
+              <option value="warning">Deadline Warning</option>
+              <option value="urgent">Urgent Directive</option>
+              <option value="success">Milestone Passed</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button type="submit" class="btn btn-primary" style="width:100%;">
+              Broadcast
+            </button>
+          </div>
+          <div style="grid-column: 1 / -1; margin-top:-0.25rem;">
+            <label class="form-label">Broadcast Body Text</label>
+            <textarea id="bcastMessage" class="form-textarea" rows="2" placeholder="" required></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Immutable System & Compliance Audit Trail</span>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="loadAuditTrail()">Refresh Audit Log</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:160px;">Timestamp (UTC)</th>
+                <th style="width:180px;">Event Code</th>
+                <th style="width:140px;">Candidate ID</th>
+                <th>Structured Audit Metadata</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody">
+              <tr>
+                <td colspan="4" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                  Loading compliance audit logs...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
   </div>
 
-  <!-- Modal: Provision Candidate / Position -->
-  <div id="candidateModal" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-        <h3 style="font-size:1.15rem; font-weight:800;">Provision Candidate & Company Position</h3>
-        <button class="btn" onclick="closeCandidateModal()">✕</button>
+  <!-- ======================================================================
+       MODAL: EVALUATE DELIVERABLE (EXECUTIVE RUBRIC)
+       ====================================================================== -->
+  <div id="reviewModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:680px;">
+      <div class="modal-header">
+        <div class="modal-title" id="reviewModalTitle">Evaluate Deliverable Submission</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeReviewModal()">✕</button>
       </div>
-      <form onsubmit="handleCreateCandidate(event)">
-        <div class="form-group">
-          <label>Candidate Full Name</label>
-          <input type="text" id="newCandName" placeholder="" required />
+      <form onsubmit="handleReviewSubmit(event)">
+        <input type="hidden" id="reviewTaskId" />
+
+        <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Artifact Submission URL:</div>
+          <div id="reviewArtifactUrl" style="font-family:var(--font-mono); font-size:12px; margin-top:2px; word-break:break-all;"></div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-top:0.6rem;">Candidate Remarks:</div>
+          <div id="reviewCandidateNotes" style="font-size:12px; color:var(--text-secondary); margin-top:2px;"></div>
         </div>
+
         <div class="form-group">
-          <label>Company Position / Designation</label>
-          <select id="newCandRole" onchange="toggleCustomRoleInput()" required>
-            <option value="tech_lead">⚡ Technical Lead / Systems Architect</option>
-            <option value="devsecops">🛡️ DevSecOps & Cloud Security Specialist</option>
-            <option value="security_analyst">🔍 Security Analyst & Penetration Tester</option>
-            <option value="senior_dev">💻 Senior Full-Stack Engineer</option>
-            <option value="backend_dev">⚙️ Backend & API Engineer</option>
-            <option value="frontend_dev">🎨 Frontend & UI/UX Engineer</option>
-            <option value="data_engineer">📊 Data & Telemetry Engineer</option>
-            <option value="qa_engineer">🧪 QA & Test Automation Specialist</option>
-            <option value="core">🚀 Core Developer</option>
-            <option value="junior" selected>📘 Junior Software Engineer</option>
-            <option value="intern">🎓 Software Engineering Intern</option>
-            <option value="custom">➕ Custom Position...</option>
+          <label class="form-label">Review Decision</label>
+          <select id="reviewDecision" class="form-select" onchange="toggleReviewRubric()" required>
+            <option value="completed">✓ Approve & Mark Completed</option>
+            <option value="in_progress">↺ Request Revision (Return to In-Progress)</option>
           </select>
         </div>
-        <div id="customRoleGroup" class="form-group" style="display:none;">
-          <label>Custom Position Title</label>
-          <input type="text" id="customRoleInput" placeholder="" />
+
+        <div id="rubricSection">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+            <div>
+              <label class="form-label">Overall Score (0-100)</label>
+              <input type="number" id="reviewScore" class="form-input form-input-mono" min="0" max="100" placeholder="" required />
+            </div>
+            <div>
+              <label class="form-label">Letter Grade (Auto)</label>
+              <input type="text" id="reviewGradeDisplay" class="form-input form-input-mono" readonly value="A" />
+            </div>
+          </div>
+
+          <div style="font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; margin-bottom:0.4rem;">
+            4-Tier Evaluation Rubric (25 Points Each)
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.5rem; margin-bottom:1rem;">
+            <div>
+              <label class="form-label" style="font-size:10px;">Arch & Security</label>
+              <input type="number" id="rubricSecurity" class="form-input form-input-mono" min="0" max="25" placeholder="" oninput="autoSumScore()" />
+            </div>
+            <div>
+              <label class="form-label" style="font-size:10px;">Implementation</label>
+              <input type="number" id="rubricQuality" class="form-input form-input-mono" min="0" max="25" placeholder="" oninput="autoSumScore()" />
+            </div>
+            <div>
+              <label class="form-label" style="font-size:10px;">Docs & Tests</label>
+              <input type="number" id="rubricArch" class="form-input form-input-mono" min="0" max="25" placeholder="" oninput="autoSumScore()" />
+            </div>
+            <div>
+              <label class="form-label" style="font-size:10px;">Resilience</label>
+              <input type="number" id="rubricTime" class="form-input form-input-mono" min="0" max="25" placeholder="" oninput="autoSumScore()" />
+            </div>
+          </div>
         </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button type="button" class="btn" onclick="closeCandidateModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Candidate & Generate Token ➔</button>
+
+        <div class="form-group">
+          <label class="form-label">Lead Technical Feedback & Recommendation</label>
+          <textarea id="reviewFeedback" class="form-textarea form-input-mono" rows="3" placeholder="" required></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Commit Evaluation</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Promote Candidate / Change Position (Admin Only) -->
+  <!-- ======================================================================
+       MODAL: PROMOTE CANDIDATE / ADVANCE POSITION
+       ====================================================================== -->
   <div id="promoteModal" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-        <h3 style="font-size:1.15rem; font-weight:800;">🎖️ Candidate Promotion & Role Advancement</h3>
-        <button class="btn" onclick="closePromoteModal()">✕</button>
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Promote Candidate Position</div>
+        <button class="btn btn-secondary btn-sm" onclick="closePromoteModal()">✕</button>
       </div>
       <form onsubmit="handlePromoteCandidate(event)">
         <input type="hidden" id="promoteCandId" />
         <div class="form-group">
-          <label>Candidate Name</label>
-          <div id="promoteCandName" style="font-size:1.1rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;"></div>
-          <div style="font-size:0.8rem; color:var(--text-muted);">Current Position: <span id="promoteCandCurrentRole" class="role-badge"></span></div>
+          <label class="form-label">Candidate</label>
+          <div id="promoteCandName" style="font-weight:700; font-size:14px;"></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+            Current Position: <span id="promoteCandCurrentRole" class="badge"></span>
+          </div>
         </div>
         <div class="form-group">
-          <label>Promote To / New Position</label>
-          <select id="promoteNewRole" onchange="togglePromoteCustomRole()" required>
-            <option value="tech_lead">⚡ Technical Lead / Systems Architect</option>
-            <option value="devsecops">🛡️ DevSecOps & Cloud Security Specialist</option>
-            <option value="security_analyst">🔍 Security Analyst & Penetration Tester</option>
-            <option value="senior_dev">💻 Senior Full-Stack Engineer</option>
-            <option value="backend_dev">⚙️ Backend & API Engineer</option>
-            <option value="frontend_dev">🎨 Frontend & UI/UX Engineer</option>
-            <option value="data_engineer">📊 Data & Telemetry Engineer</option>
-            <option value="qa_engineer">🧪 QA & Test Automation Specialist</option>
-            <option value="core">🚀 Core Developer</option>
-            <option value="junior">📘 Junior Software Engineer</option>
-            <option value="intern">🎓 Software Engineering Intern</option>
-            <option value="custom">➕ Custom Position...</option>
+          <label class="form-label">Promote To / New Position</label>
+          <select id="promoteNewRole" class="form-select" onchange="togglePromoteCustomRole()" required>
+            <option value="devsecops">DevSecOps & Cloud Security</option>
+            <option value="security_analyst">Security Analyst & Pen-Tester</option>
+            <option value="tech_lead">Technical Lead / Architect</option>
+            <option value="senior_dev">Senior Full-Stack Engineer</option>
+            <option value="backend_dev">Backend & Systems Engineer</option>
+            <option value="frontend_dev">Frontend & Interface Engineer</option>
+            <option value="data_engineer">Data & Telemetry Engineer</option>
+            <option value="qa_engineer">QA & Test Automation Specialist</option>
+            <option value="core">Core Developer</option>
+            <option value="junior">Junior Developer</option>
+            <option value="intern">Engineering Intern</option>
+            <option value="custom">Custom Position...</option>
           </select>
         </div>
         <div id="promoteCustomGroup" class="form-group" style="display:none;">
-          <label>Custom Position Title</label>
-          <input type="text" id="promoteCustomRole" placeholder="" />
+          <label class="form-label">Custom Position Title</label>
+          <input type="text" id="promoteCustomRole" class="form-input" placeholder="" />
         </div>
         <div class="form-group">
-          <label>Commendation Notes / Promotion Reason (Delivered to Workstation)</label>
-          <textarea id="promoteReason" rows="3" placeholder="" required></textarea>
+          <label class="form-label">Commendation Notes (Delivered to Candidate Workstation)</label>
+          <textarea id="promoteReason" class="form-textarea" rows="3" placeholder="" required></textarea>
         </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button type="button" class="btn" onclick="closePromoteModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Authorize Promotion ➔</button>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closePromoteModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Promotion</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Set Admin Key -->
-  <div id="keyModal" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-        <h3 style="font-size:1.15rem; font-weight:800;">Authenticate Lead Access</h3>
-        <button class="btn" onclick="closeKeyModal()">✕</button>
+  <!-- ======================================================================
+       MODAL: PROVISION CANDIDATE
+       ====================================================================== -->
+  <div id="candidateModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Provision Candidate Credential</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeCandidateModal()">✕</button>
       </div>
-      <form onsubmit="handleSaveKey(event)">
+      <form onsubmit="handleCreateCandidate(event)">
         <div class="form-group">
-          <label>Admin Secret Key (x-admin-key)</label>
-          <input type="password" id="adminKeyInput" placeholder="" required />
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button type="button" class="btn" onclick="closeKeyModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Unlock Lead Hub ➔</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Assign Task -->
-  <div id="createTaskModal" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-        <h3 style="font-size:1.15rem; font-weight:800;">Assign New Deliverable</h3>
-        <button class="btn" onclick="closeCreateTaskModal()">✕</button>
-      </div>
-      <form onsubmit="handleCreateTask(event)">
-        <div class="form-group">
-          <label>Deliverable Title</label>
-          <input type="text" id="taskTitle" placeholder="" required />
+          <label class="form-label">Candidate Full Name</label>
+          <input type="text" id="newCandName" class="form-input" placeholder="" required />
         </div>
         <div class="form-group">
-          <label>Description & Acceptance Criteria</label>
-          <textarea id="taskDesc" rows="3" placeholder="" required></textarea>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-          <div class="form-group">
-            <label>Assignee</label>
-            <select id="taskAssignee" required></select>
-          </div>
-          <div class="form-group">
-            <label>Priority</label>
-            <select id="taskPriority" required>
-              <option value="critical">Critical</option>
-              <option value="high">High</option>
-              <option value="medium" selected>Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Deadline (UTC)</label>
-          <input type="datetime-local" id="taskDeadline" required />
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button type="button" class="btn" onclick="closeCreateTaskModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Assign Deliverable ➔</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Review Task with Multi-Criteria Rubric Scoring -->
-  <div id="reviewModal" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-        <h3 style="font-size:1.15rem; font-weight:800;">Evaluate Deliverable Submission</h3>
-        <button class="btn" onclick="closeReviewModal()">✕</button>
-      </div>
-      <form onsubmit="handleReviewSubmit(event)">
-        <input type="hidden" id="reviewTaskId" />
-        <div class="form-group">
-          <label>Evaluation Decision</label>
-          <select id="reviewDecision" onchange="toggleReviewRubric()" required>
-            <option value="completed">✓ Approve & Mark Completed</option>
-            <option value="in_progress">↺ Request Revision (Back to In-Progress)</option>
+          <label class="form-label">Initial Designation</label>
+          <select id="newCandRole" class="form-select" required>
+            <option value="devsecops">DevSecOps & Cloud Security</option>
+            <option value="security_analyst">Security Analyst & Pen-Tester</option>
+            <option value="core">Core Developer</option>
+            <option value="junior" selected>Junior Developer</option>
+            <option value="intern">Engineering Intern</option>
           </select>
         </div>
-        <div id="rubricSection">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-            <div class="form-group">
-              <label>Overall Score (0-100)</label>
-              <input type="number" id="reviewScore" min="0" max="100" placeholder="" />
-            </div>
-            <div class="form-group">
-              <label>Code Quality (/25)</label>
-              <input type="number" id="rubricQuality" min="0" max="25" placeholder="" oninput="autoSumScore()" />
-            </div>
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem;">
-            <div class="form-group">
-              <label>Security (/25)</label>
-              <input type="number" id="rubricSecurity" min="0" max="25" placeholder="" oninput="autoSumScore()" />
-            </div>
-            <div class="form-group">
-              <label>Architecture (/25)</label>
-              <input type="number" id="rubricArch" min="0" max="25" placeholder="" oninput="autoSumScore()" />
-            </div>
-            <div class="form-group">
-              <label>Timeliness (/25)</label>
-              <input type="number" id="rubricTime" min="0" max="25" placeholder="" oninput="autoSumScore()" />
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Lead Review Feedback & Commendations</label>
-          <textarea id="reviewFeedback" rows="3" placeholder="" required></textarea>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button type="button" class="btn" onclick="closeReviewModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Submit Evaluation ➔</button>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeCandidateModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate Credential</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Broadcast Notification -->
-  <div id="broadcastModal" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-        <h3 style="font-size:1.15rem; font-weight:800;">Broadcast Notification</h3>
-        <button class="btn" onclick="closeBroadcastModal()">✕</button>
-      </div>
-      <form onsubmit="handleBroadcast(event)">
-        <div class="form-group">
-          <label>Notification Title</label>
-          <input type="text" id="bcastTitle" placeholder="" required />
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-          <div class="form-group">
-            <label>Target Audience</label>
-            <select id="bcastCandidateId">
-              <option value="">All Candidates (Cohort-Wide)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Urgency Level</label>
-            <select id="bcastType">
-              <option value="info">Information</option>
-              <option value="warning">Warning / Deadline Approaching</option>
-              <option value="urgent">Urgent Action Required</option>
-              <option value="success">Success / Milestone Passed</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Broadcast Message</label>
-          <textarea id="bcastMessage" rows="3" placeholder="" required></textarea>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button type="button" class="btn" onclick="closeBroadcastModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Dispatch Broadcast ➔</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Resolve Ticket -->
+  <!-- ======================================================================
+       MODAL: RESOLVE TICKET
+       ====================================================================== -->
   <div id="ticketModal" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-        <h3 style="font-size:1.15rem; font-weight:800;">Resolve Support Ticket</h3>
-        <button class="btn" onclick="closeTicketModal()">✕</button>
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Resolve Escalation Ticket</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeTicketModal()">✕</button>
       </div>
       <form onsubmit="handleResolveTicket(event)">
         <input type="hidden" id="resolveTicketId" />
         <div class="form-group">
-          <label>Ticket Status</label>
-          <select id="resolveStatus" required>
+          <label class="form-label">Ticket Status</label>
+          <select id="resolveStatus" class="form-select" required>
             <option value="resolved">✓ Resolved</option>
             <option value="in_progress">In Progress</option>
             <option value="closed">Closed</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Lead Response & Resolution Guidance</label>
-          <textarea id="resolveNotes" rows="4" placeholder="" required></textarea>
+          <label class="form-label">Lead Resolution Guidance</label>
+          <textarea id="resolveNotes" class="form-textarea form-input-mono" rows="4" placeholder="" required></textarea>
         </div>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
-          <button type="button" class="btn" onclick="closeTicketModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Update Ticket ➔</button>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeTicketModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Commit Guidance</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- ======================================================================
+       MODAL: SET ADMIN KEY
+       ====================================================================== -->
+  <div id="keyModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Authenticate Lead Access</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeKeyModal()">✕</button>
+      </div>
+      <form onsubmit="handleSaveKey(event)">
+        <div class="form-group">
+          <label class="form-label">Admin Secret Key (x-admin-key)</label>
+          <input type="password" id="adminKeyInput" class="form-input form-input-mono" placeholder="" required />
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeKeyModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Authorize Console</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       CLIENT SCRIPT & LEAD OPERATIONS CONTROLLER
+       ====================================================================== -->
   <script>
-    let ADMIN_KEY = sessionStorage.getItem('cf_lead_session_key') || '4c2db3e43f43cb0342c88e1b8be5a37fd456c06bbf103a7e8e139c9b30f697ee';
+    let ADMIN_KEY = localStorage.getItem('cyberforge_admin_key') || '';
     let cachedCandidates = [];
-    let cachedLeadTasks = [];
+    let cachedTasks = [];
+    let cachedTickets = [];
+    let activeFilter = 'all';
 
     window.addEventListener('DOMContentLoaded', () => {
-      updateKeyStatus();
-      loadAllData();
-      setInterval(loadAllData, 20000);
-      setInterval(updateLeadCountdowns, 1000);
+      updateKeyDisplay();
+      updateUtcClock();
+      setInterval(updateUtcClock, 1000);
+      setInterval(updateCountdowns, 1000);
+
+      if (!ADMIN_KEY) {
+        openKeyModal();
+      } else {
+        loadAllData();
+      }
+
+      // Auto-refresh data every 30 seconds
+      setInterval(() => {
+        if (ADMIN_KEY) loadAllData();
+      }, 30000);
     });
 
-    function updateKeyStatus() {
-      const badge = document.getElementById('keyStatusBadge');
-      if (ADMIN_KEY) {
-        badge.innerHTML = '🔑 <span style="color:var(--green);">Authorized</span>';
-      } else {
-        badge.innerHTML = '🔑 <span style="color:var(--amber);">Set Lead Key</span>';
-      }
+    function updateUtcClock() {
+      const now = new Date();
+      const parts = now.toUTCString().split(' ');
+      document.getElementById('sysUtcClock').innerText = 'UTC ' + (parts[4] || now.toISOString().substring(11, 19));
     }
 
-    function openKeyModal() { document.getElementById('keyModal').classList.add('open'); }
+    function updateKeyDisplay() {
+      const el = document.getElementById('keyStatusDisplay');
+      el.innerText = ADMIN_KEY ? '••••••••' : 'Not Set';
+      el.style.color = ADMIN_KEY ? 'var(--status-green)' : 'var(--status-red)';
+    }
+
+    function openKeyModal() {
+      document.getElementById('adminKeyInput').value = ADMIN_KEY;
+      document.getElementById('keyModal').classList.add('open');
+    }
     function closeKeyModal() { document.getElementById('keyModal').classList.remove('open'); }
+
     function handleSaveKey(e) {
       e.preventDefault();
       ADMIN_KEY = document.getElementById('adminKeyInput').value.trim();
-      sessionStorage.setItem('cf_lead_session_key', ADMIN_KEY);
-      updateKeyStatus();
+      localStorage.setItem('cyberforge_admin_key', ADMIN_KEY);
+      updateKeyDisplay();
       closeKeyModal();
       loadAllData();
     }
 
+    async function apiFetch(url, opts = {}) {
+      opts.headers = opts.headers || {};
+      opts.headers['x-admin-key'] = ADMIN_KEY;
+      if (opts.body && typeof opts.body === 'string') {
+        opts.headers['Content-Type'] = 'application/json';
+      }
+      const res = await fetch(url, opts);
+      if (res.status === 401) {
+        openKeyModal();
+        throw new Error('Unauthorized: Invalid or missing Lead Admin Key.');
+      }
+      return res.json();
+    }
+
     function switchLeadTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('rosterTab').style.display = tab === 'roster' ? 'block' : 'none';
-      document.getElementById('streamTab').style.display = tab === 'stream' ? 'block' : 'none';
-      document.getElementById('tasksTab').style.display = tab === 'tasks' ? 'block' : 'none';
-      document.getElementById('ticketsTab').style.display = tab === 'tickets' ? 'block' : 'none';
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('leadPaneRoster').style.display = tab === 'roster' ? 'block' : 'none';
+      document.getElementById('leadPaneTasks').style.display = tab === 'tasks' ? 'block' : 'none';
+      document.getElementById('leadPaneTickets').style.display = tab === 'tickets' ? 'block' : 'none';
+      document.getElementById('leadPaneAudit').style.display = tab === 'audit' ? 'block' : 'none';
+
       event.currentTarget.classList.add('active');
 
-      if (tab === 'stream') loadWorkStream();
-    }
-
-    async function apiFetch(endpoint, options = {}) {
-      if (!ADMIN_KEY) {
-        openKeyModal();
-        throw new Error('Authentication required');
-      }
-
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-admin-key': ADMIN_KEY,
-        ...(options.headers || {})
-      };
-
-      const res = await fetch(endpoint, { ...options, headers });
-      if (res.status === 401) {
-        sessionStorage.removeItem('cf_lead_session_key');
-        ADMIN_KEY = '';
-        updateKeyStatus();
-        openKeyModal();
-        throw new Error('Unauthorized');
-      }
-      return await res.json();
-    }
-
-    function formatTime(seconds) {
-      if (!seconds || seconds <= 0) return '0m';
-      const hrs = Math.floor(seconds / 3600);
-      const mins = Math.floor((seconds % 3600) / 60);
-      return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-    }
-
-    function copyToClipboard(text, btn) {
-      navigator.clipboard.writeText(text).then(() => {
-        const orig = btn.innerText;
-        btn.innerText = '✓ Copied';
-        setTimeout(() => { btn.innerText = orig; }, 1500);
-      });
-    }
-
-    function formatRoleName(role) {
-      const map = {
-        'tech_lead': 'TECH LEAD',
-        'lead': 'TECH LEAD',
-        'devsecops': 'DEVSECOPS',
-        'security_analyst': 'SECURITY ANALYST',
-        'senior_dev': 'SENIOR DEV',
-        'backend_dev': 'BACKEND DEV',
-        'frontend_dev': 'FRONTEND DEV',
-        'data_engineer': 'DATA ENGINEER',
-        'qa_engineer': 'QA TESTER',
-        'core': 'CORE DEV',
-        'junior': 'JUNIOR DEV',
-        'intern': 'INTERN'
-      };
-      return map[role] || (role || 'CANDIDATE').toUpperCase().replace(/_/g, ' ');
-    }
-
-    function formatCountdown(deadlineStr, status) {
-      if (status === 'completed') return `<span class="countdown-pill cd-green">✓ Completed</span>`;
-      const diff = new Date(deadlineStr) - Date.now();
-      if (diff <= 0) return `<span class="countdown-pill cd-expired">⚠️ OVERDUE</span>`;
-
-      const hrs = Math.floor(diff / 3600000);
-      const mins = Math.floor((diff % 3600000) / 60000);
-      const secs = Math.floor((diff % 60000) / 1000);
-      const timeText = `${String(hrs).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
-
-      if (diff < 3600000) return `<span class="countdown-pill cd-urgent">⏳ ${timeText}</span>`;
-      if (diff < 21600000) return `<span class="countdown-pill cd-amber">⏳ ${timeText}</span>`;
-      return `<span class="countdown-pill cd-green">⏳ ${timeText}</span>`;
-    }
-
-    function updateLeadCountdowns() {
-      cachedLeadTasks.forEach(t => {
-        const el = document.getElementById(`lead-cd-${t.id}`);
-        if (el) el.innerHTML = formatCountdown(t.deadline, t.status);
-      });
+      if (tab === 'tasks') loadTasks();
+      if (tab === 'tickets') loadTickets();
+      if (tab === 'audit') loadAuditTrail();
     }
 
     async function loadAllData() {
+      loadHealth();
       await loadCandidates();
       await loadTasks();
       await loadTickets();
+    }
+
+    async function loadHealth() {
+      try {
+        const res = await fetch('/api/health');
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById('sysGatewayStatus').innerText = data.status || 'UP';
+        const uptime = data.uptime || 0;
+        const hrs = Math.floor(uptime / 3600);
+        const mins = Math.floor((uptime % 3600) / 60);
+        document.getElementById('sysUptime').innerText = `${hrs}h ${mins}m`;
+      } catch (_) {}
     }
 
     async function loadCandidates() {
       try {
         const data = await apiFetch('/api/admin/candidates');
         cachedCandidates = data.candidates || [];
+        document.getElementById('tabCountRoster').innerText = cachedCandidates.length;
 
-        const total = cachedCandidates.length;
-        const onlineCount = cachedCandidates.filter(c => c.is_online === 1).length;
-        document.getElementById('kpiTotalCandidates').innerText = total;
-        document.getElementById('kpiActiveCandidates').innerHTML = `
-          ${onlineCount} <span class="badge ${onlineCount > 0 ? 'badge-online' : 'badge-offline'}"><span class="pulse-dot"></span> Online</span>
-        `;
-        document.getElementById('tabRosterCount').innerText = total;
+        // KPI: Total Time & Active Workstations
+        let totalActiveSec = 0;
+        let onlineCount = 0;
+        cachedCandidates.forEach(c => {
+          totalActiveSec += (c.total_active_seconds || 0);
+          if (c.is_online === 1) onlineCount++;
+        });
 
-        // Populate Assignee dropdowns
-        const taskSelect = document.getElementById('taskAssignee');
-        const bcastSelect = document.getElementById('bcastCandidateId');
-        taskSelect.innerHTML = '<option value="">Select Candidate...</option>' + cachedCandidates.map(c => `
-          <option value="${c.id}">${c.name} (${formatRoleName(c.role)})</option>
+        document.getElementById('kpiTotalTime').innerText = formatSeconds(totalActiveSec);
+        document.getElementById('kpiActiveWorkstations').innerText = `${onlineCount} / ${cachedCandidates.length}`;
+
+        // Populate Assignee Selectors
+        const taskAssignee = document.getElementById('taskAssignee');
+        const bcastAssignee = document.getElementById('bcastCandidateId');
+        taskAssignee.innerHTML = '<option value="">Select Candidate...</option>' + cachedCandidates.map(c => `
+          <option value="${c.id}">${escapeHtml(c.name)} (${formatRoleName(c.role)})</option>
         `).join('');
-        bcastSelect.innerHTML = '<option value="">All Candidates (Cohort-Wide)</option>' + cachedCandidates.map(c => `
-          <option value="${c.id}">${c.name}</option>
+        bcastAssignee.innerHTML = '<option value="">All Candidates (Cohort-Wide)</option>' + cachedCandidates.map(c => `
+          <option value="${c.id}">${escapeHtml(c.name)}</option>
         `).join('');
 
-        const tbody = document.getElementById('candidateTableBody');
-        if (cachedCandidates.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No candidates registered in database.</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = cachedCandidates.map(c => {
-          const totalSec = (c.total_active_seconds || 0) + (c.idle_seconds || 0);
-          const workSec = c.workstation_seconds || 0;
-          const extSec = c.external_work_seconds || 0;
-          const idleSec = c.idle_seconds || 0;
-
-          const workPct = totalSec > 0 ? Math.round((workSec / totalSec) * 100) : 0;
-          const extPct = totalSec > 0 ? Math.round((extSec / totalSec) * 100) : 0;
-          const idlePct = totalSec > 0 ? Math.round((idleSec / totalSec) * 100) : 0;
-
-          const focusScore = c.focus_score !== undefined ? c.focus_score : (c.is_online ? 100 : 0);
-          let focusBadge = `<span class="badge badge-online">${focusScore}% Focus</span>`;
-          if (focusScore < 50 && totalSec > 300) {
-            focusBadge = `<span class="badge badge-overdue" title="Over 50% idle without assigned deliverable">⚠️ ${focusScore}% Idle</span>`;
-          }
-
-          let scoreBadge = `<span style="color:var(--text-faint); font-size:0.75rem;">Unrated</span>`;
-          if (c.avg_score !== null && c.avg_score !== undefined) {
-            scoreBadge = `<div style="font-family:var(--font-mono); font-size:0.85rem; font-weight:800; color:#fff;">${c.avg_score}/100 <span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399;">${c.overall_grade || 'A'}</span></div>`;
-          }
-
-          let activeTaskDisplay = `<span style="color:var(--text-faint); font-size:0.8rem;">No active deliverable</span>`;
-          if (c.active_task_title) {
-            activeTaskDisplay = `<strong style="color:var(--cyan); font-size:0.825rem;">⚡ Task #${c.active_task_id}: ${c.active_task_title}</strong>`;
-          }
-
-          let latestLogDisplay = `<span style="color:var(--text-faint); font-size:0.75rem;">None</span>`;
-          if (c.latest_work_log) {
-            latestLogDisplay = `<div style="max-width:220px; font-family:var(--font-mono); font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.latest_work_log}">${c.latest_work_log}</div>`;
-          }
-
-          return `
-            <tr>
-              <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.8rem;">#${c.id}</td>
-              <td>
-                <div><strong>${c.name}</strong></div>
-                <div style="margin-top:2px;"><span class="role-badge role-${c.role}">${formatRoleName(c.role)}</span></div>
-              </td>
-              <td>
-                <span class="badge ${c.is_online === 1 ? 'badge-online' : 'badge-offline'}">
-                  ${c.is_online === 1 ? '<span class="pulse-dot"></span> Active' : 'Offline'}
-                </span>
-              </td>
-              <td>${scoreBadge}</td>
-              <td>${activeTaskDisplay}</td>
-              <td>
-                <div style="font-family:var(--font-mono); font-size:0.85rem; font-weight:700;">
-                  ${formatTime(c.total_active_seconds)} Active
-                </div>
-                <div style="font-size:0.7rem; color:var(--text-muted);">
-                  Ext: ${formatTime(extSec)} · WS: ${formatTime(workSec)}
-                </div>
-                <div class="telemetry-bar-container" title="Workstation: ${workPct}% | External: ${extPct}% | Idle: ${idlePct}%">
-                  <div class="bar-seg-workstation" style="width:${workPct}%"></div>
-                  <div class="bar-seg-external" style="width:${extPct}%"></div>
-                  <div class="bar-seg-idle" style="width:${idlePct}%"></div>
-                </div>
-              </td>
-              <td>${focusBadge}</td>
-              <td>${latestLogDisplay}</td>
-              <td>
-                <div style="display:flex; align-items:center; gap:0.4rem;">
-                  <button class="btn btn-outline" style="padding:0.25rem 0.5rem; font-size:0.7rem; border-color:rgba(0,242,254,0.4); color:var(--cyan);" onclick="openPromoteModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', '${c.role}')" title="Promote / Update Role">
-                    🎖️ Promote
-                  </button>
-                  <div class="token-box">
-                    <span>••••••••</span>
-                    <button class="copy-btn" onclick="copyToClipboard('${c.access_token}', this)">Copy</button>
-                  </div>
-                  <button class="btn btn-danger" style="padding:0.25rem 0.5rem; font-size:0.7rem;" onclick="deleteCandidate(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Delete Candidate">
-                    🗑️
-                  </button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('');
-
+        renderCandidatesTable();
       } catch (_) {}
     }
 
-    async function loadWorkStream() {
-      try {
-        const data = await apiFetch('/api/admin/work-stream');
-        const stream = data.stream || [];
-        const container = document.getElementById('workStreamContainer');
+    function filterCandidates(filter, btn) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCandidatesTable();
+    }
 
-        if (stream.length === 0) {
-          container.innerHTML = `
-            <div style="text-align:center; padding:3rem; color:var(--text-muted);">
-              No candidate proof-of-work check-ins recorded yet. Check-ins from candidate workstations appear here live!
-            </div>
-          `;
-          return;
-        }
+    function renderCandidatesTable() {
+      const tbody = document.getElementById('candidateTableBody');
+      let list = cachedCandidates;
 
-        container.innerHTML = stream.map(item => `
-          <div class="stream-card">
-            <div>
-              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem; flex-wrap:wrap;">
-                <strong>${item.candidate_name}</strong>
-                <span class="role-badge role-${item.candidate_role}">${formatRoleName(item.candidate_role)}</span>
-                <span class="badge" style="background:rgba(255,255,255,0.06); color:var(--cyan); border:1px solid var(--border-subtle);">${item.log_type.toUpperCase()}</span>
-                ${item.task_title ? `<span style="font-size:0.75rem; color:var(--text-muted);">[#${item.task_id} ${item.task_title}]</span>` : ''}
+      if (activeFilter === 'active') list = list.filter(c => c.is_online === 1);
+      else if (activeFilter === 'offline') list = list.filter(c => c.is_online !== 1);
+      else if (activeFilter === 'idle') list = list.filter(c => c.is_online === 1 && (c.idle_seconds || 0) > 180);
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">No candidates match the selected filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(c => {
+        const totalSec = (c.total_active_seconds || 0) + (c.idle_seconds || 0);
+        const workSec = c.workstation_seconds || 0;
+        const extSec = c.external_work_seconds || 0;
+        const idleSec = c.idle_seconds || 0;
+
+        const workPct = totalSec > 0 ? Math.round((workSec / totalSec) * 100) : 0;
+        const extPct = totalSec > 0 ? Math.round((extSec / totalSec) * 100) : 0;
+        const idlePct = totalSec > 0 ? Math.round((idleSec / totalSec) * 100) : 0;
+
+        const focusScore = c.focus_score !== undefined ? c.focus_score : (c.is_online ? 100 : 0);
+        const roleName = (c.role || 'junior').toLowerCase();
+
+        return `
+          <tr>
+            <td style="font-family:var(--font-mono); color:var(--text-muted);">#${c.id}</td>
+            <td>
+              <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(c.name)}</div>
+              <div style="margin-top:2px;"><span class="badge badge-${roleName}">${formatRoleName(c.role)}</span></div>
+            </td>
+            <td>
+              <span class="badge ${c.is_online === 1 ? 'badge-online' : 'badge-offline'}">
+                ${c.is_online === 1 ? '● Online' : '○ Offline'}
+              </span>
+            </td>
+            <td>
+              <span style="font-family:var(--font-mono); font-weight:700; color:${focusScore >= 70 ? 'var(--status-green)' : (focusScore >= 40 ? 'var(--status-amber)' : 'var(--status-red)')};">
+                ${focusScore}%
+              </span>
+            </td>
+            <td>
+              <div style="font-family:var(--font-mono); font-size:12px; font-weight:600;">${formatSeconds(c.total_active_seconds || 0)}</div>
+              <div style="font-size:10px; color:var(--text-muted);">Ext: ${formatSeconds(extSec)} · WS: ${formatSeconds(workSec)}</div>
+              <div class="telemetry-bar-container" title="Workstation: ${workPct}% | External: ${extPct}% | Idle: ${idlePct}%">
+                <div class="bar-seg-ws" style="width:${workPct}%"></div>
+                <div class="bar-seg-ext" style="width:${extPct}%"></div>
+                <div class="bar-seg-idle" style="width:${idlePct}%"></div>
               </div>
-              <div style="font-family:var(--font-mono); font-size:0.85rem; color:var(--text-main);">${item.message}</div>
-            </div>
-            <div style="font-family:var(--font-mono); font-size:0.725rem; color:var(--text-faint); white-space:nowrap;">
-              ${new Date(item.created_at).toLocaleTimeString()}
-            </div>
-          </div>
-        `).join('');
-
-      } catch (_) {}
+            </td>
+            <td>
+              ${c.avg_score !== null && c.avg_score !== undefined ? `
+                <span style="font-family:var(--font-mono); font-weight:700;">${c.avg_score}/100</span>
+                <span class="badge badge-online" style="margin-left:4px;">${c.overall_grade || 'A'}</span>
+              ` : '<span style="color:var(--text-muted); font-size:11px;">Unrated</span>'}
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:0.4rem;">
+                <span style="font-family:var(--font-mono); color:var(--text-muted); font-size:11px;">••••••••••••</span>
+                <button class="btn btn-secondary btn-sm" style="padding:2px 6px; font-size:10px;" onclick="copyCandidateToken('${c.access_token}', this)">
+                  Copy
+                </button>
+              </div>
+            </td>
+            <td style="text-align:right;">
+              <div style="display:flex; justify-content:flex-end; gap:0.35rem;">
+                <button class="btn btn-secondary btn-sm" onclick="openPromoteModal(${c.id}, '${escapeHtml(c.name)}', '${c.role}')">
+                  Promote
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteCandidate(${c.id}, '${escapeHtml(c.name)}')">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     async function loadTasks() {
       try {
         const data = await apiFetch('/api/admin/tasks');
-        cachedLeadTasks = data.tasks || [];
+        cachedTasks = data.tasks || [];
+        document.getElementById('tabCountTasks').innerText = cachedTasks.length;
 
-        const openCount = cachedLeadTasks.filter(t => ['pending', 'in_progress'].includes(t.status)).length;
-        document.getElementById('kpiOpenTasks').innerText = openCount;
-        document.getElementById('tabTasksCount').innerText = cachedLeadTasks.length;
+        // KPI: Sprint Delivery Rate
+        const completed = cachedTasks.filter(t => t.status === 'completed').length;
+        const total = cachedTasks.length;
+        const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+        document.getElementById('kpiDeliveryRate').innerText = `${rate}% (${completed}/${total})`;
 
-        const tbody = document.getElementById('taskTableBody');
-        if (cachedLeadTasks.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:3rem; color:var(--text-muted);">No governance deliverables currently assigned. Click <strong>+ Create Deliverable</strong> to assign tasks from scratch!</td></tr>';
+        const tbody = document.getElementById('tasksTableBody');
+        if (cachedTasks.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2.5rem; color:var(--text-muted);">No deliverables assigned. Use the Deploy panel above.</td></tr>`;
           return;
         }
 
-        tbody.innerHTML = cachedLeadTasks.map(t => {
-          let statusBadge = `<span class="badge" style="background:rgba(255,255,255,0.06);">${t.status.toUpperCase()}</span>`;
-          if (t.is_overdue) statusBadge = '<span class="badge badge-overdue">OVERDUE</span>';
-          else if (t.status === 'submitted') statusBadge = '<span class="badge badge-online">SUBMITTED (IN REVIEW)</span>';
-          else if (t.status === 'completed') {
-            const scoreTxt = t.score !== null ? `(${t.score}/100 · ${t.grade})` : '';
-            statusBadge = `<span class="badge badge-online">COMPLETED ${scoreTxt}</span>`;
-          }
+        tbody.innerHTML = cachedTasks.map(t => {
+          const priorityClass = t.priority === 'critical' ? 'badge-critical' : (t.priority === 'high' ? 'badge-high' : 'badge-medium');
 
-          const prioBadge = `<span class="badge prio-${t.priority || 'medium'}">${(t.priority || 'medium').toUpperCase()}</span>`;
-
-          let reviewBtn = '';
+          let actions = '';
           if (t.status === 'submitted') {
-            reviewBtn = `<button class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="openReviewModal(${t.id})">Review & Grade ↗</button>`;
-          } else if (t.submission_url) {
-            reviewBtn = `<a href="${t.submission_url}" target="_blank" class="btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; color:var(--cyan);">Artifact ↗</a>`;
+            actions = `<button class="btn btn-primary btn-sm" onclick="openReviewModal(${t.id})">Evaluate Rubric</button>`;
+          } else if (t.status === 'completed') {
+            actions = `<span style="color:var(--status-green); font-size:11px; font-weight:600;">✓ Approved (${t.score || 0})</span>`;
           }
+
+          actions += ` <button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id}, '${escapeHtml(t.title)}')">Delete</button>`;
 
           return `
             <tr>
-              <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.8rem;">#${t.id}</td>
+              <td style="font-family:var(--font-mono); color:var(--text-muted);">#${t.id}</td>
               <td>
-                <div><strong>${t.title}</strong></div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">${t.description || 'No detailed instructions.'}</div>
+                <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(t.title)}</div>
+                <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${escapeHtml(t.description || '—')}</div>
               </td>
-              <td>${prioBadge}</td>
-              <td><strong>${t.candidate_name || 'Unassigned'}</strong></td>
               <td>
-                <div id="lead-cd-${t.id}">${formatCountdown(t.deadline, t.status)}</div>
-                <div style="font-size:0.7rem; color:var(--text-faint); font-family:var(--font-mono); margin-top:2px;">
-                  ${new Date(t.deadline).toLocaleString()}
-                </div>
+                <span style="font-weight:500;">${escapeHtml(t.assignee_name || 'Unassigned')}</span>
               </td>
-              <td>${statusBadge}</td>
+              <td><span class="badge ${priorityClass}">${t.priority}</span></td>
               <td>
-                <div style="display:flex; align-items:center; gap:0.4rem;">
-                  ${reviewBtn}
-                  <button class="btn btn-danger" style="padding:0.3rem 0.55rem; font-size:0.75rem;" onclick="deleteTask(${t.id}, '${t.title.replace(/'/g, "\\'")}')" title="Delete Task">
-                    🗑️
-                  </button>
-                </div>
+                <span class="badge ${t.status === 'completed' ? 'badge-online' : (t.status === 'submitted' ? 'badge-critical' : 'badge-medium')}">
+                  ${t.status}
+                </span>
               </td>
+              <td style="font-family:var(--font-mono); font-size:11px;" id="admin-countdown-${t.id}">
+                ${formatDeadlineCountdown(t.deadline)}
+              </td>
+              <td style="text-align:right;">${actions}</td>
             </tr>
           `;
         }).join('');
-
       } catch (_) {}
+    }
+
+    function formatDeadlineCountdown(deadlineStr) {
+      if (!deadlineStr) return '—';
+      const now = new Date().getTime();
+      const target = new Date(deadlineStr).getTime();
+      const diff = target - now;
+
+      if (diff <= 0) return `<span style="color:var(--status-red); font-weight:700;">EXPIRED</span>`;
+
+      const hrs = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const color = hrs < 2 ? 'var(--status-red)' : (hrs < 24 ? 'var(--status-amber)' : 'var(--text-secondary)');
+      return `<span style="color:${color}; font-weight:600;">${hrs}h ${mins}m ${secs}s</span>`;
+    }
+
+    function updateCountdowns() {
+      cachedTasks.forEach(t => {
+        const el = document.getElementById(`admin-countdown-${t.id}`);
+        if (el) el.innerHTML = formatDeadlineCountdown(t.deadline);
+      });
     }
 
     async function loadTickets() {
       try {
         const data = await apiFetch('/api/admin/tickets');
-        const tickets = data.tickets || [];
+        cachedTickets = data.tickets || [];
+        const openCount = cachedTickets.filter(t => t.status !== 'resolved' && t.status !== 'closed').length;
+        document.getElementById('tabCountTickets').innerText = openCount;
 
-        const openTickets = tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length;
-        document.getElementById('kpiOpenTickets').innerText = openTickets;
-        document.getElementById('tabTicketsCount').innerText = tickets.length;
+        const kpi = document.getElementById('kpiOpenTickets');
+        kpi.innerText = openCount;
+        kpi.style.color = openCount > 0 ? 'var(--status-amber)' : 'var(--text-primary)';
 
-        const tbody = document.getElementById('ticketTableBody');
-        if (tickets.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No support tickets in queue.</td></tr>';
+        const tbody = document.getElementById('ticketsTableBody');
+        if (cachedTickets.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">No escalation tickets filed.</td></tr>`;
           return;
         }
 
-        tbody.innerHTML = tickets.map(tk => `
+        tbody.innerHTML = cachedTickets.map(t => `
           <tr>
-            <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.8rem;">#${tk.id}</td>
-            <td><strong>${tk.candidate_name}</strong></td>
+            <td style="font-family:var(--font-mono); color:var(--text-muted);">#${t.id}</td>
+            <td><strong>${escapeHtml(t.candidate_name)}</strong></td>
             <td>
-              <div><strong>${tk.subject}</strong></div>
-              <div style="font-size:0.75rem; color:var(--text-muted); max-width:320px;">${tk.description}</div>
+              <div style="font-weight:600;">${escapeHtml(t.subject)}</div>
+              <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${escapeHtml(t.description)}</div>
             </td>
-            <td><span class="badge" style="background:rgba(255,255,255,0.06);">${tk.category}</span></td>
-            <td><span class="badge prio-${tk.priority}">${tk.priority.toUpperCase()}</span></td>
-            <td><span class="badge" style="background:rgba(255,255,255,0.06);">${tk.status.toUpperCase()}</span></td>
+            <td><span class="badge badge-medium">${t.category}</span></td>
+            <td><span class="badge ${t.priority === 'critical' ? 'badge-critical' : 'badge-high'}">${t.priority}</span></td>
             <td>
-              <div style="display:flex; align-items:center; gap:0.4rem;">
-                <button class="btn btn-primary" style="padding:0.35rem 0.65rem; font-size:0.75rem;" onclick="openResolveTicketModal(${tk.id}, '${tk.status}')">
-                  Respond ➔
-                </button>
-                <button class="btn btn-danger" style="padding:0.35rem 0.55rem; font-size:0.75rem;" onclick="deleteTicket(${tk.id})" title="Delete Ticket">
-                  🗑️
-                </button>
-              </div>
+              <span class="badge ${t.status === 'resolved' ? 'badge-online' : (t.status === 'in_progress' ? 'badge-external' : 'badge-medium')}">
+                ${t.status}
+              </span>
+            </td>
+            <td style="text-align:right;">
+              <button class="btn btn-primary btn-sm" onclick="openResolveModal(${t.id}, '${escapeHtml(t.admin_notes || '')}')">Resolve</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteTicket(${t.id})">Delete</button>
             </td>
           </tr>
         `).join('');
-
       } catch (_) {}
     }
 
-    // Modal Handlers & Actions
+    async function loadAuditTrail() {
+      try {
+        const data = await apiFetch('/api/admin/audit');
+        const list = data.audit_trail || [];
+
+        const tbody = document.getElementById('auditTableBody');
+        if (list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--text-muted);">No audit records registered.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(a => `
+          <tr>
+            <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${formatTimestamp(a.created_at)}</td>
+            <td><span class="badge badge-medium">${escapeHtml(a.event_type)}</span></td>
+            <td style="font-family:var(--font-mono); font-size:11px;">${a.candidate_id ? '#' + a.candidate_id : 'System'}</td>
+            <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); word-break:break-all;">
+              ${escapeHtml(typeof a.metadata === 'string' ? a.metadata : JSON.stringify(a.metadata))}
+            </td>
+          </tr>
+        `).join('');
+      } catch (_) {}
+    }
+
+    // Modal Actions
     function openCandidateModal() { document.getElementById('candidateModal').classList.add('open'); }
     function closeCandidateModal() { document.getElementById('candidateModal').classList.remove('open'); }
-    function toggleCustomRoleInput() {
-      const isCustom = document.getElementById('newCandRole').value === 'custom';
-      document.getElementById('customRoleGroup').style.display = isCustom ? 'block' : 'none';
+
+    async function handleCreateCandidate(e) {
+      e.preventDefault();
+      const name = document.getElementById('newCandName').value.trim();
+      const role = document.getElementById('newCandRole').value;
+
+      try {
+        const res = await apiFetch('/api/admin/candidates', {
+          method: 'POST',
+          body: JSON.stringify({ name, role })
+        });
+        closeCandidateModal();
+        document.getElementById('newCandName').value = '';
+        loadCandidates();
+        alert(`Candidate ${res.candidate.name} provisioned successfully with role: ${res.candidate.role}`);
+      } catch (err) {
+        alert('Provisioning failed: ' + err.message);
+      }
+    }
+
+    async function deleteCandidate(id, name) {
+      if (!confirm(`Permanently remove candidate #${id} (${name})? All associated session telemetry will be purged.`)) return;
+      try {
+        await apiFetch(`/api/admin/candidates/${id}`, { method: 'DELETE' });
+        loadCandidates();
+      } catch (err) { alert(err.message); }
     }
 
     function openPromoteModal(id, name, currentRole) {
       document.getElementById('promoteCandId').value = id;
       document.getElementById('promoteCandName').innerText = `#${id} — ${name}`;
       const badge = document.getElementById('promoteCandCurrentRole');
-      badge.className = 'role-badge role-' + currentRole;
+      badge.className = 'badge badge-' + currentRole;
       badge.innerText = formatRoleName(currentRole);
-      
-      const select = document.getElementById('promoteNewRole');
-      select.value = currentRole === 'junior' ? 'core' : (currentRole === 'core' ? 'senior_dev' : 'tech_lead');
+
+      document.getElementById('promoteNewRole').value = 'core';
       document.getElementById('promoteCustomGroup').style.display = 'none';
       document.getElementById('promoteCustomRole').value = '';
       document.getElementById('promoteReason').value = '';
       document.getElementById('promoteModal').classList.add('open');
     }
-
-    function closePromoteModal() {
-      document.getElementById('promoteModal').classList.remove('open');
-    }
-
+    function closePromoteModal() { document.getElementById('promoteModal').classList.remove('open'); }
     function togglePromoteCustomRole() {
       const isCustom = document.getElementById('promoteNewRole').value === 'custom';
       document.getElementById('promoteCustomGroup').style.display = isCustom ? 'block' : 'none';
@@ -1342,10 +1345,7 @@
       let role = document.getElementById('promoteNewRole').value;
       if (role === 'custom') {
         role = document.getElementById('promoteCustomRole').value.trim();
-        if (!role) {
-          alert('Please enter a custom position title.');
-          return;
-        }
+        if (!role) { alert('Please enter custom title.'); return; }
       }
       const reason = document.getElementById('promoteReason').value.trim();
 
@@ -1356,249 +1356,212 @@
         });
         closePromoteModal();
         loadCandidates();
-        alert(res.message || 'Candidate promoted successfully!');
-      } catch (err) {
-        alert('Failed to authorize promotion: ' + err.message);
-      }
+        alert(res.message);
+      } catch (err) { alert(err.message); }
     }
 
-    async function handleCreateCandidate(e) {
-      e.preventDefault();
-      const name = document.getElementById('newCandName').value.trim();
-      let role = document.getElementById('newCandRole').value;
-      if (role === 'custom') {
-        role = document.getElementById('customRoleInput').value.trim() || 'junior';
-      }
-
-      try {
-        const res = await apiFetch('/api/admin/candidates', {
-          method: 'POST',
-          body: JSON.stringify({ name, role })
-        });
-        closeCandidateModal();
-        document.getElementById('newCandName').value = '';
-        document.getElementById('customRoleInput').value = '';
-        loadCandidates();
-        alert(`Candidate ${res.candidate.name} created successfully with position: ${formatRoleName(res.candidate.role)}.\nToken: ${res.candidate.access_token}`);
-      } catch (err) {
-        alert('Failed to provision candidate: ' + err.message);
-      }
-    }
-
-    async function deleteCandidate(id, name) {
-      if (!confirm(`Are you sure you want to permanently delete candidate #${id} (${name})? All their sessions, work logs, and tickets will be purged.`)) return;
-      try {
-        await apiFetch(`/api/admin/candidates/${id}`, { method: 'DELETE' });
-        loadAllData();
-        alert(`Candidate #${id} (${name}) deleted successfully.`);
-      } catch (err) {
-        alert('Failed to delete candidate: ' + err.message);
-      }
-    }
-
-    async function deleteTask(id, title) {
-      if (!confirm(`Are you sure you want to delete deliverable #${id} ("${title}")?`)) return;
-      try {
-        await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' });
-        loadTasks();
-        loadCandidates();
-        alert(`Deliverable #${id} deleted.`);
-      } catch (err) {
-        alert('Failed to delete task: ' + err.message);
-      }
-    }
-
-    async function deleteTicket(id) {
-      if (!confirm(`Are you sure you want to delete support ticket #${id}?`)) return;
-      try {
-        await apiFetch(`/api/admin/tickets/${id}`, { method: 'DELETE' });
-        loadTickets();
-        alert(`Support ticket #${id} deleted.`);
-      } catch (err) {
-        alert('Failed to delete ticket: ' + err.message);
-      }
-    }
-
-    function openCreateTaskModal() {
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 16);
-      document.getElementById('taskDeadline').value = tomorrow;
-      document.getElementById('createTaskModal').classList.add('open');
-    }
-    function closeCreateTaskModal() { document.getElementById('createTaskModal').classList.remove('open'); }
+    function openCreateTaskModal() { document.getElementById('leadPaneTasks').scrollIntoView(); }
 
     async function handleCreateTask(e) {
       e.preventDefault();
       const title = document.getElementById('taskTitle').value.trim();
       const description = document.getElementById('taskDesc').value.trim();
-      const assigned_to = document.getElementById('taskAssignee').value || null;
+      const assigned_to = document.getElementById('taskAssignee').value;
       const priority = document.getElementById('taskPriority').value;
-      const deadline = new Date(document.getElementById('taskDeadline').value).toISOString();
+      const deadline = document.getElementById('taskDeadline').value;
 
       try {
         await apiFetch('/api/tasks', {
           method: 'POST',
           body: JSON.stringify({ title, description, assigned_to, priority, deadline })
         });
-        closeCreateTaskModal();
         document.getElementById('taskTitle').value = '';
         document.getElementById('taskDesc').value = '';
+        document.getElementById('taskDeadline').value = '';
         loadTasks();
-        loadCandidates();
-        alert('Deliverable created and assigned successfully.');
-      } catch (err) {
-        alert('Failed to assign task: ' + err.message);
-      }
+        alert('Deliverable deployed to candidate successfully.');
+      } catch (err) { alert(err.message); }
+    }
+
+    async function deleteTask(id, title) {
+      if (!confirm(`Delete deliverable #${id} ("${title}")?`)) return;
+      try {
+        await apiFetch(`/api/tasks/${id}`, { method: 'DELETE' });
+        loadTasks();
+      } catch (err) { alert(err.message); }
     }
 
     function openReviewModal(taskId) {
+      const task = cachedTasks.find(t => t.id === taskId);
+      if (!task) return;
+
       document.getElementById('reviewTaskId').value = taskId;
-      document.getElementById('reviewScore').value = '90';
-      document.getElementById('rubricQuality').value = '23';
-      document.getElementById('rubricSecurity').value = '23';
-      document.getElementById('rubricArch').value = '22';
-      document.getElementById('rubricTime').value = '22';
+      document.getElementById('reviewModalTitle').innerText = `Evaluate Deliverable #${taskId} — ${task.title}`;
+      document.getElementById('reviewArtifactUrl').innerText = task.submission_url || '—';
+      document.getElementById('reviewCandidateNotes').innerText = task.submission_notes || 'No remarks provided.';
+
+      document.getElementById('reviewScore').value = '';
+      document.getElementById('rubricSecurity').value = '';
+      document.getElementById('rubricQuality').value = '';
+      document.getElementById('rubricArch').value = '';
+      document.getElementById('rubricTime').value = '';
       document.getElementById('reviewFeedback').value = '';
+      document.getElementById('reviewGradeDisplay').value = 'A';
+
       document.getElementById('reviewModal').classList.add('open');
     }
     function closeReviewModal() { document.getElementById('reviewModal').classList.remove('open'); }
 
-    function toggleReviewRubric() {
-      const isCompleted = document.getElementById('reviewDecision').value === 'completed';
-      document.getElementById('rubricSection').style.display = isCompleted ? 'block' : 'none';
-    }
-
     function autoSumScore() {
-      const q = parseInt(document.getElementById('rubricQuality').value || 0, 10);
-      const s = parseInt(document.getElementById('rubricSecurity').value || 0, 10);
-      const a = parseInt(document.getElementById('rubricArch').value || 0, 10);
-      const t = parseInt(document.getElementById('rubricTime').value || 0, 10);
-      document.getElementById('reviewScore').value = Math.min(100, q + s + a + t);
+      const s1 = parseInt(document.getElementById('rubricSecurity').value) || 0;
+      const s2 = parseInt(document.getElementById('rubricQuality').value) || 0;
+      const s3 = parseInt(document.getElementById('rubricArch').value) || 0;
+      const s4 = parseInt(document.getElementById('rubricTime').value) || 0;
+      const total = s1 + s2 + s3 + s4;
+      document.getElementById('reviewScore').value = total;
+
+      let grade = 'Needs Revision';
+      if (total >= 95) grade = 'A+';
+      else if (total >= 85) grade = 'A';
+      else if (total >= 75) grade = 'B';
+      else if (total >= 65) grade = 'C';
+      document.getElementById('reviewGradeDisplay').value = grade;
     }
 
     async function handleReviewSubmit(e) {
       e.preventDefault();
-      const taskId = document.getElementById('reviewTaskId').value;
+      const id = document.getElementById('reviewTaskId').value;
       const status = document.getElementById('reviewDecision').value;
-      const score = document.getElementById('reviewScore').value;
+      const score = parseInt(document.getElementById('reviewScore').value) || 0;
       const feedback = document.getElementById('reviewFeedback').value.trim();
 
       const rubric = {
-        code_quality: parseInt(document.getElementById('rubricQuality').value || 0, 10),
-        security: parseInt(document.getElementById('rubricSecurity').value || 0, 10),
-        architecture: parseInt(document.getElementById('rubricArch').value || 0, 10),
-        timeliness: parseInt(document.getElementById('rubricTime').value || 0, 10)
+        security: parseInt(document.getElementById('rubricSecurity').value) || 0,
+        quality: parseInt(document.getElementById('rubricQuality').value) || 0,
+        arch: parseInt(document.getElementById('rubricArch').value) || 0,
+        time: parseInt(document.getElementById('rubricTime').value) || 0
       };
 
       try {
-        await apiFetch(`/api/tasks/${taskId}/review`, {
+        await apiFetch(`/api/tasks/${id}/review`, {
           method: 'PATCH',
-          body: JSON.stringify({ status, feedback, score: parseInt(score, 10), rubric })
+          body: JSON.stringify({ status, score, rubric, feedback })
         });
         closeReviewModal();
         loadTasks();
         loadCandidates();
-        alert(`Deliverable #${taskId} evaluated as ${status.toUpperCase()} (Score: ${score}/100).`);
-      } catch (err) {
-        alert('Review error: ' + err.message);
-      }
+        alert('Deliverable evaluated successfully.');
+      } catch (err) { alert(err.message); }
     }
 
-    function exportExecutiveCSV() {
-      if (!ADMIN_KEY) return openKeyModal();
-      fetch('/api/admin/export/candidates-csv', {
-        headers: { 'x-admin-key': ADMIN_KEY }
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to generate report');
-        return res.blob();
-      })
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `cyberforge_executive_report_${new Date().toISOString().slice(0, 10)}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      })
-      .catch(err => alert('CSV Export failed: ' + err.message));
-    }
-
-    function downloadBackup() {
-      if (!ADMIN_KEY) return openKeyModal();
-      fetch('/api/admin/backup', {
-        headers: { 'x-admin-key': ADMIN_KEY }
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to create backup snapshot');
-        return res.blob();
-      })
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `cyberforge_snapshot_${new Date().toISOString().slice(0, 10)}.db`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      })
-      .catch(err => alert('Backup failed: ' + err.message));
-    }
-
-    function openBroadcastModal() { document.getElementById('broadcastModal').classList.add('open'); }
-    function closeBroadcastModal() { document.getElementById('broadcastModal').classList.remove('open'); }
-
-    async function handleBroadcast(e) {
-      e.preventDefault();
-      const title = document.getElementById('bcastTitle').value.trim();
-      const message = document.getElementById('bcastMessage').value.trim();
-      const type = document.getElementById('bcastType').value;
-      const candidateId = document.getElementById('bcastCandidateId').value;
-
-      try {
-        await apiFetch('/api/admin/broadcast', {
-          method: 'POST',
-          body: JSON.stringify({
-            title,
-            message,
-            type,
-            candidate_id: candidateId ? parseInt(candidateId, 10) : null
-          })
-        });
-        closeBroadcastModal();
-        document.getElementById('bcastTitle').value = '';
-        document.getElementById('bcastMessage').value = '';
-        alert('Notification broadcast successfully dispatched.');
-      } catch (err) {
-        alert('Broadcast failed: ' + err.message);
-      }
-    }
-
-    function openResolveTicketModal(ticketId, currentStatus) {
-      document.getElementById('resolveTicketId').value = ticketId;
-      document.getElementById('resolveStatus').value = currentStatus === 'open' ? 'resolved' : currentStatus;
-      document.getElementById('resolveNotes').value = '';
+    function openResolveModal(id, notes) {
+      document.getElementById('resolveTicketId').value = id;
+      document.getElementById('resolveNotes').value = notes;
       document.getElementById('ticketModal').classList.add('open');
     }
     function closeTicketModal() { document.getElementById('ticketModal').classList.remove('open'); }
 
     async function handleResolveTicket(e) {
       e.preventDefault();
-      const ticketId = document.getElementById('resolveTicketId').value;
+      const id = document.getElementById('resolveTicketId').value;
       const status = document.getElementById('resolveStatus').value;
       const admin_notes = document.getElementById('resolveNotes').value.trim();
 
       try {
-        await apiFetch(`/api/admin/tickets/${ticketId}`, {
+        await apiFetch(`/api/admin/tickets/${id}`, {
           method: 'PATCH',
           body: JSON.stringify({ status, admin_notes })
         });
         closeTicketModal();
         loadTickets();
-        alert(`Ticket #${ticketId} updated successfully.`);
-      } catch (err) {
-        alert('Resolution failed: ' + err.message);
-      }
+        alert('Escalation ticket updated.');
+      } catch (err) { alert(err.message); }
+    }
+
+    async function deleteTicket(id) {
+      if (!confirm(`Purge ticket #${id}?`)) return;
+      try {
+        await apiFetch(`/api/admin/tickets/${id}`, { method: 'DELETE' });
+        loadTickets();
+      } catch (err) { alert(err.message); }
+    }
+
+    async function handleBroadcast(e) {
+      e.preventDefault();
+      const title = document.getElementById('bcastTitle').value.trim();
+      const message = document.getElementById('bcastMessage').value.trim();
+      const type = document.getElementById('bcastType').value;
+      const candidate_id = document.getElementById('bcastCandidateId').value || null;
+
+      try {
+        await apiFetch('/api/admin/broadcast', {
+          method: 'POST',
+          body: JSON.stringify({ title, message, type, candidate_id })
+        });
+        document.getElementById('bcastTitle').value = '';
+        document.getElementById('bcastMessage').value = '';
+        alert('Broadcast dispatched to active workstations.');
+      } catch (err) { alert(err.message); }
+    }
+
+    function exportCandidatesCSV() {
+      if (!ADMIN_KEY) { openKeyModal(); return; }
+      window.location.href = `/api/admin/export/candidates-csv?x-admin-key=${encodeURIComponent(ADMIN_KEY)}`;
+    }
+
+    function triggerDatabaseBackup() {
+      if (!ADMIN_KEY) { openKeyModal(); return; }
+      window.location.href = `/api/admin/backup?x-admin-key=${encodeURIComponent(ADMIN_KEY)}`;
+    }
+
+    function copyCandidateToken(token, btn) {
+      if (!token) return;
+      navigator.clipboard.writeText(token).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = 'Copied';
+        setTimeout(() => { btn.innerText = orig; }, 1500);
+      });
+    }
+
+    function formatSeconds(sec) {
+      const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function formatRoleName(role) {
+      if (!role) return 'Junior Developer';
+      const map = {
+        devsecops: 'DevSecOps Specialist',
+        security_analyst: 'Security Analyst',
+        tech_lead: 'Technical Lead',
+        senior_dev: 'Senior Engineer',
+        backend_dev: 'Backend Engineer',
+        frontend_dev: 'Frontend Engineer',
+        data_engineer: 'Data Engineer',
+        qa_engineer: 'QA Specialist',
+        core: 'Core Developer',
+        junior: 'Junior Developer',
+        intern: 'Engineering Intern'
+      };
+      return map[role] || role.toUpperCase().replace(/_/g, ' ');
+    }
+
+    function formatTimestamp(ts) {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      return d.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
   </script>
 </body>

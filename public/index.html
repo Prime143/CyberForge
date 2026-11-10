@@ -3,91 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CyberForge | Secure Workstation Gateway</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>CyberForge | Engineering Proving Ground Gateway</title>
   <style>
     :root {
-      --bg: #090a0f;
-      --card: #11141e;
-      --border: #1f2638;
-      --text: #f0f3fa;
-      --text-muted: #8490ab;
-      --cyan: #00f2fe;
+      --bg-root: #0b0f19;
+      --bg-surface: #111827;
+      --border-strong: #374151;
+      --border-subtle: #1f2937;
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --accent-blue: #2563eb;
+      --accent-blue-hover: #1d4ed8;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, Consolas, monospace;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
+      background: var(--bg-root);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
+      font-size: 13px;
     }
-    .hero {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 3rem 2.5rem;
-      max-width: 500px;
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 2.5rem 2rem;
+      max-width: 480px;
       width: 100%;
-      text-align: center;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
     }
-    .logo {
-      width: 52px;
-      height: 52px;
-      background: linear-gradient(135deg, #00f2fe, #4facfe);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .title {
+      font-size: 18px;
       font-weight: 700;
-      color: #000;
-      font-size: 1.5rem;
-      margin: 0 auto 1.5rem;
-      box-shadow: 0 0 25px rgba(0, 242, 254, 0.35);
+      letter-spacing: 0.02em;
+      margin-bottom: 0.25rem;
     }
-    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
-    p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 2rem; }
+    .subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-family: var(--font-mono);
+    }
+    .description {
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 1.75rem;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 1rem 0;
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      background: linear-gradient(135deg, #0072ff, #00c6ff);
-      color: #fff;
+      padding: 0.65rem 1rem;
+      font-size: 13px;
       font-weight: 600;
+      border-radius: 4px;
       text-decoration: none;
-      padding: 0.85rem 1.75rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      box-shadow: 0 4px 15px rgba(0, 198, 255, 0.3);
-      transition: all 0.2s;
-      width: 100%;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s;
     }
-    .btn:hover {
-      filter: brightness(1.15);
-      box-shadow: 0 6px 25px rgba(0, 198, 255, 0.45);
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #fff;
+      border: 1px solid var(--accent-blue);
+    }
+    .btn-primary:hover {
+      background: var(--accent-blue-hover);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.04);
     }
     .footer-note {
-      margin-top: 1.75rem;
-      font-size: 0.75rem;
+      margin-top: 1.5rem;
+      font-size: 11px;
       color: var(--text-muted);
-      font-family: 'Fira Code', monospace;
+      text-align: center;
+      font-family: var(--font-mono);
     }
   </style>
 </head>
 <body>
-  <div class="hero">
-    <div class="logo">CF</div>
-    <h1>CyberForge Gateway</h1>
-    <p>Corporate Candidate Activity Governance & Workstation Infrastructure. Connect your workstation using your assigned cryptographic access token.</p>
-    <a href="/workstation" class="btn">Launch Candidate Workstation ➔</a>
-    <div class="footer-note">DEVSECOPS ENCLAVE · TLS ENCRYPTED</div>
+  <div class="panel">
+    <div class="title">CyberForge Proving Ground</div>
+    <div class="subtitle">Student Engineering Incubator // Access Ingress</div>
+    
+    <div class="description">
+      An open, student-led engineering incubator and live-infrastructure proving ground. Candidates build defensive software, security verification tooling, and resilient systems for public utility, civic governance, and national infrastructure.
+    </div>
+
+    <div class="btn-group">
+      <a href="/workstation" class="btn btn-primary">Connect Candidate Workstation ➔</a>
+      <a href="/lead-portal.html" class="btn btn-secondary">Lead Operations Console</a>
+    </div>
+
+    <div class="footer-note">
+      CONTINUOUS TELEMETRY · APPEND-ONLY AUDIT TRAIL
+    </div>
   </div>
 </body>
 </html>

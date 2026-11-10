@@ -153,6 +153,7 @@ db.serialize(() => {
   db.run(`ALTER TABLE tasks ADD COLUMN grade TEXT`, () => {});
   db.run(`ALTER TABLE tasks ADD COLUMN rubric_breakdown TEXT`, () => {});
   db.run(`ALTER TABLE tasks ADD COLUMN review_feedback TEXT`, () => {});
+  db.run(`ALTER TABLE tasks ADD COLUMN submission_notes TEXT`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN workstation_seconds INTEGER DEFAULT 0`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN external_work_seconds INTEGER DEFAULT 0`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN idle_seconds INTEGER DEFAULT 0`, () => {});

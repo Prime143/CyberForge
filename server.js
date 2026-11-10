@@ -708,9 +708,9 @@ app.post('/api/tasks/:id/submit', requireCandidate, async (req, res) => {
 
     await run(`
       UPDATE tasks 
-      SET submission_url = ?, status = 'submitted' 
+      SET submission_url = ?, submission_notes = ?, status = 'submitted' 
       WHERE id = ?
-    `, [trimmedUrl, taskId]);
+    `, [trimmedUrl, notes || null, taskId]);
 
     await logAudit(candidate.id, 'TASK_SUBMITTED_FOR_REVIEW', {
       taskId,

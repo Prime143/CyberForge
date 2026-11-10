@@ -408,7 +408,7 @@
           Atomic DB Snapshot
         </button>
         <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()">
-          + Deploy Deliverable
+          + Assign Task
         </button>
         <button class="btn btn-secondary btn-sm" onclick="openCandidateModal()">
           + Provision Candidate
@@ -466,16 +466,16 @@
 
     <!-- Operations Navigation Tabs -->
     <nav class="tab-bar">
-      <button class="tab-btn active" onclick="switchLeadTab('roster')">
+      <button class="tab-btn active" onclick="switchLeadTab('roster', this)">
         Candidate Fleet Management <span id="tabCountRoster" class="tab-counter">0</span>
       </button>
-      <button class="tab-btn" onclick="switchLeadTab('tasks')">
+      <button class="tab-btn" onclick="switchLeadTab('tasks', this)">
         Sprint Task Queue & Review <span id="tabCountTasks" class="tab-counter">0</span>
       </button>
-      <button class="tab-btn" onclick="switchLeadTab('tickets')">
+      <button class="tab-btn" onclick="switchLeadTab('tickets', this)">
         Escalation Tickets & Support <span id="tabCountTickets" class="tab-counter">0</span>
       </button>
-      <button class="tab-btn" onclick="switchLeadTab('audit')">
+      <button class="tab-btn" onclick="switchLeadTab('audit', this)">
         Telemetry & Compliance Audit
       </button>
     </nav>
@@ -526,55 +526,15 @@
          TAB 2: SPRINT TASK QUEUE & REVIEW
          ==================================================================== -->
     <section id="leadPaneTasks" style="display:none;">
-      
-      <!-- Collapsible Deploy Panel -->
-      <div class="panel" style="background:var(--bg-surface-elevated); margin-bottom:1.5rem;">
-        <div class="panel-header">
-          <span class="panel-title">Deploy Engineering Deliverable</span>
-          <span style="font-size:11px; color:var(--text-muted);">Assign live-fire infrastructure tasks with enforced deadlines</span>
-        </div>
-        <form onsubmit="handleCreateTask(event)">
-          <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
-            <div>
-              <label class="form-label">Deliverable Title</label>
-              <input type="text" id="taskTitle" class="form-input" placeholder="" required />
-            </div>
-            <div>
-              <label class="form-label">Assignee Candidate</label>
-              <select id="taskAssignee" class="form-select" required></select>
-            </div>
-            <div>
-              <label class="form-label">Priority Level</label>
-              <select id="taskPriority" class="form-select" required>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium" selected>Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-          </div>
-          <div style="display:grid; grid-template-columns: 1fr 240px; gap:0.75rem; margin-bottom:0.75rem;">
-            <div>
-              <label class="form-label">Technical Specification & Verification Criteria</label>
-              <textarea id="taskDesc" class="form-textarea form-input-mono" rows="2" placeholder="" required></textarea>
-            </div>
-            <div>
-              <label class="form-label">Delivery Deadline (UTC)</label>
-              <input type="datetime-local" id="taskDeadline" class="form-input" required />
-              <div style="display:flex; justify-content:flex-end; margin-top:0.75rem;">
-                <button type="submit" class="btn btn-primary" style="width:100%;">
-                  Deploy to Candidate
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">Sprint Deliverable Queue</span>
-          <span style="font-size:11px; color:var(--text-muted);">Submissions require lead rubric evaluation for certificate grading</span>
+          <div>
+            <span class="panel-title">Sprint Task Queue</span>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Deploy and track engineering deliverables across the candidate fleet</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()">
+            + Assign Task
+          </button>
         </div>
 
         <div class="table-container">
@@ -593,7 +553,7 @@
             <tbody id="tasksTableBody">
               <tr>
                 <td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">
-                  No deliverables in sprint queue. Use the deployment form above to assign work.
+                  No deliverables in sprint queue. Click "+ Assign Task" above to deploy tasks to candidates.
                 </td>
               </tr>
             </tbody>
@@ -710,6 +670,51 @@
       </div>
     </section>
 
+  </div>
+
+  <!-- ======================================================================
+       MODAL: ASSIGN TASK / DEPLOY DELIVERABLE
+       ====================================================================== -->
+  <div id="createTaskModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:620px;">
+      <div class="modal-header">
+        <div class="modal-title">Assign Engineering Task</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeCreateTaskModal()">✕</button>
+      </div>
+      <form onsubmit="handleCreateTask(event)">
+        <div class="form-group">
+          <label class="form-label" for="taskTitle">Task Title / Specification Summary</label>
+          <input type="text" id="taskTitle" class="form-input" placeholder="" required />
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label" for="taskAssignee">Assignee Candidate</label>
+            <select id="taskAssignee" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="taskPriority">Priority Level</label>
+            <select id="taskPriority" class="form-select" required>
+              <option value="critical">Critical (Hard Blocker)</option>
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="taskDeadline">Delivery Deadline (UTC)</label>
+          <input type="datetime-local" id="taskDeadline" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="taskDesc">Technical Requirements & Acceptance Criteria</label>
+          <textarea id="taskDesc" class="form-textarea form-input-mono" rows="4" placeholder="" required></textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeCreateTaskModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Task</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- ======================================================================
@@ -992,18 +997,24 @@
       return res.json();
     }
 
-    function switchLeadTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    function switchLeadTab(tab, btn = null) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('leadPaneRoster').style.display = tab === 'roster' ? 'block' : 'none';
       document.getElementById('leadPaneTasks').style.display = tab === 'tasks' ? 'block' : 'none';
       document.getElementById('leadPaneTickets').style.display = tab === 'tickets' ? 'block' : 'none';
       document.getElementById('leadPaneAudit').style.display = tab === 'audit' ? 'block' : 'none';
 
-      event.currentTarget.classList.add('active');
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const found = document.querySelector(`button[onclick*="'${tab}'"]`);
+        if (found) found.classList.add('active');
+      }
 
       if (tab === 'tasks') loadTasks();
       if (tab === 'tickets') loadTickets();
       if (tab === 'audit') loadAuditTrail();
+      if (tab === 'roster') loadCandidates();
     }
 
     async function loadAllData() {
@@ -1132,10 +1143,13 @@
             </td>
             <td style="text-align:right;">
               <div style="display:flex; justify-content:flex-end; gap:0.35rem;">
-                <button class="btn btn-secondary btn-sm" onclick="openPromoteModal(${c.id}, '${escapeHtml(c.name)}', '${c.role}')">
+                <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal(${c.id})">
+                  Assign Task
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="openPromoteModal(${c.id}, '${escapeHtml(c.name).replace(/'/g, "\\'")}', '${c.role}')">
                   Promote
                 </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteCandidate(${c.id}, '${escapeHtml(c.name)}')">
+                <button class="btn btn-danger btn-sm" onclick="deleteCandidate(${c.id}, '${escapeHtml(c.name).replace(/'/g, "\\'")}')">
                   Delete
                 </button>
               </div>
@@ -1173,7 +1187,7 @@
             actions = `<span style="color:var(--status-green); font-size:11px; font-weight:600;">✓ Approved (${t.score || 0})</span>`;
           }
 
-          actions += ` <button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id}, '${escapeHtml(t.title)}')">Delete</button>`;
+          actions += ` <button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id}, '${escapeHtml(t.title).replace(/'/g, "\\'")}')">Delete</button>`;
 
           return `
             <tr>
@@ -1183,7 +1197,7 @@
                 <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">${escapeHtml(t.description || '—')}</div>
               </td>
               <td>
-                <span style="font-weight:500;">${escapeHtml(t.assignee_name || 'Unassigned')}</span>
+                <span style="font-weight:500;">${escapeHtml(t.candidate_name || t.assignee_name || 'Unassigned')}</span>
               </td>
               <td><span class="badge ${priorityClass}">${t.priority}</span></td>
               <td>
@@ -1360,7 +1374,23 @@
       } catch (err) { alert(err.message); }
     }
 
-    function openCreateTaskModal() { document.getElementById('leadPaneTasks').scrollIntoView(); }
+    function openCreateTaskModal(candidateId = null) {
+      if (candidateId) {
+        const sel = document.getElementById('taskAssignee');
+        if (sel) sel.value = candidateId;
+      }
+      const deadlineInput = document.getElementById('taskDeadline');
+      if (!deadlineInput.value) {
+        const d = new Date();
+        d.setHours(d.getHours() + 48);
+        deadlineInput.value = d.toISOString().slice(0, 16);
+      }
+      document.getElementById('createTaskModal').classList.add('open');
+    }
+
+    function closeCreateTaskModal() {
+      document.getElementById('createTaskModal').classList.remove('open');
+    }
 
     async function handleCreateTask(e) {
       e.preventDefault();
@@ -1375,12 +1405,14 @@
           method: 'POST',
           body: JSON.stringify({ title, description, assigned_to, priority, deadline })
         });
+        closeCreateTaskModal();
         document.getElementById('taskTitle').value = '';
         document.getElementById('taskDesc').value = '';
         document.getElementById('taskDeadline').value = '';
         loadTasks();
-        alert('Deliverable deployed to candidate successfully.');
-      } catch (err) { alert(err.message); }
+        loadCandidates();
+        alert('Task assigned successfully.');
+      } catch (err) { alert('Failed to assign task: ' + err.message); }
     }
 
     async function deleteTask(id, title) {

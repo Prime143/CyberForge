@@ -551,16 +551,16 @@
       
       <!-- Operational Navigation Tabs -->
       <nav class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('tasks')">
+        <button class="tab-btn active" onclick="switchTab('tasks', this)">
           Sprint Deliverables <span id="tabCountTasks" class="tab-counter">0</span>
         </button>
-        <button class="tab-btn" onclick="switchTab('checkpoints')">
+        <button class="tab-btn" onclick="switchTab('checkpoints', this)">
           Milestone Checkpoints <span id="tabCountLogs" class="tab-counter">0</span>
         </button>
-        <button class="tab-btn" onclick="switchTab('escalations')">
+        <button class="tab-btn" onclick="switchTab('escalations', this)">
           Support & Escalations <span id="tabCountTickets" class="tab-counter">0</span>
         </button>
-        <button class="tab-btn" onclick="switchTab('scorecard')">
+        <button class="tab-btn" onclick="switchTab('scorecard', this)">
           Performance Scorecard
         </button>
       </nav>
@@ -921,18 +921,24 @@
       }
     }
 
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    function switchTab(tab, btn = null) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('paneTasks').style.display = tab === 'tasks' ? 'block' : 'none';
       document.getElementById('paneCheckpoints').style.display = tab === 'checkpoints' ? 'block' : 'none';
       document.getElementById('paneEscalations').style.display = tab === 'escalations' ? 'block' : 'none';
       document.getElementById('paneScorecard').style.display = tab === 'scorecard' ? 'block' : 'none';
 
-      event.currentTarget.classList.add('active');
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const found = document.querySelector(`button[onclick*="'${tab}'"]`);
+        if (found) found.classList.add('active');
+      }
 
       if (tab === 'scorecard') loadScorecard();
       if (tab === 'checkpoints') loadMyWorkLogs();
       if (tab === 'escalations') loadMyTickets();
+      if (tab === 'tasks') loadMyTasks();
     }
 
     async function handleTokenLogin(e) {

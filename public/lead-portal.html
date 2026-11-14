@@ -1130,8 +1130,8 @@
   <div id="promoteModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title">Promote Candidate Position</div>
-        <button class="btn btn-secondary btn-sm" onclick="closePromoteModal()">✕</button>
+        <div class="modal-title">Promote / Demote Candidate Position</div>
+        <button class="btn btn-secondary btn-sm" onclick="closePromoteModal()">Close</button>
       </div>
       <form onsubmit="handlePromoteCandidate(event)">
         <input type="hidden" id="promoteCandId" />
@@ -1143,21 +1143,21 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Promote To / New Position</label>
+          <label class="form-label">New Rank / Position Assignment</label>
           <select id="promoteNewRole" class="form-select" onchange="togglePromoteCustomRole()" required>
+            <option value="tech_lead">Technical Lead / Systems Architect</option>
+            <option value="sre">Site Reliability & Resilience Engineer (SRE)</option>
             <option value="devsecops">DevSecOps & Cloud Security</option>
+            <option value="crypto_systems">Cryptography & Resilient Systems Engineer</option>
             <option value="security_analyst">Security Operations & SOC Analyst</option>
             <option value="pen_tester">Penetration Tester & Offensive Security</option>
-            <option value="crypto_systems">Cryptography & Resilient Systems Engineer</option>
-            <option value="tech_lead">Technical Lead / Systems Architect</option>
+            <option value="firmware_sec">Embedded & Firmware Security Specialist</option>
             <option value="senior_dev">Senior Full-Stack Engineer</option>
             <option value="backend_dev">Backend & Distributed Systems Engineer</option>
             <option value="frontend_dev">Frontend & Interface Systems Engineer</option>
             <option value="network_inf">Network & Infrastructure Defense Engineer</option>
             <option value="data_engineer">Data & Telemetry Engineer</option>
             <option value="qa_engineer">QA & Test Automation Specialist</option>
-            <option value="sre">Site Reliability & Resilience Engineer (SRE)</option>
-            <option value="firmware_sec">Embedded & Firmware Security Specialist</option>
             <option value="core">Core Proving Ground Developer</option>
             <option value="junior">Junior Systems Developer</option>
             <option value="intern">Engineering Fellow / Intern</option>
@@ -1166,15 +1166,15 @@
         </div>
         <div id="promoteCustomGroup" class="form-group" style="display:none;">
           <label class="form-label">Custom Position Title</label>
-          <input type="text" id="promoteCustomRole" class="form-input" placeholder="" />
+          <input type="text" id="promoteCustomRole" class="form-input" placeholder="e.g. Avionics Protocol Specialist" />
         </div>
         <div class="form-group">
-          <label class="form-label">Commendation Notes (Delivered to Candidate Workstation)</label>
-          <textarea id="promoteReason" class="form-textarea" rows="3" placeholder="" required></textarea>
+          <label class="form-label">Promotion / Demotion Evaluation Remarks</label>
+          <textarea id="promoteReason" class="form-textarea" rows="3" placeholder="Provide formal engineering justification for this position transition..." required></textarea>
         </div>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="closePromoteModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Confirm Promotion</button>
+          <button type="submit" class="btn btn-primary">Commit Position Transition</button>
         </div>
       </form>
     </div>
@@ -1736,13 +1736,16 @@
                 <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal(${c.id})">
                   Assign Task
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="openGovernanceModal(${c.id})">
+                <button class="btn btn-secondary btn-sm" onclick="openGovernanceModal(${c.id})" title="Update HR Governance Status (Active, Neutral Exit, Adverse Log)">
                   HR Status
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="openManageTokenModal(${c.id})">
+                <button class="btn btn-secondary btn-sm" onclick="openPromoteModal(${c.id}, '${escapeHtml(c.name).replace(/'/g, "\\'")}', '${c.role}')" title="Promote or Demote Candidate Rank/Position">
+                  Promote / Demote
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="openManageTokenModal(${c.id})" title="Candidate Credentials Key">
                   Key
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="openCandidateHistoryModal(${c.id})">
+                <button class="btn btn-secondary btn-sm" onclick="openCandidateHistoryModal(${c.id})" title="Lifetime Records">
                   History
                 </button>
               </div>

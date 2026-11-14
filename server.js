@@ -271,9 +271,9 @@ app.patch('/api/admin/candidates/:id/role', requireAdmin, async (req, res) => {
       'INSERT INTO notifications (candidate_id, title, message, type) VALUES (?, ?, ?, ?)',
       [
         candidateId,
-        '🎖️ Official Promotion & Position Advancement',
-        `You have been promoted from ${readableOldRole} to ${readableNewRole}.${reason ? ` Commendation Notes: ${reason}` : ''}`,
-        'success'
+        'Official Position & Rank Transition',
+        `Your position has been updated from ${readableOldRole} to ${readableNewRole}.${reason ? ` Evaluation Notes: ${reason}` : ''}`,
+        'info'
       ]
     );
 

@@ -44,8 +44,6 @@ The active CyberForge cohort operates across specialized engineering disciplines
 | **Nadir Murudkar** | Core Proving Ground Developer | Kinematics Kalman State Filter | `src/filters/kinematics.rs` |
 | **Tejal Puthran** | Core Proving Ground Developer | Ingress HMAC-SHA256 Guard | `src/middleware/hmac_guard.js` |
 | **Khot Maaz** | Junior Systems Developer | Avionics High-Rate Telemetry Streamer | `src/telemetry/streamer.rs` |
-| **Aarav Sharma** | Core Proving Ground Developer | DO-326A Memory Boundary Sanitizer | `src/security/boundary_sanitizer.c` |
-| **Zoya Ansari** | Core Proving Ground Developer | Fault-Tolerant Sweeper Daemon | `src/daemons/sweeper.js` |
 
 ---
 

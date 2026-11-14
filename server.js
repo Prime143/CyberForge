@@ -310,27 +310,49 @@ app.delete('/api/admin/candidates/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Not Found', message: `Candidate ID ${candidateId} not found.` });
     }
 
-    // 1. Cleanly purge related candidate records
-    await run('DELETE FROM tasks WHERE assigned_to = ?', [candidateId]);
+    // 1. Interconnected Vacating: Safely vacate all candidate's assigned tasks to unassigned backlog
+    const vacatedTasks = await all('SELECT id, title FROM tasks WHERE assigned_to = ?', [candidateId]);
+    await run(`
+      UPDATE tasks 
+      SET assigned_to = NULL, 
+          status = CASE WHEN status = 'completed' THEN 'completed' ELSE 'pending' END 
+      WHERE assigned_to = ?
+    `, [candidateId]);
+
+    // 2. Interconnected Vacating: If candidate had an assigned DO-326A module, engage Golden Master failsafe standby
+    if (candidate.target_repo_path) {
+      await run(`
+        UPDATE shadow_codebase 
+        SET is_deployed = 1, 
+            lead_backfilled_at = CURRENT_TIMESTAMP, 
+            notes = 'Seat vacated. Lead Golden Master failsafe active / module vacant for reassignment.' 
+        WHERE target_path = ?
+      `, [candidate.target_repo_path]);
+    }
+
+    // 3. Cleanly purge transient candidate sessions, telemetry, notifications, and tickets
     await run('DELETE FROM activity_logs WHERE candidate_id = ?', [candidateId]);
     await run('DELETE FROM work_logs WHERE candidate_id = ?', [candidateId]);
     await run('DELETE FROM tickets WHERE candidate_id = ?', [candidateId]);
     await run('DELETE FROM notifications WHERE candidate_id = ?', [candidateId]);
     await run('DELETE FROM pipeline_telemetry WHERE candidate_id = ?', [candidateId]);
 
-    // 2. Delete candidate record
+    // 4. Delete candidate record
     await run('DELETE FROM candidates WHERE id = ?', [candidateId]);
 
-    // 3. Record audit trail
+    // 5. Record non-repudiation audit trail
     await logAudit(null, 'ADMIN_CANDIDATE_DELETED', {
       deletedCandidateId: candidate.id,
       name: candidate.name,
-      role: candidate.role
+      role: candidate.role,
+      vacatedTasksCount: vacatedTasks.length,
+      vacatedTrack: candidate.do326a_track || null
     });
 
     res.json({
-      message: `Candidate #${candidate.id} (${candidate.name}) deleted successfully.`,
-      deleted_id: candidate.id
+      message: `Candidate #${candidate.id} (${candidate.name}) deleted successfully. ${vacatedTasks.length} task(s) vacated to unassigned backlog.`,
+      deleted_id: candidate.id,
+      vacated_tasks_count: vacatedTasks.length
     });
   } catch (err) {
     console.error('[ERROR] [Admin::DeleteCandidate]', err.message);
@@ -1231,6 +1253,79 @@ app.patch('/api/admin/tasks/:id/archive', requireAdmin, async (req, res) => {
     res.json({ message: newArchived ? 'Task archived to historical records.' : 'Task unarchived.', is_archived: newArchived });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * PATCH /api/admin/tasks/:id/assign (Admin Only)
+ * Assigns or reassigns an unassigned or active task to another candidate (or vacates it).
+ */
+app.patch('/api/admin/tasks/:id/assign', requireAdmin, async (req, res) => {
+  try {
+    const taskId = parseInt(req.params.id, 10);
+    const { assigned_to, deadline } = req.body;
+
+    const task = await get('SELECT * FROM tasks WHERE id = ?', [taskId]);
+    if (!task) {
+      return res.status(404).json({ error: 'Not Found', message: 'Task not found.' });
+    }
+
+    let targetCandidate = null;
+    let newAssignedTo = null;
+
+    if (assigned_to !== null && assigned_to !== undefined && assigned_to !== '' && assigned_to !== 'unassigned') {
+      const parsedCandId = parseInt(assigned_to, 10);
+      targetCandidate = await get('SELECT id, name, role FROM candidates WHERE id = ?', [parsedCandId]);
+      if (!targetCandidate) {
+        return res.status(400).json({ error: 'Validation Error', message: `Target candidate #${assigned_to} does not exist.` });
+      }
+      newAssignedTo = targetCandidate.id;
+    }
+
+    let updatedDeadline = task.deadline;
+    if (deadline && !isNaN(new Date(deadline).getTime())) {
+      updatedDeadline = new Date(deadline).toISOString();
+    }
+
+    const newStatus = task.status === 'completed' ? 'completed' : 'pending';
+
+    await run(`
+      UPDATE tasks 
+      SET assigned_to = ?, 
+          deadline = ?,
+          status = ?
+      WHERE id = ?
+    `, [newAssignedTo, updatedDeadline, newStatus, taskId]);
+
+    if (newAssignedTo) {
+      await createNotification(
+        newAssignedTo,
+        'Engineering Deliverable Reassigned',
+        `Task "${task.title}" has been assigned to your workstation. Deadline: ${updatedDeadline}.`,
+        'info'
+      );
+    }
+
+    await logAudit(newAssignedTo, 'ADMIN_TASK_REASSIGNED', {
+      taskId,
+      previousAssignee: task.assigned_to,
+      newAssignee: newAssignedTo,
+      newAssigneeName: targetCandidate ? targetCandidate.name : 'Unassigned',
+      deadline: updatedDeadline
+    });
+
+    res.json({
+      success: true,
+      message: newAssignedTo 
+        ? `Task #${taskId} successfully reassigned to ${targetCandidate.name}.` 
+        : `Task #${taskId} is now unassigned.`,
+      task_id: taskId,
+      assigned_to: newAssignedTo,
+      deadline: updatedDeadline
+    });
+  } catch (err) {
+    console.error('[ERROR] [Admin::ReassignTask]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
 

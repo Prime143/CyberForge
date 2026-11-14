@@ -608,7 +608,7 @@
             RTCA DO-326A Airworthiness Governance Cohort
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
-            6-Seat mission-critical software engineering proving ground. Standardized "Fork and PR" local git workflow with automated CI telemetry and Lead Golden Master failsafe.
+            Mission-critical aerospace software engineering proving ground. Standardized "Fork and PR" local git workflow with automated CI telemetry and Lead Golden Master failsafe.
           </div>
         </div>
         <div style="display:flex; gap:0.5rem; align-items:center;">
@@ -621,7 +621,7 @@
         </div>
       </div>
 
-      <!-- 6-Seat Aerospace Interactive Cards Grid -->
+      <!-- DO-326A Aerospace Interactive Cards Grid -->
       <div id="cohortCardGrid" class="cohort-grid">
         <!-- Rendered dynamically via renderCohortCards() -->
       </div>
@@ -787,6 +787,7 @@
               <button class="filter-btn" id="taskFilterInProgress" onclick="filterTasks('in_progress', this)">In Progress</button>
               <button class="filter-btn" id="taskFilterCompleted" onclick="filterTasks('completed', this)">Completed</button>
               <button class="filter-btn" id="taskFilterOverdue" onclick="filterTasks('overdue', this)">Overdue</button>
+              <button class="filter-btn" id="taskFilterUnassigned" onclick="filterTasks('unassigned', this)">Unassigned (Vacant)</button>
               <button class="filter-btn" id="taskFilterArchived" onclick="filterTasks('archived', this)">Archived History</button>
             </div>
             <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()">
@@ -1044,6 +1045,37 @@
         <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="closeCreateTaskModal()">Cancel</button>
           <button type="submit" id="btnSubmitTask" class="btn btn-primary">Assign Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: REASSIGN TASK / VACATE DELIVERABLE
+       ====================================================================== -->
+  <div id="reassignTaskModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:540px;">
+      <div class="modal-header">
+        <div class="modal-title">Reassign Engineering Deliverable</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeReassignModal()">Close</button>
+      </div>
+      <form onsubmit="handleReassignTask(event)">
+        <input type="hidden" id="reassignTaskId" />
+        <div class="form-group">
+          <label class="form-label">Deliverable Specification</label>
+          <div id="reassignTaskTitle" style="font-size:13px; font-weight:700; color:var(--text-primary); font-family:var(--font-mono); background:var(--bg-root); padding:0.6rem 0.75rem; border:1px solid var(--border-subtle); border-radius:4px;"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Assignee Target Candidate</label>
+          <select id="reassignCandidateSelect" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adjust Deadline (UTC, Optional)</label>
+          <input type="datetime-local" id="reassignDeadline" class="form-input" />
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeReassignModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Commit Reassignment</button>
         </div>
       </form>
     </div>
@@ -1582,6 +1614,7 @@
       await loadPipeline();
       await loadTasks();
       await loadTickets();
+      await loadWorkStream();
     }
 
     async function loadHealth() {
@@ -1728,6 +1761,23 @@
                   <div style="height:100%; width:${focusScore}%; background:${focusScore >= 70 ? 'var(--status-green)' : (focusScore >= 40 ? 'var(--status-amber)' : 'var(--status-red)')};"></div>
                 </div>
               </div>
+
+              <!-- Candidate Live Transmitted Status Log -->
+              ${c.latest_work_log ? `
+                <div style="background:var(--bg-root); border-left:2px solid var(--accent-blue); padding:0.35rem 0.55rem; margin-top:0.4rem; border-radius:0 3px 3px 0;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                    <span>Transmitted Status Log</span>
+                    <span>${c.latest_work_log_time ? formatTimestamp(c.latest_work_log_time) : ''}</span>
+                  </div>
+                  <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-primary); margin-top:2px; word-break:break-all;">
+                    ${escapeHtml(c.latest_work_log)}
+                  </div>
+                </div>
+              ` : `
+                <div style="font-size:10px; color:var(--text-muted); margin-top:0.35rem; font-style:italic;">
+                  No milestone log transmitted yet this session.
+                </div>
+              `}
             </div>
 
             <!-- Lead Action Buttons -->
@@ -2163,6 +2213,8 @@
           list = list.filter(t => t.status === 'completed');
         } else if (activeTaskFilter === 'overdue') {
           list = list.filter(t => t.status !== 'completed' && new Date(t.deadline) < now);
+        } else if (activeTaskFilter === 'unassigned') {
+          list = list.filter(t => !t.assigned_to);
         }
       }
 
@@ -2183,6 +2235,7 @@
           actions += `<button class="btn btn-secondary btn-sm" onclick="openReviewModal(${t.id})">Score / Review</button>`;
         }
 
+        actions += `<button class="btn btn-secondary btn-sm" onclick="openReassignModal(${t.id}, ${t.assigned_to || 'null'}, '${escapeHtml(t.title).replace(/'/g, "\\'")}')" title="Assign or reassign deliverable">Reassign</button>`;
         actions += `<button class="btn btn-secondary btn-sm" onclick="toggleTaskArchive(${t.id}, ${t.is_archived || 0})" title="${t.is_archived ? 'Restore to Active' : 'Archive to History'}">${t.is_archived ? 'Unarchive' : 'Archive'}</button>`;
         actions += `<button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id}, '${escapeHtml(t.title).replace(/'/g, "\\'")}')">Delete</button></div>`;
 
@@ -2239,7 +2292,11 @@
               <span class="badge badge-medium" style="font-size:10px;">${formatCategory(t.task_category)}</span>
             </td>
             <td>
-              <span style="font-weight:500;">${escapeHtml(t.candidate_name || t.assignee_name || 'Unassigned')}</span>
+              ${t.assigned_to && (t.candidate_name || t.assignee_name) ? `
+                <span style="font-weight:600; color:var(--text-primary);">${escapeHtml(t.candidate_name || t.assignee_name)}</span>
+              ` : `
+                <span class="badge" style="background:#f59e0b20; color:#fbbf24; border:1px solid #f59e0b50; font-size:10px;">Unassigned (Vacant)</span>
+              `}
             </td>
             <td><span class="badge ${priorityClass}">${t.priority}</span></td>
             <td>
@@ -2446,12 +2503,14 @@
     }
 
     async function deleteCandidate(id, name) {
-      if (!confirm(`Permanently delete candidate #${id} (${name}) from the server?\n\nThis will purge all associated activity logs, tickets, milestone records, and pipeline telemetry permanently.`)) return;
+      if (!confirm(`Permanently delete candidate #${id} (${name}) from the server?\n\nTheir assigned deliverables will be safely vacated to the Unassigned Backlog so you can reassign them, and their aerospace module failsafe will engage.`)) return;
       try {
         const res = await apiFetch(`/api/admin/candidates/${id}`, { method: 'DELETE' });
         alert(res.message || `Candidate #${id} deleted successfully.`);
         await loadCandidates();
         await loadFailsafe();
+        await loadTasks();
+        await loadWorkStream();
       } catch (err) { alert('Delete failed: ' + err.message); }
     }
 
@@ -2600,6 +2659,48 @@
         alert('Failed to assign task: ' + err.message);
       } finally {
         if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = origText; }
+      }
+    }
+
+    function openReassignModal(taskId, currentAssignedTo, taskTitle) {
+      document.getElementById('reassignTaskId').value = taskId;
+      document.getElementById('reassignTaskTitle').innerText = `#${taskId} — ${taskTitle}`;
+      const sel = document.getElementById('reassignCandidateSelect');
+      sel.innerHTML = '<option value="unassigned">— Vacate to Unassigned Backlog —</option>' +
+        cachedCandidates.map(c => `
+          <option value="${c.id}" ${c.id === currentAssignedTo ? 'selected' : ''}>
+            ${escapeHtml(c.name)} (${formatRoleName(c.role)})
+          </option>
+        `).join('');
+      document.getElementById('reassignDeadline').value = '';
+      document.getElementById('reassignTaskModal').classList.add('open');
+    }
+
+    function closeReassignModal() {
+      document.getElementById('reassignTaskModal').classList.remove('open');
+    }
+
+    async function handleReassignTask(e) {
+      e.preventDefault();
+      const taskId = document.getElementById('reassignTaskId').value;
+      const assigned_to = document.getElementById('reassignCandidateSelect').value;
+      const deadlineVal = document.getElementById('reassignDeadline').value;
+
+      try {
+        const res = await apiFetch(`/api/admin/tasks/${taskId}/assign`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            assigned_to: assigned_to === 'unassigned' ? null : assigned_to,
+            deadline: deadlineVal ? new Date(deadlineVal).toISOString() : undefined
+          })
+        });
+        closeReassignModal();
+        await loadTasks();
+        await loadCandidates();
+        await loadWorkStream();
+        alert(res.message || 'Task reassigned successfully.');
+      } catch (err) {
+        alert('Failed to reassign task: ' + err.message);
       }
     }
 

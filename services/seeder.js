@@ -1,7 +1,7 @@
 /**
  * CyberForge Cohort Initial Seeder
  *
- * Automatically provisions 6-candidate DO-326A aerospace flight cohort,
+ * Automatically provisions 4-candidate DO-326A aerospace flight cohort,
  * Golden Master Shadow Codebase records, and baseline pipeline telemetry.
  */
 
@@ -36,20 +36,6 @@ const INITIAL_COHORT = [
     do326a_track: 'Avionics High-Rate Telemetry Streamer',
     target_repo_path: 'src/telemetry/streamer.rs',
     github_username: 'khot-maaz'
-  },
-  {
-    name: 'Aarav Sharma',
-    role: 'core',
-    do326a_track: 'DO-326A Memory Boundary Sanitizer',
-    target_repo_path: 'src/security/boundary_sanitizer.c',
-    github_username: 'aarav-sharma'
-  },
-  {
-    name: 'Zoya Ansari',
-    role: 'core',
-    do326a_track: 'Fault-Tolerant Sweeper Daemon',
-    target_repo_path: 'src/daemons/sweeper.js',
-    github_username: 'zoya-ansari'
   }
 ];
 

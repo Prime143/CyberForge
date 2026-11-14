@@ -690,7 +690,7 @@
           Sprint Deliverables <span id="tabCountTasks" class="tab-counter">0</span>
         </button>
         <button class="tab-btn" onclick="switchTab('checkpoints', this)">
-          Milestone Checkpoints <span id="tabCountLogs" class="tab-counter">0</span>
+          Transmit Status Log
         </button>
         <button class="tab-btn" onclick="switchTab('escalations', this)">
           Support & Escalations <span id="tabCountTickets" class="tab-counter">0</span>
@@ -742,21 +742,23 @@
         </div>
       </section>
 
-      <!-- TAB 2: MILESTONE CHECKPOINTS -->
+      <!-- TAB 2: TRANSMIT WORK LOG TO LEAD COMMAND CENTER -->
       <section id="paneCheckpoints" style="display:none;">
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">Log Production Milestone / Commit Checkpoint</span>
-            <span style="font-size:11px; color:var(--text-muted);">Verify continuous engineering progress for technical leads</span>
+            <div>
+              <span class="panel-title">Transmit Engineering Status / Checkpoint</span>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Dispatches real-time commits, research progress, and milestone logs directly to the Lead Command Center</div>
+            </div>
           </div>
 
-          <form onsubmit="handleQuickCheckin(event)" style="display:grid; grid-template-columns: 1fr 180px 140px; gap:0.75rem; margin-bottom:1.5rem;">
+          <form onsubmit="handleQuickCheckin(event)" style="display:grid; grid-template-columns: 1fr 180px 160px; gap:0.75rem; margin-bottom:1rem;">
             <div>
               <label class="form-label">Checkpoint Summary / Commit Reference</label>
-              <input type="text" id="quickLogMsg" class="form-input form-input-mono" placeholder="" required />
+              <input type="text" id="quickLogMsg" class="form-input form-input-mono" placeholder="e.g. Implemented constant-time signature verifier [commit: 8a4c2f]" required />
             </div>
             <div>
-              <label class="form-label">Checkpoint Type</label>
+              <label class="form-label">Log Classification</label>
               <select id="quickLogType" class="form-select">
                 <option value="progress">Progress Milestone</option>
                 <option value="git_commit">Git Commit SHA</option>
@@ -766,29 +768,13 @@
             </div>
             <div style="display:flex; align-items:flex-end;">
               <button type="submit" class="btn btn-primary" style="width:100%;">
-                Record Log
+                Transmit to Lead Hub
               </button>
             </div>
           </form>
 
-          <div class="panel-title" style="margin-bottom:0.75rem; font-size:12px;">Verified Checkpoint History</div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:160px;">Timestamp (UTC)</th>
-                  <th style="width:120px;">Type</th>
-                  <th>Checkpoint Details & Architecture Notes</th>
-                </tr>
-              </thead>
-              <tbody id="workLogsTableBody">
-                <tr>
-                  <td colspan="3" style="text-align:center; padding:2rem; color:var(--text-muted);">
-                    No milestone checkpoints recorded for this session.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div id="logTransmittedNotice" style="display:none; padding:0.75rem 1rem; background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.3); border-radius:4px; font-size:12px; color:var(--status-green); margin-top:0.75rem;">
+            Status log transmitted to Lead Command Center. All engineering activity streams are centrally monitored and audited on Lead Hub.
           </div>
         </div>
       </section>
@@ -1958,37 +1944,7 @@
     }
 
     async function loadMyWorkLogs() {
-      if (!TOKEN) return;
-      try {
-        const res = await fetch('/api/candidate/work-logs', {
-          headers: { 'Authorization': `Bearer ${TOKEN}` }
-        });
-        if (!res.ok) return;
-
-        const data = await res.json();
-        const logs = data.work_logs || [];
-        document.getElementById('tabCountLogs').innerText = logs.length;
-
-        const tbody = document.getElementById('workLogsTableBody');
-        if (logs.length === 0) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="3" style="text-align:center; padding:2rem; color:var(--text-muted);">
-                No milestone checkpoints recorded yet. Log regular commit checkpoints to document your engineering workflow.
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        tbody.innerHTML = logs.map(l => `
-          <tr>
-            <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${formatTimestamp(l.timestamp)}</td>
-            <td><span class="badge badge-medium">${l.log_type}</span></td>
-            <td style="font-family:var(--font-mono); font-size:12px; color:var(--text-primary);">${escapeHtml(l.message)}</td>
-          </tr>
-        `).join('');
-      } catch (_) {}
+      // Engineering activity streams are centrally routed and monitored on Lead Hub
     }
 
     async function handleQuickCheckin(e) {
@@ -2009,7 +1965,11 @@
 
         if (res.ok) {
           document.getElementById('quickLogMsg').value = '';
-          loadMyWorkLogs();
+          const notice = document.getElementById('logTransmittedNotice');
+          if (notice) {
+            notice.style.display = 'block';
+            setTimeout(() => { notice.style.display = 'none'; }, 4000);
+          }
         }
       } catch (_) {}
     }

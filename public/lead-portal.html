@@ -6,28 +6,28 @@
   <title>CyberForge | Lead Operations Console</title>
   <style>
     :root {
-      --bg-root: #0b0f19;
-      --bg-surface: #111827;
-      --bg-surface-elevated: #1f2937;
-      --bg-surface-hover: #263346;
-      --border-subtle: #1f2937;
-      --border-strong: #374151;
-      --border-focus: #2563eb;
-      --text-primary: #f9fafb;
-      --text-secondary: #9ca3af;
-      --text-muted: #6b7280;
-      --accent-blue: #2563eb;
-      --accent-blue-hover: #1d4ed8;
-      --status-green: #059669;
-      --status-green-bg: rgba(5, 150, 105, 0.15);
-      --status-amber: #d97706;
-      --status-amber-bg: rgba(217, 119, 6, 0.15);
-      --status-red: #dc2626;
-      --status-red-bg: rgba(220, 38, 38, 0.15);
-      --status-blue: #2563eb;
-      --status-blue-bg: rgba(37, 99, 235, 0.15);
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, Consolas, monospace;
+      --bg-root: #090d16;
+      --bg-surface: #0f172a;
+      --bg-surface-elevated: #1e293b;
+      --bg-surface-hover: #243248;
+      --border-subtle: #1e293b;
+      --border-strong: #334155;
+      --border-focus: #3b82f6;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --status-green: #10b981;
+      --status-green-bg: rgba(16, 185, 129, 0.12);
+      --status-amber: #f59e0b;
+      --status-amber-bg: rgba(245, 158, 11, 0.12);
+      --status-red: #f43f5e;
+      --status-red-bg: rgba(244, 63, 94, 0.12);
+      --status-blue: #3b82f6;
+      --status-blue-bg: rgba(59, 130, 246, 0.12);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,6 +78,27 @@
       border-color: var(--border-strong);
     }
     .btn-danger:hover { background: var(--status-red-bg); border-color: var(--status-red); }
+    .btn-danger-outline {
+      background: transparent;
+      color: var(--status-red);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+    .btn-danger-outline:hover {
+      background: var(--status-red-bg);
+      border-color: var(--status-red);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .status-dot.online { background-color: var(--status-green); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+    .status-dot.offline { background-color: var(--text-muted); }
+    .status-dot.idle { background-color: var(--status-amber); }
+    .status-dot.danger { background-color: var(--status-red); }
+    .status-dot.neutral { background-color: #60a5fa; }
     .btn-success {
       background: var(--status-green);
       color: #fff;
@@ -436,6 +457,34 @@
       font-weight: 700;
       color: var(--text-primary);
     }
+
+    /* Fluid Layout & Universal Screen Size Adaptability */
+    @media (max-width: 1200px) {
+      .cohort-grid { grid-template-columns: repeat(2, 1fr); }
+      .failsafe-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .lead-container { padding: 0.75rem; }
+      .header-primary-row { padding: 0.75rem 1rem; flex-direction: column; align-items: stretch; gap: 0.75rem; }
+      .header-system-strip { padding: 0.5rem 1rem; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+      .cohort-grid { grid-template-columns: 1fr; }
+      .failsafe-grid { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .kpi-card { padding: 0.75rem; }
+      .kpi-value { font-size: 18px; }
+      .panel { padding: 0.85rem; }
+      .tab-bar { overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+      .tab-bar::-webkit-scrollbar { display: none; }
+      .modal-box { width: 95vw !important; max-width: 95vw !important; padding: 1rem; }
+    }
+    @media (max-width: 480px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .header-primary-row div { flex-wrap: wrap; }
+      .filter-bar { flex-wrap: wrap; }
+    }
   </style>
 </head>
 <body>
@@ -454,9 +503,9 @@
         </span>
       </div>
 
-      <div style="display:flex; align-items:center; gap:0.5rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" onclick="openKeyModal()">
-          🔑 Key: <span id="keyStatusDisplay" style="font-family:var(--font-mono);">Not Set</span>
+          Lead Key: <span id="keyStatusDisplay" style="font-family:var(--font-mono);">Not Set</span>
         </button>
         <button class="btn btn-secondary btn-sm" onclick="exportCandidatesCSV()">
           Export CSV Report
@@ -465,10 +514,10 @@
           Atomic DB Snapshot
         </button>
         <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()">
-          + Assign Task
+          Assign Task
         </button>
         <button class="btn btn-secondary btn-sm" onclick="openCandidateModal()">
-          + Provision Candidate
+          Provision Candidate
         </button>
         <button class="btn btn-danger btn-sm" onclick="handleAdminLogout()" title="Lock Lead Console & Clear Session Key">
           Log Out
@@ -478,7 +527,7 @@
 
     <!-- Live Telemetry Health Bar -->
     <div class="header-system-strip">
-      <div style="display:flex; align-items:center; gap:1.25rem;">
+      <div style="display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap;">
         <span class="sys-indicator">
           <span class="sys-dot"></span>
           <span style="color:var(--text-primary);">Gateway Ingress:</span> <span id="sysGatewayStatus">UP</span>
@@ -555,8 +604,8 @@
       <!-- Cohort Matrix Top Banner -->
       <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:4px; padding:0.9rem 1.15rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
         <div>
-          <div style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:0.4rem;">
-            <span>🛡️</span> RTCA DO-326A Airworthiness Governance Cohort
+          <div style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.04em;">
+            RTCA DO-326A Airworthiness Governance Cohort
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
             6-Seat mission-critical software engineering proving ground. Standardized "Fork and PR" local git workflow with automated CI telemetry and Lead Golden Master failsafe.
@@ -564,7 +613,7 @@
         </div>
         <div style="display:flex; gap:0.5rem; align-items:center;">
           <button class="btn btn-secondary btn-sm" onclick="exportCohortCsv()">
-            📥 Export Cohort Report
+            Export Cohort Report
           </button>
           <button class="btn btn-primary btn-sm" onclick="openCandidateModal()">
             + Provision Seat
@@ -606,7 +655,7 @@
                 <th style="width:90px;">Focus %</th>
                 <th style="width:160px;">Tracked Time</th>
                 <th style="width:130px;">Access Key</th>
-                <th style="width:210px; text-align:right;">Actions</th>
+                <th style="width:230px; text-align:right;">Actions</th>
               </tr>
             </thead>
             <tbody id="candidateTableBody">
@@ -628,8 +677,8 @@
       
       <!-- Failsafe Architecture Banner -->
       <div style="background:rgba(37, 99, 235, 0.05); border:1px solid rgba(37, 99, 235, 0.25); border-left:4px solid var(--accent-blue); border-radius:4px; padding:1rem 1.25rem; margin-bottom:1.25rem;">
-        <div style="font-weight:700; font-size:13px; color:#93c5fd; display:flex; align-items:center; gap:0.4rem;">
-          <span>⚡</span> Lead Golden Master Shadow Codebase (DO-326A Section 6.2 Contingency Protocol)
+        <div style="font-weight:700; font-size:13px; color:#93c5fd;">
+          Lead Golden Master Shadow Codebase (DO-326A Section 6.2 Contingency Protocol)
         </div>
         <div style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
           To guarantee zero-downtime flight certification timelines, each candidate's module is paired with a verified <strong>Golden Master codebase</strong>. If a candidate initiates a Voluntary Exit (Neutral Log) or is decommissioned for unannounced departure (Adverse Log), the Lead Backfill engages instantly. The CI pipeline continues passing with zero dependency blockage for the remaining candidates.
@@ -637,7 +686,7 @@
       </div>
 
       <!-- Shadow Modules Metric Bar -->
-      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.75rem; margin-bottom:1.25rem;">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem; margin-bottom:1.25rem;">
         <div class="kpi-card" style="padding:0.75rem 1rem;">
           <div class="kpi-label">Golden Master Modules</div>
           <div class="kpi-value" style="font-size:18px;">6 Configured</div>
@@ -670,8 +719,8 @@
       <!-- Pipeline Governance Banner -->
       <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:4px; padding:0.9rem 1.15rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
         <div>
-          <div style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:0.4rem;">
-            <span>🛡️</span> GitHub Actions CI & DO-326A Path-Guard Telemetry
+          <div style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.04em;">
+            GitHub Actions CI & DO-326A Path-Guard Telemetry
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
             Automated verification ensuring PR contributions strictly respect module boundaries (e.g., Cryptography PRs cannot modify Kinematics code).
@@ -679,10 +728,10 @@
         </div>
         <div style="display:flex; gap:0.5rem; align-items:center;">
           <button class="btn btn-secondary btn-sm" onclick="triggerMockPipelineIngress()">
-            ⚡ Ingest Test PR Telemetry
+            Ingest Test PR Telemetry
           </button>
           <a href="https://github.com/CyberForge/internship-core" target="_blank" class="btn btn-primary btn-sm">
-            🔗 Open GitHub Repository
+            Open GitHub Repository
           </a>
         </div>
       </div>
@@ -1595,19 +1644,19 @@
       grid.innerHTML = cachedCandidates.map((c, idx) => {
         const status = c.governance_status || 'active';
         let cardClass = 'status-active';
-        let statusBadge = '<span class="badge badge-online">● Active (DO-326A In Good Standing)</span>';
+        let statusBadge = '<span class="badge badge-online"><span class="status-dot online"></span> Active</span>';
         if (status === 'neutral_exit') {
           cardClass = 'status-neutral';
-          statusBadge = '<span class="badge badge-medium">◌ Neutral Log / Withdrawn</span>';
+          statusBadge = '<span class="badge badge-medium"><span class="status-dot neutral"></span> Neutral Exit</span>';
         } else if (status === 'adverse_log') {
           cardClass = 'status-adverse';
-          statusBadge = '<span class="badge badge-critical">✕ Adverse Log / Disciplinary</span>';
+          statusBadge = '<span class="badge badge-critical"><span class="status-dot danger"></span> Adverse Log</span>';
         }
 
         const failsafeActive = c.failsafe_active === 1;
         const failsafeBadge = failsafeActive 
-          ? '<span class="badge badge-high" style="font-size:10px;">⚡ Lead Backfill Active</span>'
-          : '<span class="badge badge-online" style="font-size:10px;">✓ Assignee Primary</span>';
+          ? '<span class="badge badge-high" style="font-size:10px;">Lead Backfill Active</span>'
+          : '<span class="badge badge-online" style="font-size:10px;">Assignee Primary</span>';
 
         const focusScore = c.focus_score !== undefined ? c.focus_score : (c.is_online ? 100 : 0);
         const latestPr = c.latest_pipeline;
@@ -1623,20 +1672,20 @@
                 <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
                   <span class="badge badge-${(c.role || 'junior').toLowerCase()}">${formatRoleName(c.role)}</span>
                   <span class="badge ${c.is_online === 1 ? 'badge-online' : 'badge-offline'}" style="font-size:9px;">
-                    ${c.is_online === 1 ? '● Online' : '○ Offline'}
+                    <span class="status-dot ${c.is_online === 1 ? 'online' : 'offline'}"></span> ${c.is_online === 1 ? 'Online' : 'Offline'}
                   </span>
                 </div>
               </div>
 
               <!-- DO-326A Track & Target Path -->
               <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.6rem 0.75rem; margin-bottom:0.75rem;">
-                <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Assigned Aerospace Module:</div>
+                <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Assigned Aerospace Module</div>
                 <div style="font-size:12px; font-weight:600; color:#93c5fd; margin-top:2px;">${escapeHtml(c.do326a_track || 'Avionics DO-326A Subsystem')}</div>
                 <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); margin-top:3px; word-break:break-all;">
-                  📁 ${escapeHtml(c.target_repo_path || 'src/core/module.rs')}
+                  Path: ${escapeHtml(c.target_repo_path || 'src/core/module.rs')}
                 </div>
                 <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
-                  GitHub Contributor: <span style="font-family:var(--font-mono); color:var(--text-primary);">@${escapeHtml(c.github_username || 'candidate')}</span>
+                  GitHub: <span style="font-family:var(--font-mono); color:var(--text-primary);">@${escapeHtml(c.github_username || 'candidate')}</span>
                 </div>
               </div>
 
@@ -1649,10 +1698,10 @@
               <!-- CI Pipeline & PR Status -->
               <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:3px; padding:0.45rem 0.65rem; margin-bottom:0.75rem; font-size:11px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; font-weight:600;">Latest Pipeline:</span>
+                  <span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; font-weight:600;">CI Path-Guard:</span>
                   ${latestPr ? `
                     <span class="badge ${latestPr.path_guard_status === 'passed' ? 'badge-online' : 'badge-high'}" style="font-size:9px;">
-                      Path-Guard: ${latestPr.path_guard_status.toUpperCase()}
+                      ${latestPr.path_guard_status.toUpperCase()}
                     </span>
                   ` : '<span class="badge badge-offline" style="font-size:9px;">No PR Dispatched</span>'}
                 </div>
@@ -1682,18 +1731,23 @@
             </div>
 
             <!-- Lead Action Buttons -->
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.4rem; pt:0.5rem; border-top:1px solid var(--border-subtle); margin-top:0.5rem; flex-wrap:wrap;">
-              <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal(${c.id})">
-                + Assign Task
-              </button>
-              <button class="btn btn-secondary btn-sm" onclick="openGovernanceModal(${c.id})" title="Update HR Standing (Active, Neutral Exit, Adverse Log)">
-                ⚖️ HR Status
-              </button>
-              <button class="btn btn-secondary btn-sm" onclick="openManageTokenModal(${c.id})" title="Access Key Governance">
-                🔑 Key
-              </button>
-              <button class="btn btn-secondary btn-sm" onclick="openCandidateHistoryModal(${c.id})" title="Lifetime Records">
-                📜 History
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.4rem; padding-top:0.5rem; border-top:1px solid var(--border-subtle); margin-top:0.5rem; flex-wrap:wrap;">
+              <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal(${c.id})">
+                  Assign Task
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="openGovernanceModal(${c.id})">
+                  HR Status
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="openManageTokenModal(${c.id})">
+                  Key
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="openCandidateHistoryModal(${c.id})">
+                  History
+                </button>
+              </div>
+              <button class="btn btn-danger-outline btn-sm" onclick="deleteCandidate(${c.id}, '${escapeHtml(c.name).replace(/'/g, "\\'")}')" title="Permanently delete candidate from database">
+                Delete
               </button>
             </div>
           </div>
@@ -1729,13 +1783,13 @@
         const roleName = (c.role || 'junior').toLowerCase();
         const status = c.governance_status || 'active';
 
-        let statusBadge = '<span class="badge badge-online">● Active</span>';
-        if (status === 'neutral_exit') statusBadge = '<span class="badge badge-medium">◌ Neutral Log</span>';
-        else if (status === 'adverse_log') statusBadge = '<span class="badge badge-critical">✕ Adverse Log</span>';
+        let statusBadge = '<span class="badge badge-online"><span class="status-dot online"></span> Active</span>';
+        if (status === 'neutral_exit') statusBadge = '<span class="badge badge-medium"><span class="status-dot neutral"></span> Neutral</span>';
+        else if (status === 'adverse_log') statusBadge = '<span class="badge badge-critical"><span class="status-dot danger"></span> Adverse</span>';
 
         const failsafeBadge = c.failsafe_active === 1
-          ? '<span class="badge badge-high" style="font-size:9px;">⚡ Backfill Active</span>'
-          : '<span class="badge badge-online" style="font-size:9px;">✓ Primary</span>';
+          ? '<span class="badge badge-high" style="font-size:9px;">Lead Backfill</span>'
+          : '<span class="badge badge-online" style="font-size:9px;">Primary</span>';
 
         return `
           <tr>
@@ -1762,7 +1816,7 @@
             </td>
             <td>
               <div style="font-family:var(--font-mono); font-size:12px; font-weight:600;">${formatSeconds(c.total_active_seconds || 0)}</div>
-              <div style="font-size:10px; color:var(--text-muted);">${c.is_online === 1 ? '● Online' : '○ Offline'}</div>
+              <div style="font-size:10px; color:var(--text-muted);"><span class="status-dot ${c.is_online === 1 ? 'online' : 'offline'}"></span> ${c.is_online === 1 ? 'Online' : 'Offline'}</div>
             </td>
             <td>
               <div style="display:flex; flex-direction:column; gap:4px;">
@@ -1783,19 +1837,22 @@
             <td style="text-align:right;">
               <div style="display:flex; justify-content:flex-end; gap:0.35rem; flex-wrap:wrap;">
                 <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal(${c.id})">
-                  Assign Task
+                  Assign
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="openGovernanceModal(${c.id})">
-                  ⚖️ HR Status
+                  HR
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="openPromoteModal(${c.id}, '${escapeHtml(c.name).replace(/'/g, "\\'")}', '${c.role}')">
                   Promote
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="openManageTokenModal(${c.id})" title="Access Key Governance & Reset">
-                  🔑 Key
+                  Key
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="openCandidateHistoryModal(${c.id})" title="View Lifetime History & Telemetry">
-                  📜 History
+                  History
+                </button>
+                <button class="btn btn-danger-outline btn-sm" onclick="deleteCandidate(${c.id}, '${escapeHtml(c.name).replace(/'/g, "\\'")}')" title="Delete Candidate">
+                  Delete
                 </button>
               </div>
             </td>
@@ -2386,11 +2443,13 @@
     }
 
     async function deleteCandidate(id, name) {
-      if (!confirm(`Permanently remove candidate #${id} (${name})? All associated session telemetry will be purged.`)) return;
+      if (!confirm(`Permanently delete candidate #${id} (${name}) from the server?\n\nThis will purge all associated activity logs, tickets, milestone records, and pipeline telemetry permanently.`)) return;
       try {
-        await apiFetch(`/api/admin/candidates/${id}`, { method: 'DELETE' });
-        loadCandidates();
-      } catch (err) { alert(err.message); }
+        const res = await apiFetch(`/api/admin/candidates/${id}`, { method: 'DELETE' });
+        alert(res.message || `Candidate #${id} deleted successfully.`);
+        await loadCandidates();
+        await loadFailsafe();
+      } catch (err) { alert('Delete failed: ' + err.message); }
     }
 
     function openPromoteModal(id, name, currentRole) {

@@ -6,28 +6,28 @@
   <title>CyberForge | Candidate Engineering Workstation</title>
   <style>
     :root {
-      --bg-root: #0b0f19;
-      --bg-surface: #111827;
-      --bg-surface-elevated: #1f2937;
-      --bg-surface-hover: #263346;
-      --border-subtle: #1f2937;
-      --border-strong: #374151;
-      --border-focus: #2563eb;
-      --text-primary: #f9fafb;
-      --text-secondary: #9ca3af;
-      --text-muted: #6b7280;
-      --accent-blue: #2563eb;
-      --accent-blue-hover: #1d4ed8;
-      --status-green: #059669;
-      --status-green-bg: rgba(5, 150, 105, 0.15);
-      --status-amber: #d97706;
-      --status-amber-bg: rgba(217, 119, 6, 0.15);
-      --status-red: #dc2626;
-      --status-red-bg: rgba(220, 38, 38, 0.15);
-      --status-blue: #2563eb;
-      --status-blue-bg: rgba(37, 99, 235, 0.15);
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, Consolas, monospace;
+      --bg-root: #090d16;
+      --bg-surface: #0f172a;
+      --bg-surface-elevated: #1e293b;
+      --bg-surface-hover: #243248;
+      --border-subtle: #1e293b;
+      --border-strong: #334155;
+      --border-focus: #3b82f6;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #3b82f6;
+      --accent-blue-hover: #2563eb;
+      --status-green: #10b981;
+      --status-green-bg: rgba(16, 185, 129, 0.12);
+      --status-amber: #f59e0b;
+      --status-amber-bg: rgba(245, 158, 11, 0.12);
+      --status-red: #f43f5e;
+      --status-red-bg: rgba(244, 63, 94, 0.12);
+      --status-blue: #3b82f6;
+      --status-blue-bg: rgba(59, 130, 246, 0.12);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,6 +78,27 @@
       border-color: var(--border-strong);
     }
     .btn-danger:hover { background: var(--status-red-bg); border-color: var(--status-red); }
+    .btn-danger-outline {
+      background: transparent;
+      color: var(--status-red);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+    }
+    .btn-danger-outline:hover {
+      background: var(--status-red-bg);
+      border-color: var(--status-red);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .status-dot.online { background-color: var(--status-green); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+    .status-dot.offline { background-color: var(--text-muted); }
+    .status-dot.idle { background-color: var(--status-amber); }
+    .status-dot.danger { background-color: var(--status-red); }
+    .status-dot.neutral { background-color: #60a5fa; }
     .btn-success {
       background: var(--status-green);
       color: #fff;
@@ -442,6 +463,21 @@
       font-size: 11px;
       margin-top: 2rem;
     }
+    /* Universal Screen Responsiveness */
+    @media (max-width: 768px) {
+      .top-header { flex-direction: column; align-items: stretch; gap: 0.75rem; padding: 0.75rem 1rem; }
+      .header-right { justify-content: space-between; flex-wrap: wrap; }
+      .active-deliverable-bar { flex-direction: column; align-items: flex-start; gap: 0.6rem; padding: 0.65rem 1rem; }
+      .main-container { padding: 0.75rem; }
+      .tab-bar { overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+      .tab-bar::-webkit-scrollbar { display: none; }
+      .modal-box { width: 95vw !important; max-width: 95vw !important; padding: 1rem; }
+      .footer-bar { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .login-panel { width: 95vw !important; max-width: 95vw !important; padding: 1.25rem; }
+      .deliv-meta { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+    }
   </style>
 </head>
 <body>
@@ -589,8 +625,8 @@
       <div class="panel" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-left:4px solid var(--accent-blue); padding:1rem 1.25rem; margin-bottom:1.25rem;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:0.85rem;">
           <div>
-            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:0.4rem;">
-              <span>🛡️</span> Current Standing Orders · RTCA DO-326A Airworthiness Track
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">
+              Current Standing Orders · RTCA DO-326A Airworthiness Track
             </div>
             <div style="font-size:16px; font-weight:700; color:var(--text-primary); margin-top:2px;" id="orderTrackTitle">
               Avionics Subsystem Proving Ground
@@ -607,7 +643,7 @@
             <div id="sprintCountdownDisplay" style="font-family:var(--font-mono); font-size:15px; font-weight:700; color:#fbbf24;">
               04d 18h 32m 10s
             </div>
-            <span id="orderGovBadge" class="badge badge-online">● DO-326A In Good Standing</span>
+            <span id="orderGovBadge" class="badge badge-online"><span class="status-dot online"></span> In Good Standing</span>
           </div>
         </div>
 
@@ -615,36 +651,36 @@
         <div style="display:flex; justify-content:space-between; align-items:center; padding-top:0.6rem; border-top:1px solid var(--border-subtle); gap:0.5rem; flex-wrap:wrap;">
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
             <a href="https://github.com/CyberForge/internship-core" target="_blank" class="btn btn-secondary btn-sm">
-              🔗 GitHub Repository
+              GitHub Repository
             </a>
             <a id="btnCodeStub" href="https://github.com/CyberForge/internship-core" target="_blank" class="btn btn-secondary btn-sm">
-              📁 Assigned Code Stub
+              Assigned Code Stub
             </a>
             <button class="btn btn-secondary btn-sm" onclick="openDirectiveModal()">
-              📜 Governance Contract
+              Governance Contract
             </button>
           </div>
 
           <div style="display:flex; gap:0.5rem; align-items:center;">
-            <button class="btn btn-danger btn-sm" onclick="openVoluntaryExitModal()" title="Honorable withdrawal protocol recording a Neutral Log">
-              🚪 Voluntary Exit Protocol
+            <button class="btn btn-danger-outline btn-sm" onclick="openVoluntaryExitModal()" title="Honorable withdrawal protocol recording a Neutral Log">
+              Voluntary Exit Protocol
             </button>
           </div>
         </div>
       </div>
       
       <!-- Custom Token Prompt Banner (Displayed only if custom_token_set === 0) -->
-      <div id="customTokenPromptBanner" style="display:none; background:rgba(217, 119, 6, 0.12); border:1px solid var(--status-amber); border-left:4px solid var(--status-amber); padding:0.75rem 1rem; border-radius:4px; margin-bottom:1.25rem; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+      <div id="customTokenPromptBanner" style="display:none; background:rgba(245, 158, 11, 0.08); border:1px solid var(--status-amber); border-left:4px solid var(--status-amber); padding:0.75rem 1rem; border-radius:4px; margin-bottom:1.25rem; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
         <div>
-          <div style="font-weight:700; font-size:12px; color:#fbbf24; display:flex; align-items:center; gap:0.4rem;">
-            <span>⚠️</span> Default Cryptographic Key Active
+          <div style="font-weight:700; font-size:12px; color:#fbbf24;">
+            Default Cryptographic Key Active
           </div>
           <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
-            You are operating with a temporary default access key. You are permitted to generate your own personalized defense-grade credential <strong>once</strong>.
+            You are operating with a temporary default access key. You are permitted to generate your own personal credential <strong>once</strong>.
           </div>
         </div>
         <button class="btn btn-primary btn-sm" onclick="openCustomTokenModal()">
-          🔑 Set Personalized Key
+          Set Personal Key
         </button>
       </div>
 
@@ -1169,8 +1205,8 @@
   <div id="voluntaryExitModal" class="modal-overlay">
     <div class="modal-box" style="max-width:580px;">
       <div class="modal-header">
-        <div class="modal-title" style="color:var(--status-amber); display:flex; align-items:center; gap:0.4rem;">
-          <span>🚪</span> Voluntary Exit Protocol · DO-326A Governance
+        <div class="modal-title" style="color:var(--status-amber);">
+          Voluntary Exit Protocol · DO-326A Governance
         </div>
         <button class="btn btn-secondary btn-sm" onclick="closeVoluntaryExitModal()">✕</button>
       </div>

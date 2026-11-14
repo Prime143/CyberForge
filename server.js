@@ -310,10 +310,15 @@ app.delete('/api/admin/candidates/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Not Found', message: `Candidate ID ${candidateId} not found.` });
     }
 
-    // 1. Unassign tasks assigned to this candidate
-    await run('UPDATE tasks SET assigned_to = NULL WHERE assigned_to = ?', [candidateId]);
+    // 1. Cleanly purge related candidate records
+    await run('DELETE FROM tasks WHERE assigned_to = ?', [candidateId]);
+    await run('DELETE FROM activity_logs WHERE candidate_id = ?', [candidateId]);
+    await run('DELETE FROM work_logs WHERE candidate_id = ?', [candidateId]);
+    await run('DELETE FROM tickets WHERE candidate_id = ?', [candidateId]);
+    await run('DELETE FROM notifications WHERE candidate_id = ?', [candidateId]);
+    await run('DELETE FROM pipeline_telemetry WHERE candidate_id = ?', [candidateId]);
 
-    // 2. Delete candidate (cascades delete activity_logs, work_logs, tickets, notifications)
+    // 2. Delete candidate record
     await run('DELETE FROM candidates WHERE id = ?', [candidateId]);
 
     // 3. Record audit trail

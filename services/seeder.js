@@ -12,7 +12,6 @@ const INITIAL_COHORT = [
   {
     name: 'Kaif Pathan',
     role: 'devsecops',
-    token: '04521968ccdc2d5bc71066dd3aed7f82',
     do326a_track: 'Ed25519 Cryptographic Verifier',
     target_repo_path: 'src/crypto/ed25519_verifier.rs',
     github_username: 'kaif-pathan'
@@ -20,7 +19,6 @@ const INITIAL_COHORT = [
   {
     name: 'Nadir Murudkar',
     role: 'core',
-    token: '1f4297bf57f572146c5281df4db52c6d',
     do326a_track: 'Kinematics Kalman State Filter',
     target_repo_path: 'src/filters/kinematics.rs',
     github_username: 'nadir-m'
@@ -28,7 +26,6 @@ const INITIAL_COHORT = [
   {
     name: 'Tejal Puthran',
     role: 'core',
-    token: 'e79155d935fb61ae6e5c4ac0f299aa28',
     do326a_track: 'Ingress HMAC-SHA256 Guard',
     target_repo_path: 'src/middleware/hmac_guard.js',
     github_username: 'tejal-p'
@@ -36,7 +33,6 @@ const INITIAL_COHORT = [
   {
     name: 'Khot Maaz',
     role: 'junior',
-    token: '2e16602939e3e77a4ea4e9b263ce6885',
     do326a_track: 'Avionics High-Rate Telemetry Streamer',
     target_repo_path: 'src/telemetry/streamer.rs',
     github_username: 'khot-maaz'
@@ -44,7 +40,6 @@ const INITIAL_COHORT = [
   {
     name: 'Aarav Sharma',
     role: 'core',
-    token: '3a7b9c1d5e7f8a9b0c1d2e3f4a5b6c7d',
     do326a_track: 'DO-326A Memory Boundary Sanitizer',
     target_repo_path: 'src/security/boundary_sanitizer.c',
     github_username: 'aarav-sharma'
@@ -52,7 +47,6 @@ const INITIAL_COHORT = [
   {
     name: 'Zoya Ansari',
     role: 'core',
-    token: '5f6e7d8c9b0a1f2e3d4c5b6a7f8e9d0c',
     do326a_track: 'Fault-Tolerant Sweeper Daemon',
     target_repo_path: 'src/daemons/sweeper.js',
     github_username: 'zoya-ansari'
@@ -116,7 +110,7 @@ async function seedInitialCandidates() {
     for (const member of INITIAL_COHORT) {
       const existingCand = await get('SELECT * FROM candidates WHERE name = ?', [member.name]);
       if (!existingCand) {
-        const token = member.token || crypto.randomBytes(16).toString('hex');
+        const token = crypto.randomBytes(16).toString('hex');
         const res = await run(
           `INSERT INTO candidates (name, role, access_token, default_token, do326a_track, target_repo_path, github_username, governance_status, is_online)
            VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0)`,

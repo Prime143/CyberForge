@@ -171,7 +171,52 @@ db.serialize(() => {
   db.run(`ALTER TABLE candidates ADD COLUMN token_reset_reason TEXT`, () => {});
   db.run(`ALTER TABLE candidates ADD COLUMN token_entropy_score TEXT`, () => {});
 
+  // Aerospace DO-326A Governance & Telemetry Schema Migrations
+  db.run(`ALTER TABLE candidates ADD COLUMN governance_status TEXT DEFAULT 'active'`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN exit_reason TEXT`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN exit_timestamp DATETIME`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN do326a_track TEXT`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN target_repo_path TEXT`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN github_username TEXT`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN failsafe_active INTEGER DEFAULT 0`, () => {});
+
+  // Table 7: shadow_codebase (Lead Architect Failsafe Protocol)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS shadow_codebase (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      module_code TEXT UNIQUE NOT NULL,
+      module_name TEXT NOT NULL,
+      do326a_track TEXT NOT NULL,
+      target_path TEXT NOT NULL,
+      readiness_pct INTEGER DEFAULT 100,
+      is_deployed INTEGER DEFAULT 0,
+      lead_backfilled_at DATETIME,
+      notes TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Table 8: pipeline_telemetry (GitHub Actions CI & Path-Guards)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS pipeline_telemetry (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      candidate_id INTEGER REFERENCES candidates(id),
+      candidate_name TEXT,
+      branch TEXT NOT NULL,
+      target_path TEXT,
+      pr_number INTEGER,
+      pr_title TEXT,
+      pr_url TEXT,
+      commit_sha TEXT,
+      path_guard_status TEXT CHECK(path_guard_status IN ('passed', 'failed', 'running', 'pending')) DEFAULT 'pending',
+      ci_status TEXT CHECK(ci_status IN ('passed', 'failed', 'running', 'pending')) DEFAULT 'pending',
+      ci_run_url TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
   db.run(`UPDATE candidates SET default_token = access_token WHERE default_token IS NULL;`, () => {});
+  db.run(`UPDATE candidates SET governance_status = 'active' WHERE governance_status IS NULL;`, () => {});
 
   db.run(`ALTER TABLE activity_logs ADD COLUMN workstation_seconds INTEGER DEFAULT 0`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN external_work_seconds INTEGER DEFAULT 0`, () => {});

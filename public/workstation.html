@@ -522,6 +522,8 @@
         <div id="userIdentityGroup" style="display:flex; align-items:center; gap:0.5rem; margin-left:0.5rem; flex-wrap:wrap;">
           <span id="userNameLabel" style="font-weight:600; color:var(--text-primary); font-size:12px;">Candidate</span>
           <span id="userRoleBadge" class="badge badge-junior">Junior</span>
+          <span id="userTrackBadge" class="badge" style="background:rgba(37, 99, 235, 0.15); color:#93c5fd; border-color:rgba(37, 99, 235, 0.3); font-size:10px;">DO-326A Track</span>
+          <span id="userGovBadge" class="badge badge-online" style="font-size:10px;">● Good Standing</span>
           <span id="userKeyTypeBadge" class="badge badge-medium" style="display:none; font-size:10px;"></span>
           <a id="authResetKeyLink" href="javascript:void(0)" onclick="openRequestResetModal(false)" style="display:none; font-size:10px; color:var(--text-secondary); text-decoration:underline;">Request Reset</a>
         </div>
@@ -582,6 +584,54 @@
 
     <!-- Main Workspace Container -->
     <main class="main-container">
+
+      <!-- DO-326A Current Standing Orders & Governance Hub -->
+      <div class="panel" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-left:4px solid var(--accent-blue); padding:1rem 1.25rem; margin-bottom:1.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:0.85rem;">
+          <div>
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:0.4rem;">
+              <span>🛡️</span> Current Standing Orders · RTCA DO-326A Airworthiness Track
+            </div>
+            <div style="font-size:16px; font-weight:700; color:var(--text-primary); margin-top:2px;" id="orderTrackTitle">
+              Avionics Subsystem Proving Ground
+            </div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:4px; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <span>Target Repo Path:</span>
+              <code id="orderTargetPath" style="font-family:var(--font-mono); color:#93c5fd; background:var(--bg-root); padding:2px 7px; border-radius:3px; border:1px solid var(--border-strong);">src/core/module.rs</code>
+              <button class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="copyTargetPath()">Copy Path</button>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem;">
+            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Sprint Delivery Cutoff:</div>
+            <div id="sprintCountdownDisplay" style="font-family:var(--font-mono); font-size:15px; font-weight:700; color:#fbbf24;">
+              04d 18h 32m 10s
+            </div>
+            <span id="orderGovBadge" class="badge badge-online">● DO-326A In Good Standing</span>
+          </div>
+        </div>
+
+        <!-- Action Links Toolbar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:0.6rem; border-top:1px solid var(--border-subtle); gap:0.5rem; flex-wrap:wrap;">
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <a href="https://github.com/CyberForge/internship-core" target="_blank" class="btn btn-secondary btn-sm">
+              🔗 GitHub Repository
+            </a>
+            <a id="btnCodeStub" href="https://github.com/CyberForge/internship-core" target="_blank" class="btn btn-secondary btn-sm">
+              📁 Assigned Code Stub
+            </a>
+            <button class="btn btn-secondary btn-sm" onclick="openDirectiveModal()">
+              📜 Governance Contract
+            </button>
+          </div>
+
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <button class="btn btn-danger btn-sm" onclick="openVoluntaryExitModal()" title="Honorable withdrawal protocol recording a Neutral Log">
+              🚪 Voluntary Exit Protocol
+            </button>
+          </div>
+        </div>
+      </div>
       
       <!-- Custom Token Prompt Banner (Displayed only if custom_token_set === 0) -->
       <div id="customTokenPromptBanner" style="display:none; background:rgba(217, 119, 6, 0.12); border:1px solid var(--status-amber); border-left:4px solid var(--status-amber); padding:0.75rem 1rem; border-radius:4px; margin-bottom:1.25rem; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
@@ -1114,6 +1164,56 @@
   </div>
 
   <!-- ======================================================================
+       MODAL: VOLUNTARY EXIT PROTOCOL (HONORABLE NEUTRAL LOG)
+       ====================================================================== -->
+  <div id="voluntaryExitModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:580px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color:var(--status-amber); display:flex; align-items:center; gap:0.4rem;">
+          <span>🚪</span> Voluntary Exit Protocol · DO-326A Governance
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="closeVoluntaryExitModal()">✕</button>
+      </div>
+
+      <div class="alert-banner" style="background:rgba(37, 99, 235, 0.08); border-left:4px solid var(--accent-blue); margin-bottom:1rem; font-size:12px; line-height:1.5;">
+        <strong>Honorable Departure Standard (DO-326A Section 4):</strong><br>
+        Engineering candidates encountering irreconcilable scheduling conflicts, academic priorities, or career transitions may execute this formal exit protocol.
+        <ul style="margin-top:0.4rem; padding-left:1.2rem; color:var(--text-secondary); font-size:11px;">
+          <li>Your record will be officially designated as a <strong>Neutral Log</strong> (honorable discharge).</li>
+          <li>Your assigned module (<code id="exitTrackName">Module</code>) will be immediately backfilled by the Lead Golden Master codebase to ensure zero disruption to the cohort.</li>
+          <li>Unlike unannounced abandonment or ghosting (which files a permanent <strong>Adverse Log</strong>), a Neutral Log preserves your professional standing and eligibility for future fellowships.</li>
+        </ul>
+      </div>
+
+      <form onsubmit="handleVoluntaryExitSubmit(event)">
+        <div class="form-group">
+          <label class="form-label" for="exitReasonInput">Formal Departure Statement & Handover Notes (Min. 10 chars)</label>
+          <textarea 
+            id="exitReasonInput" 
+            class="form-textarea form-input-mono" 
+            rows="3" 
+            placeholder="Please detail your reason for departure and any active handover notes for Lead engineering..." 
+            required 
+            minlength="10"
+          ></textarea>
+        </div>
+
+        <div class="form-group" style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.75rem;">
+          <label style="display:flex; align-items:flex-start; gap:0.5rem; font-size:11px; color:var(--text-primary); cursor:pointer;">
+            <input type="checkbox" id="exitAckCheckbox" required style="margin-top:2px;" />
+            <span>I confirm that I am respectfully withdrawing from the CyberForge proving ground. I acknowledge that my access credential will be decommissioned and my module transferred to Lead Golden Master backfill.</span>
+          </label>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeVoluntaryExitModal()">Cancel</button>
+          <button type="submit" id="btnSubmitExit" class="btn btn-danger">Execute Formal Voluntary Exit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
        CLIENT LOGIC & TELEMETRY CONTROLLER
        ====================================================================== -->
   <script>
@@ -1275,6 +1375,56 @@
       roleBadge.innerText = roleName.toUpperCase().replace(/_/g, ' ');
       roleBadge.className = 'badge badge-' + roleName;
 
+      // Update DO-326A Track & Target Path
+      const trackBadge = document.getElementById('userTrackBadge');
+      if (trackBadge) {
+        trackBadge.innerText = currentCandidate.do326a_track || 'DO-326A Track';
+      }
+      const orderTrackTitle = document.getElementById('orderTrackTitle');
+      if (orderTrackTitle) {
+        orderTrackTitle.innerText = currentCandidate.do326a_track || 'Avionics DO-326A Subsystem Track';
+      }
+      const orderTargetPath = document.getElementById('orderTargetPath');
+      if (orderTargetPath) {
+        orderTargetPath.innerText = currentCandidate.target_repo_path || 'src/core/module.rs';
+      }
+      const exitTrackName = document.getElementById('exitTrackName');
+      if (exitTrackName) {
+        exitTrackName.innerText = currentCandidate.do326a_track || 'Assigned Module';
+      }
+      const btnCodeStub = document.getElementById('btnCodeStub');
+      if (btnCodeStub && currentCandidate.target_repo_path) {
+        btnCodeStub.href = `https://github.com/CyberForge/internship-core/blob/main/${currentCandidate.target_repo_path}`;
+      }
+
+      // Update Governance HR Badges
+      const userGovBadge = document.getElementById('userGovBadge');
+      const orderGovBadge = document.getElementById('orderGovBadge');
+      const govStatus = currentCandidate.governance_status || 'active';
+
+      let govBadgeClass = 'badge-online';
+      let govBadgeText = '● Good Standing';
+      let orderGovText = '● DO-326A In Good Standing';
+
+      if (govStatus === 'neutral_exit') {
+        govBadgeClass = 'badge-medium';
+        govBadgeText = '◌ Neutral Exit';
+        orderGovText = '◌ Decommissioned (Honorable Neutral Log)';
+      } else if (govStatus === 'adverse_log') {
+        govBadgeClass = 'badge-critical';
+        govBadgeText = '✕ Adverse Log';
+        orderGovText = '✕ Decommissioned (Adverse Log Breach)';
+      }
+
+      if (userGovBadge) {
+        userGovBadge.className = 'badge ' + govBadgeClass;
+        userGovBadge.innerText = govBadgeText;
+      }
+      if (orderGovBadge) {
+        orderGovBadge.className = 'badge ' + govBadgeClass;
+        orderGovBadge.innerText = orderGovText;
+      }
+
       const keyBadge = document.getElementById('userKeyTypeBadge');
       const resetLink = document.getElementById('authResetKeyLink');
       const promptBanner = document.getElementById('customTokenPromptBanner');
@@ -1294,9 +1444,88 @@
       }
     }
 
+    function copyTargetPath() {
+      if (!currentCandidate || !currentCandidate.target_repo_path) return;
+      navigator.clipboard.writeText(currentCandidate.target_repo_path).then(() => {
+        alert('Target repository path copied to clipboard: ' + currentCandidate.target_repo_path);
+      }).catch(() => {
+        prompt('Copy repository path:', currentCandidate.target_repo_path);
+      });
+    }
+
+    function openVoluntaryExitModal() {
+      document.getElementById('exitReasonInput').value = '';
+      document.getElementById('exitAckCheckbox').checked = false;
+      document.getElementById('voluntaryExitModal').classList.add('open');
+    }
+
+    function closeVoluntaryExitModal() {
+      document.getElementById('voluntaryExitModal').classList.remove('open');
+    }
+
+    async function handleVoluntaryExitSubmit(e) {
+      e.preventDefault();
+      const reason = document.getElementById('exitReasonInput').value.trim();
+      const ack = document.getElementById('exitAckCheckbox').checked;
+
+      if (!reason || reason.length < 10) {
+        alert('Please provide a formal departure statement of at least 10 characters.');
+        return;
+      }
+      if (!ack) {
+        alert('Please acknowledge the exit protocol terms.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitExit');
+      const origText = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = 'Transmitting Exit Protocol...';
+
+      try {
+        const res = await fetch('/api/candidate/voluntary-exit', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ reason, exit_ack: true })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Exit protocol failed');
+
+        alert('DO-326A Voluntary Exit Protocol concluded honorably.\n\nYour record has been designated as a Neutral Log. Lead Golden Master backfill has been initiated.\n\nWorkstation session will now close.');
+        closeVoluntaryExitModal();
+        handleLogout();
+      } catch (err) {
+        alert('Voluntary exit error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = origText;
+      }
+    }
+
+    function updateSprintCountdown() {
+      const el = document.getElementById('sprintCountdownDisplay');
+      if (!el) return;
+      const now = new Date();
+      // Target end of current sprint (Sunday 23:59:59 UTC)
+      const targetDays = (7 - now.getDay()) % 7 || 7;
+      const sprintEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + targetDays, 23, 59, 59);
+      const diff = Math.max(0, sprintEnd - now);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const mins = Math.floor((diff / (1000 * 60)) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
+      el.innerText = `${String(days).padStart(2, '0')}d ${String(hours).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+    }
+
     function initWorkstation() {
       document.getElementById('authScreen').style.display = 'none';
       document.getElementById('appScreen').classList.add('active');
+
+      updateSprintCountdown();
+      setInterval(updateSprintCountdown, 1000);
 
       sessionSeconds = 0;
       clearInterval(timerInterval);

@@ -352,6 +352,13 @@ app.get('/api/admin/candidates', requireAdmin, async (req, res) => {
         c.token_reset_requested,
         c.token_reset_reason,
         c.token_entropy_score,
+        c.governance_status,
+        c.exit_reason,
+        c.exit_timestamp,
+        c.do326a_track,
+        c.target_repo_path,
+        c.github_username,
+        c.failsafe_active,
         c.is_online,
         c.created_at,
         COALESCE(SUM(al.active_seconds), 0) AS total_active_seconds,
@@ -1101,7 +1108,14 @@ app.get('/api/candidate/tasks', requireCandidate, async (req, res) => {
         role: candidate.role,
         custom_token_set: candidate.custom_token_set,
         token_reset_requested: candidate.token_reset_requested,
-        token_entropy_score: candidate.token_entropy_score
+        token_entropy_score: candidate.token_entropy_score,
+        governance_status: candidate.governance_status || 'active',
+        exit_reason: candidate.exit_reason || null,
+        exit_timestamp: candidate.exit_timestamp || null,
+        do326a_track: candidate.do326a_track || 'Avionics DO-326A Defense Track',
+        target_repo_path: candidate.target_repo_path || 'src/core/module.rs',
+        github_username: candidate.github_username || '',
+        failsafe_active: candidate.failsafe_active || 0
       },
       tasks: enrichedTasks
     });
@@ -1407,6 +1421,13 @@ app.get('/api/admin/export/candidates-csv', requireAdmin, async (req, res) => {
         c.token_reset_requested,
         c.token_reset_reason,
         c.token_entropy_score,
+        c.governance_status,
+        c.exit_reason,
+        c.exit_timestamp,
+        c.do326a_track,
+        c.target_repo_path,
+        c.github_username,
+        c.failsafe_active,
         c.is_online,
         c.created_at,
         COALESCE(SUM(al.active_seconds), 0) AS total_active_seconds,
@@ -2085,6 +2106,365 @@ app.post('/api/admin/sweeper/trigger', requireAdmin, async (req, res) => {
     res.json({ message: 'Governance sweep executed successfully.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================================
+// DO-326A Cohort Governance, Shadow Codebase & Webhook Telemetry
+// ============================================================================
+
+/**
+ * GET /api/governance/cohort (Admin Only)
+ * DO-326A Aerospace Cohort Matrix & Readiness Overview.
+ */
+app.get('/api/governance/cohort', requireAdmin, async (req, res) => {
+  try {
+    const candidates = await all(`
+      SELECT 
+        c.id, c.name, c.role, c.governance_status, c.exit_reason, c.exit_timestamp,
+        c.do326a_track, c.target_repo_path, c.github_username, c.failsafe_active,
+        c.is_online, c.access_token, c.default_token, c.custom_token_set, c.token_entropy_score,
+        COALESCE(SUM(al.active_seconds), 0) AS total_active_seconds,
+        COALESCE(SUM(al.idle_seconds), 0) AS idle_seconds
+      FROM candidates c
+      LEFT JOIN activity_logs al ON c.id = al.candidate_id
+      GROUP BY c.id
+      ORDER BY c.id ASC
+    `);
+
+    // Fetch latest pipeline telemetry for each candidate
+    const telemetries = await all(`
+      SELECT pt.* FROM pipeline_telemetry pt
+      INNER JOIN (
+        SELECT candidate_id, MAX(id) as max_id
+        FROM pipeline_telemetry
+        GROUP BY candidate_id
+      ) latest ON pt.id = latest.max_id
+    `);
+    const telemetryMap = {};
+    telemetries.forEach(t => {
+      telemetryMap[t.candidate_id] = t;
+    });
+
+    const enriched = candidates.map(c => {
+      const active = c.total_active_seconds || 0;
+      const idle = c.idle_seconds || 0;
+      const total = active + idle;
+      const focusScore = total > 0 ? Math.round((active / total) * 100) : (c.is_online ? 100 : 0);
+      return {
+        ...c,
+        focus_score: focusScore,
+        latest_pipeline: telemetryMap[c.id] || null
+      };
+    });
+
+    const activeCount = enriched.filter(c => (c.governance_status || 'active') === 'active').length;
+    const neutralExitCount = enriched.filter(c => c.governance_status === 'neutral_exit').length;
+    const adverseLogCount = enriched.filter(c => c.governance_status === 'adverse_log').length;
+    const failsafeCount = enriched.filter(c => c.failsafe_active === 1).length;
+
+    res.json({
+      cohort_summary: {
+        total_seats: enriched.length,
+        active_candidates: activeCount,
+        neutral_exits: neutralExitCount,
+        adverse_logs: adverseLogCount,
+        failsafe_engaged: failsafeCount,
+        do326a_compliance_rate: enriched.length > 0 ? Math.round((activeCount / enriched.length) * 100) : 100
+      },
+      candidates: enriched
+    });
+  } catch (err) {
+    console.error('[ERROR] [Governance::Cohort]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * PATCH /api/admin/candidates/:id/governance-status (Admin Only)
+ * Allows Lead Architect to set candidate HR status: 'active', 'neutral_exit', 'adverse_log'.
+ */
+app.patch('/api/admin/candidates/:id/governance-status', requireAdmin, async (req, res) => {
+  try {
+    const candidateId = req.params.id;
+    const { status, exit_reason } = req.body;
+
+    const validStatuses = ['active', 'neutral_exit', 'adverse_log'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid Status', message: `Status must be one of: ${validStatuses.join(', ')}` });
+    }
+
+    const candidate = await get('SELECT * FROM candidates WHERE id = ?', [candidateId]);
+    if (!candidate) {
+      return res.status(404).json({ error: 'Not Found', message: `Candidate #${candidateId} not found.` });
+    }
+
+    const failsafeActive = status !== 'active' ? 1 : 0;
+    const exitTimestamp = status !== 'active' ? new Date().toISOString() : null;
+
+    await run(
+      `UPDATE candidates 
+       SET governance_status = ?, exit_reason = ?, exit_timestamp = ?, failsafe_active = ?, is_online = (CASE WHEN ? != 'active' THEN 0 ELSE is_online END)
+       WHERE id = ?`,
+      [status, exit_reason || null, exitTimestamp, failsafeActive, status, candidateId]
+    );
+
+    // If status is not active, activate failsafe backfill in shadow_codebase
+    if (failsafeActive === 1 && candidate.target_repo_path) {
+      await run(
+        `UPDATE shadow_codebase 
+         SET is_deployed = 1, lead_backfilled_at = CURRENT_TIMESTAMP, notes = ?
+         WHERE target_path = ?`,
+        [`Lead Shadow backfill active due to HR governance status: ${status}`, candidate.target_repo_path]
+      );
+    }
+
+    await logAudit(candidateId, 'LEAD_GOVERNANCE_STATUS_UPDATE', {
+      previous_status: candidate.governance_status,
+      new_status: status,
+      exit_reason: exit_reason || null,
+      failsafe_active: failsafeActive
+    });
+
+    res.json({
+      success: true,
+      message: `Candidate #${candidateId} governance status set to ${status}.`,
+      candidate_id: candidateId,
+      status,
+      failsafe_active: failsafeActive
+    });
+  } catch (err) {
+    console.error('[ERROR] [Governance::StatusUpdate]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * GET /api/governance/failsafe (Admin Only)
+ * Returns Shadow Codebase module repository and lead failover readiness.
+ */
+app.get('/api/governance/failsafe', requireAdmin, async (req, res) => {
+  try {
+    const modules = await all('SELECT * FROM shadow_codebase ORDER BY module_code ASC');
+    const deployedCount = modules.filter(m => m.is_deployed === 1).length;
+    res.json({
+      total_modules: modules.length,
+      deployed_failsafes: deployedCount,
+      readiness_index_pct: 100,
+      modules
+    });
+  } catch (err) {
+    console.error('[ERROR] [Governance::Failsafe]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * POST /api/governance/failsafe/:moduleCode/toggle (Admin Only)
+ * Engages or disengages the Lead Shadow Codebase failsafe backfill for a module.
+ */
+app.post('/api/governance/failsafe/:moduleCode/toggle', requireAdmin, async (req, res) => {
+  try {
+    const moduleCode = req.params.moduleCode.toUpperCase();
+    const existing = await get('SELECT * FROM shadow_codebase WHERE module_code = ?', [moduleCode]);
+    if (!existing) {
+      return res.status(404).json({ error: 'Not Found', message: `Module code ${moduleCode} not found in shadow registry.` });
+    }
+
+    const nextState = existing.is_deployed === 1 ? 0 : 1;
+    const nowIso = nextState === 1 ? new Date().toISOString() : null;
+    const note = nextState === 1 ? 'Lead Golden Master manual failover engaged.' : 'Failsafe disengaged; candidate primary active.';
+
+    await run(
+      'UPDATE shadow_codebase SET is_deployed = ?, lead_backfilled_at = ?, notes = ? WHERE module_code = ?',
+      [nextState, nowIso, note, moduleCode]
+    );
+
+    // Synchronize candidate failsafe flag if module matches target_path
+    await run(
+      'UPDATE candidates SET failsafe_active = ? WHERE target_repo_path = ?',
+      [nextState, existing.target_path]
+    );
+
+    await logAudit(null, 'SHADOW_CODEBASE_FAILOVER_TOGGLED', {
+      module_code: moduleCode,
+      is_deployed: nextState,
+      target_path: existing.target_path
+    });
+
+    res.json({
+      success: true,
+      module_code: moduleCode,
+      is_deployed: nextState,
+      message: nextState === 1 ? `Failsafe engaged for ${moduleCode}. Lead Golden Master active.` : `Failsafe disengaged for ${moduleCode}.`
+    });
+  } catch (err) {
+    console.error('[ERROR] [Governance::FailsafeToggle]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * GET /api/governance/pipeline (Admin Only)
+ * Real-time stream of GitHub Actions CI checks and Path-Guard evaluations.
+ */
+app.get('/api/governance/pipeline', requireAdmin, async (req, res) => {
+  try {
+    const telemetry = await all('SELECT * FROM pipeline_telemetry ORDER BY updated_at DESC LIMIT 50');
+    res.json({
+      total_runs: telemetry.length,
+      pipeline: telemetry
+    });
+  } catch (err) {
+    console.error('[ERROR] [Governance::Pipeline]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * POST /api/candidate/voluntary-exit (Candidate Auth)
+ * Formal DO-326A Voluntary Exit Protocol: honorable withdrawal producing a Neutral Log.
+ */
+app.post('/api/candidate/voluntary-exit', requireCandidate, async (req, res) => {
+  try {
+    const candidate = req.candidate;
+    const { reason, exit_ack } = req.body;
+
+    if (!reason || reason.trim().length < 10) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'A formal departure explanation of at least 10 characters is required for voluntary exit logging.'
+      });
+    }
+
+    if (!exit_ack) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'You must confirm the voluntary exit acknowledgment to finalize departure.'
+      });
+    }
+
+    const exitTimestamp = new Date().toISOString();
+
+    // 1. Update candidate record to neutral_exit and terminate online state
+    await run(
+      `UPDATE candidates 
+       SET governance_status = 'neutral_exit', exit_reason = ?, exit_timestamp = ?, failsafe_active = 1, is_online = 0
+       WHERE id = ?`,
+      [reason.trim(), exitTimestamp, candidate.id]
+    );
+
+    // 2. Engage Shadow Codebase failover for their assigned track
+    if (candidate.target_repo_path) {
+      await run(
+        `UPDATE shadow_codebase 
+         SET is_deployed = 1, lead_backfilled_at = CURRENT_TIMESTAMP, notes = ?
+         WHERE target_path = ?`,
+        [`Lead Golden Master backfill engaged upon candidate ${candidate.name} voluntary withdrawal.`, candidate.target_repo_path]
+      );
+    }
+
+    // 3. Log audit event
+    await logAudit(candidate.id, 'CANDIDATE_VOLUNTARY_EXIT', {
+      candidate_name: candidate.name,
+      governance_status: 'neutral_exit',
+      reason: reason.trim(),
+      exit_timestamp: exitTimestamp
+    });
+
+    res.json({
+      success: true,
+      governance_status: 'neutral_exit',
+      exit_timestamp: exitTimestamp,
+      message: 'Voluntary Exit Protocol concluded honorably. DO-326A Neutral Log filed. Workstation decommissioned.'
+    });
+  } catch (err) {
+    console.error('[ERROR] [Candidate::VoluntaryExit]', err.message);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/**
+ * POST /api/webhooks/github (Public Ingress)
+ * Ingests GitHub Webhooks (pull_request, check_run) without altering local Git CLI workflow.
+ */
+app.post('/api/webhooks/github', async (req, res) => {
+  try {
+    const event = req.headers['x-github-event'] || req.body.event || 'pull_request';
+    const body = req.body;
+
+    let candidateId = null;
+    let candidateName = 'External Contributor';
+    let branch = 'main';
+    let targetPath = 'src/';
+    let prNumber = null;
+    let prTitle = 'GitHub CI Telemetry Event';
+    let prUrl = 'https://github.com/CyberForge/internship-core';
+    let commitSha = 'HEAD';
+    let pathGuardStatus = 'verified';
+    let ciStatus = 'passing';
+    let ciRunUrl = null;
+
+    if (body.pull_request) {
+      prNumber = body.pull_request.number;
+      prTitle = body.pull_request.title;
+      prUrl = body.pull_request.html_url;
+      branch = body.pull_request.head ? body.pull_request.head.ref : 'feature/patch';
+      commitSha = body.pull_request.head && body.pull_request.head.sha ? body.pull_request.head.sha.substring(0, 7) : 'HEAD';
+      
+      const githubUsername = body.pull_request.user ? body.pull_request.user.login : '';
+      
+      const matched = await get(
+        'SELECT id, name, target_repo_path FROM candidates WHERE github_username = ? OR ? LIKE "%" || name || "%"',
+        [githubUsername, branch]
+      );
+      if (matched) {
+        candidateId = matched.id;
+        candidateName = matched.name;
+        targetPath = matched.target_repo_path;
+      }
+      
+      if (body.action === 'opened' || body.action === 'synchronize') {
+        ciStatus = 'in_progress';
+      }
+    } else if (body.check_run) {
+      ciStatus = body.check_run.conclusion === 'success' ? 'passing' : (body.check_run.conclusion === 'failure' ? 'failed' : 'in_progress');
+      commitSha = body.check_run.head_sha ? body.check_run.head_sha.substring(0, 7) : 'HEAD';
+      ciRunUrl = body.check_run.html_url;
+      prTitle = body.check_run.name || 'CI Check Run';
+    } else if (body.candidate_id) {
+      candidateId = body.candidate_id;
+      const matched = await get('SELECT name, target_repo_path FROM candidates WHERE id = ?', [candidateId]);
+      if (matched) {
+        candidateName = matched.name;
+        targetPath = matched.target_repo_path;
+      }
+      branch = body.branch || branch;
+      targetPath = body.target_path || targetPath;
+      prNumber = body.pr_number || prNumber;
+      prTitle = body.pr_title || prTitle;
+      prUrl = body.pr_url || prUrl;
+      commitSha = body.commit_sha || commitSha;
+      pathGuardStatus = body.path_guard_status || pathGuardStatus;
+      ciStatus = body.ci_status || ciStatus;
+      ciRunUrl = body.ci_run_url || ciRunUrl;
+    }
+
+    await run(
+      `INSERT INTO pipeline_telemetry 
+       (candidate_id, candidate_name, branch, target_path, pr_number, pr_title, pr_url, commit_sha, path_guard_status, ci_status, ci_run_url, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      [candidateId, candidateName, branch, targetPath, prNumber, prTitle, prUrl, commitSha, pathGuardStatus, ciStatus, ciRunUrl]
+    );
+
+    res.status(202).json({
+      success: true,
+      event_type: event,
+      message: 'Telemetry ingress recorded in pipeline audit stream.'
+    });
+  } catch (err) {
+    console.error('[ERROR] [Webhook::GitHub]', err.message);
+    res.status(500).json({ error: 'Webhook Ingress Error', message: err.message });
   }
 });
 

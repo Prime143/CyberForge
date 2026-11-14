@@ -343,6 +343,63 @@
       color: #fff;
     }
 
+    /* DO-326A Aerospace Cohort Matrix & Failsafe Layout */
+    .cohort-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .cohort-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.85rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      border-left: 3px solid var(--status-green);
+    }
+    .cohort-card.status-active { border-left-color: var(--status-green); }
+    .cohort-card.status-neutral { border-left-color: #60a5fa; background: rgba(37, 99, 235, 0.03); }
+    .cohort-card.status-adverse { border-left-color: var(--status-red); background: rgba(220, 38, 38, 0.04); }
+    .cohort-card:hover { border-color: var(--border-strong); }
+
+    .failsafe-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .failsafe-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.85rem;
+      border-left: 3px solid #60a5fa;
+    }
+    .failsafe-card.deployed {
+      border-left-color: var(--status-amber);
+      border-color: rgba(217, 119, 6, 0.4);
+      background: rgba(217, 119, 6, 0.04);
+    }
+
+    .telemetry-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-root);
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--border-subtle);
+    }
+
     /* Modals */
     .modal-overlay {
       position: fixed;
@@ -448,30 +505,36 @@
        ====================================================================== -->
   <div class="lead-container">
 
-    <!-- KPI Metric Strip -->
+    <!-- DO-326A Aerospace Governance & Telemetry Strip -->
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">Total Tracked Engineering Time</div>
-        <div class="kpi-value" id="kpiTotalTime">00:00:00</div>
+        <div class="kpi-label">DO-326A Airworthiness Compliance</div>
+        <div class="kpi-value" id="kpiAirworthiness" style="color:var(--status-green);">100% (6/6 Seats)</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Active Workstations</div>
-        <div class="kpi-value" id="kpiActiveWorkstations">0 / 0</div>
+        <div class="kpi-label">Active Engineering Seats</div>
+        <div class="kpi-value" id="kpiActiveWorkstations">6 Active · 0 Adverse</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Sprint Delivery Rate</div>
-        <div class="kpi-value" id="kpiDeliveryRate">0%</div>
+        <div class="kpi-label">Shadow Codebase Failsafe</div>
+        <div class="kpi-value" id="kpiShadowReadiness" style="color:#60a5fa;">6/6 Standby Ready</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Unresolved Escalation Tickets</div>
-        <div class="kpi-value" id="kpiOpenTickets" style="color:var(--text-primary);">0</div>
+        <div class="kpi-label">CI Path-Guards Verification</div>
+        <div class="kpi-value" id="kpiPathGuardRate" style="color:var(--status-green);">100% Passing</div>
       </div>
     </div>
 
     <!-- Operations Navigation Tabs -->
     <nav class="tab-bar">
-      <button class="tab-btn active" onclick="switchLeadTab('roster', this)">
-        Candidate Fleet Management <span id="tabCountRoster" class="tab-counter">0</span>
+      <button class="tab-btn active" onclick="switchLeadTab('cohort', this)">
+        DO-326A Cohort Matrix <span id="tabCountCohort" class="tab-counter">6</span>
+      </button>
+      <button class="tab-btn" onclick="switchLeadTab('failsafe', this)">
+        Failsafe & Shadow Codebase <span id="tabCountFailsafe" class="tab-counter">6 Ready</span>
+      </button>
+      <button class="tab-btn" onclick="switchLeadTab('pipeline', this)">
+        CI / Pipeline Telemetry <span id="tabCountPipeline" class="tab-counter">Live</span>
       </button>
       <button class="tab-btn" onclick="switchLeadTab('tasks', this)">
         Sprint Task Queue & Review <span id="tabCountTasks" class="tab-counter">0</span>
@@ -480,23 +543,54 @@
         Escalation Tickets & Support <span id="tabCountTickets" class="tab-counter">0</span>
       </button>
       <button class="tab-btn" onclick="switchLeadTab('audit', this)">
-        Telemetry & Compliance Audit
+        Compliance & Audit Trail
       </button>
     </nav>
 
     <!-- ====================================================================
-         TAB 1: CANDIDATE FLEET MANAGEMENT
+         TAB 1: DO-326A COHORT MATRIX (LEAD ARCHITECT CONTROL PLANE)
          ==================================================================== -->
-    <section id="leadPaneRoster">
+    <section id="leadPaneCohort">
+      
+      <!-- Cohort Matrix Top Banner -->
+      <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:4px; padding:0.9rem 1.15rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+        <div>
+          <div style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:0.4rem;">
+            <span>🛡️</span> RTCA DO-326A Airworthiness Governance Cohort
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+            6-Seat mission-critical software engineering proving ground. Standardized "Fork and PR" local git workflow with automated CI telemetry and Lead Golden Master failsafe.
+          </div>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <button class="btn btn-secondary btn-sm" onclick="exportCohortCsv()">
+            📥 Export Cohort Report
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openCandidateModal()">
+            + Provision Seat
+          </button>
+        </div>
+      </div>
+
+      <!-- 6-Seat Aerospace Interactive Cards Grid -->
+      <div id="cohortCardGrid" class="cohort-grid">
+        <!-- Rendered dynamically via renderCohortCards() -->
+      </div>
+
+      <!-- Detailed Cohort Data Table -->
       <div class="panel">
         <div class="panel-header">
-          <span class="panel-title">Active Candidate Fleet Telemetry</span>
+          <div>
+            <span class="panel-title">Cohort Operational Telemetry & Governance Registry</span>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Continuous heartbeat, token entropy score, and HR standing audit</div>
+          </div>
           <div class="filter-bar" style="margin-bottom:0;">
             <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Filter:</span>
-            <button class="filter-btn active" onclick="filterCandidates('all', this)">All</button>
+            <button class="filter-btn active" onclick="filterCandidates('all', this)">All (6)</button>
             <button class="filter-btn" onclick="filterCandidates('active', this)">Active</button>
-            <button class="filter-btn" onclick="filterCandidates('idle', this)">Idle</button>
-            <button class="filter-btn" onclick="filterCandidates('offline', this)">Offline</button>
+            <button class="filter-btn" onclick="filterCandidates('neutral', this)">Neutral Log</button>
+            <button class="filter-btn" onclick="filterCandidates('adverse', this)">Adverse Log</button>
+            <button class="filter-btn" onclick="filterCandidates('online', this)">Online Now</button>
           </div>
         </div>
 
@@ -504,20 +598,120 @@
           <table>
             <thead>
               <tr>
-                <th style="width:60px;">ID</th>
-                <th>Candidate Name & Position</th>
-                <th style="width:110px;">Status</th>
-                <th style="width:100px;">Focus %</th>
-                <th style="width:220px;">Tracked Engineering Time</th>
-                <th style="width:120px;">Evaluation</th>
-                <th style="width:150px;">Access Credential</th>
-                <th style="width:160px; text-align:right;">Actions</th>
+                <th style="width:50px;">Seat</th>
+                <th>Candidate & DO-326A Track</th>
+                <th style="width:130px;">Target Repo Path</th>
+                <th style="width:120px;">Governance HR</th>
+                <th style="width:110px;">Failsafe Status</th>
+                <th style="width:90px;">Focus %</th>
+                <th style="width:160px;">Tracked Time</th>
+                <th style="width:130px;">Access Key</th>
+                <th style="width:210px; text-align:right;">Actions</th>
               </tr>
             </thead>
             <tbody id="candidateTableBody">
               <tr>
+                <td colspan="9" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                  Loading DO-326A cohort registry...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 2: FAILSAFE PROTOCOL & SHADOW CODEBASE
+         ==================================================================== -->
+    <section id="leadPaneFailsafe" style="display:none;">
+      
+      <!-- Failsafe Architecture Banner -->
+      <div style="background:rgba(37, 99, 235, 0.05); border:1px solid rgba(37, 99, 235, 0.25); border-left:4px solid var(--accent-blue); border-radius:4px; padding:1rem 1.25rem; margin-bottom:1.25rem;">
+        <div style="font-weight:700; font-size:13px; color:#93c5fd; display:flex; align-items:center; gap:0.4rem;">
+          <span>⚡</span> Lead Golden Master Shadow Codebase (DO-326A Section 6.2 Contingency Protocol)
+        </div>
+        <div style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
+          To guarantee zero-downtime flight certification timelines, each candidate's module is paired with a verified <strong>Golden Master codebase</strong>. If a candidate initiates a Voluntary Exit (Neutral Log) or is decommissioned for unannounced departure (Adverse Log), the Lead Backfill engages instantly. The CI pipeline continues passing with zero dependency blockage for the remaining candidates.
+        </div>
+      </div>
+
+      <!-- Shadow Modules Metric Bar -->
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.75rem; margin-bottom:1.25rem;">
+        <div class="kpi-card" style="padding:0.75rem 1rem;">
+          <div class="kpi-label">Golden Master Modules</div>
+          <div class="kpi-value" style="font-size:18px;">6 Configured</div>
+        </div>
+        <div class="kpi-card" style="padding:0.75rem 1rem;">
+          <div class="kpi-label">Readiness Index</div>
+          <div class="kpi-value" style="font-size:18px; color:var(--status-green);">100% Verified</div>
+        </div>
+        <div class="kpi-card" style="padding:0.75rem 1rem;">
+          <div class="kpi-label">Active Lead Backfills</div>
+          <div class="kpi-value" id="kpiActiveFailsafes" style="font-size:18px; color:#fbbf24;">0 Deployed</div>
+        </div>
+        <div class="kpi-card" style="padding:0.75rem 1rem;">
+          <div class="kpi-label">Cohort Airworthiness Safety</div>
+          <div class="kpi-value" style="font-size:18px; color:var(--status-green);">Optimal</div>
+        </div>
+      </div>
+
+      <!-- Shadow Codebase Modules Cards Grid -->
+      <div id="failsafeGrid" class="failsafe-grid">
+        <!-- Rendered dynamically via renderFailsafeModules() -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 3: CI/CD PIPELINE TELEMETRY & PATH-GUARDS
+         ==================================================================== -->
+    <section id="leadPanePipeline" style="display:none;">
+      
+      <!-- Pipeline Governance Banner -->
+      <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:4px; padding:0.9rem 1.15rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+        <div>
+          <div style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:0.4rem;">
+            <span>🛡️</span> GitHub Actions CI & DO-326A Path-Guard Telemetry
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+            Automated verification ensuring PR contributions strictly respect module boundaries (e.g., Cryptography PRs cannot modify Kinematics code).
+          </div>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <button class="btn btn-secondary btn-sm" onclick="triggerMockPipelineIngress()">
+            ⚡ Ingest Test PR Telemetry
+          </button>
+          <a href="https://github.com/CyberForge/internship-core" target="_blank" class="btn btn-primary btn-sm">
+            🔗 Open GitHub Repository
+          </a>
+        </div>
+      </div>
+
+      <!-- Live CI Pipeline Stream Table -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Live Pull Request & Path-Guard Stream</span>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">Ingress Webhook: POST /api/webhooks/github</span>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:70px;">PR #</th>
+                <th>Pull Request Specification</th>
+                <th style="width:140px;">Contributor</th>
+                <th style="width:160px;">Target Path Guard</th>
+                <th style="width:90px;">Commit SHA</th>
+                <th style="width:120px;">Path-Guard</th>
+                <th style="width:100px;">CI Status</th>
+                <th style="width:140px; text-align:right;">Updated</th>
+              </tr>
+            </thead>
+            <tbody id="pipelineTableBody">
+              <tr>
                 <td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">
-                  Loading candidate fleet registry...
+                  Loading CI telemetry stream...
                 </td>
               </tr>
             </tbody>
@@ -1059,6 +1253,50 @@
   </div>
 
   <!-- ======================================================================
+       MODAL: UPDATE CANDIDATE GOVERNANCE HR STATUS
+       ====================================================================== -->
+  <div id="governanceModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:580px;">
+      <div class="modal-header">
+        <div class="modal-title">DO-326A HR Governance Status & Commendation</div>
+        <button class="btn btn-secondary btn-sm" onclick="closeGovernanceModal()">✕</button>
+      </div>
+      <form onsubmit="handleGovernanceSubmit(event)">
+        <input type="hidden" id="govCandId" />
+        
+        <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:13px; font-weight:700; color:var(--text-primary);" id="govCandName">Candidate Name</div>
+            <span id="govCurrentStatusBadge" class="badge"></span>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:3px;" id="govCandTrack">Assigned Track: ...</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Update Governance Standing</label>
+          <select id="govNewStatus" class="form-select" onchange="toggleGovNotice()" required>
+            <option value="active">● Active Proving Ground (DO-326A In Good Standing)</option>
+            <option value="neutral_exit">◌ Voluntary Exit Protocol (Honorable Neutral Log - Engages Shadow Backfill)</option>
+            <option value="adverse_log">✕ Disciplinary / Ghosting Breach (Adverse Log - Engages Shadow Backfill)</option>
+          </select>
+        </div>
+
+        <div id="govNoticeBox" style="font-size:11px; padding:0.6rem; border-radius:3px; margin-bottom:1rem; display:none;"></div>
+
+        <div class="form-group">
+          <label class="form-label">Commendation or Disciplinary Record Notes</label>
+          <textarea id="govNotes" class="form-textarea form-input-mono" rows="3" placeholder="Enter formal governance remarks (recorded permanently in the immutable audit log)..." required></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeGovernanceModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Commit HR Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
        MODAL: RESOLVE TICKET
        ====================================================================== -->
   <div id="ticketModal" class="modal-overlay">
@@ -1259,10 +1497,19 @@
 
     function switchLeadTab(tab, btn = null) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('leadPaneRoster').style.display = tab === 'roster' ? 'block' : 'none';
-      document.getElementById('leadPaneTasks').style.display = tab === 'tasks' ? 'block' : 'none';
-      document.getElementById('leadPaneTickets').style.display = tab === 'tickets' ? 'block' : 'none';
-      document.getElementById('leadPaneAudit').style.display = tab === 'audit' ? 'block' : 'none';
+      const pCohort = document.getElementById('leadPaneCohort');
+      const pFailsafe = document.getElementById('leadPaneFailsafe');
+      const pPipeline = document.getElementById('leadPanePipeline');
+      const pTasks = document.getElementById('leadPaneTasks');
+      const pTickets = document.getElementById('leadPaneTickets');
+      const pAudit = document.getElementById('leadPaneAudit');
+
+      if (pCohort) pCohort.style.display = (tab === 'cohort' || tab === 'roster') ? 'block' : 'none';
+      if (pFailsafe) pFailsafe.style.display = tab === 'failsafe' ? 'block' : 'none';
+      if (pPipeline) pPipeline.style.display = tab === 'pipeline' ? 'block' : 'none';
+      if (pTasks) pTasks.style.display = tab === 'tasks' ? 'block' : 'none';
+      if (pTickets) pTickets.style.display = tab === 'tickets' ? 'block' : 'none';
+      if (pAudit) pAudit.style.display = tab === 'audit' ? 'block' : 'none';
 
       if (btn) {
         btn.classList.add('active');
@@ -1271,15 +1518,19 @@
         if (found) found.classList.add('active');
       }
 
+      if (tab === 'cohort' || tab === 'roster') loadCandidates();
+      if (tab === 'failsafe') loadFailsafe();
+      if (tab === 'pipeline') loadPipeline();
       if (tab === 'tasks') loadTasks();
       if (tab === 'tickets') loadTickets();
       if (tab === 'audit') { loadAuditTrail(); loadWorkStream(); }
-      if (tab === 'roster') loadCandidates();
     }
 
     async function loadAllData() {
       loadHealth();
       await loadCandidates();
+      await loadFailsafe();
+      await loadPipeline();
       await loadTasks();
       await loadTickets();
     }
@@ -1299,85 +1550,211 @@
 
     async function loadCandidates() {
       try {
-        const data = await apiFetch('/api/admin/candidates');
+        const data = await apiFetch('/api/governance/cohort');
         cachedCandidates = data.candidates || [];
-        document.getElementById('tabCountRoster').innerText = cachedCandidates.length;
+        const summary = data.cohort_summary || {};
 
-        // KPI: Total Time & Active Workstations
-        let totalActiveSec = 0;
-        let onlineCount = 0;
-        cachedCandidates.forEach(c => {
-          totalActiveSec += (c.total_active_seconds || 0);
-          if (c.is_online === 1) onlineCount++;
-        });
+        document.getElementById('tabCountCohort').innerText = cachedCandidates.length;
 
-        document.getElementById('kpiTotalTime').innerText = formatSeconds(totalActiveSec);
-        document.getElementById('kpiActiveWorkstations').innerText = `${onlineCount} / ${cachedCandidates.length}`;
+        // Update Aerospace Governance Metric Strip
+        const complianceRate = summary.do326a_compliance_rate !== undefined ? summary.do326a_compliance_rate : 100;
+        document.getElementById('kpiAirworthiness').innerText = `${complianceRate}% (${summary.active_candidates || 0}/${cachedCandidates.length} Seats)`;
+        document.getElementById('kpiActiveWorkstations').innerText = `${summary.active_candidates || 0} Active · ${summary.adverse_logs || 0} Adverse · ${summary.neutral_exits || 0} Neutral`;
+        document.getElementById('kpiShadowReadiness').innerText = `${summary.failsafe_engaged || 0} Engaged / ${cachedCandidates.length} Standby`;
 
-        // Populate Assignee Selectors
+        // Populate Assignee Selectors for Task Creation & Broadcast
         const taskAssignee = document.getElementById('taskAssignee');
         const bcastAssignee = document.getElementById('bcastCandidateId');
-        taskAssignee.innerHTML = '<option value="">Select Candidate...</option>' + cachedCandidates.map(c => `
-          <option value="${c.id}">${escapeHtml(c.name)} (${formatRoleName(c.role)})</option>
-        `).join('');
-        bcastAssignee.innerHTML = '<option value="">All Candidates (Cohort-Wide)</option>' + cachedCandidates.map(c => `
-          <option value="${c.id}">${escapeHtml(c.name)}</option>
-        `).join('');
+        if (taskAssignee) {
+          taskAssignee.innerHTML = '<option value="">Select Candidate...</option>' + cachedCandidates.map(c => `
+            <option value="${c.id}">${escapeHtml(c.name)} (${formatRoleName(c.role)})</option>
+          `).join('');
+        }
+        if (bcastAssignee) {
+          bcastAssignee.innerHTML = '<option value="">All Candidates (Cohort-Wide)</option>' + cachedCandidates.map(c => `
+            <option value="${c.id}">${escapeHtml(c.name)}</option>
+          `).join('');
+        }
 
+        renderCohortCards();
         renderCandidatesTable();
-      } catch (_) {}
+      } catch (err) {
+        console.error('Failed to load cohort:', err);
+      }
+    }
+
+    function renderCohortCards() {
+      const grid = document.getElementById('cohortCardGrid');
+      if (!grid) return;
+
+      if (!cachedCandidates || cachedCandidates.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1; padding:2rem; text-align:center; color:var(--text-muted);">No candidates provisioned in cohort.</div>';
+        return;
+      }
+
+      grid.innerHTML = cachedCandidates.map((c, idx) => {
+        const status = c.governance_status || 'active';
+        let cardClass = 'status-active';
+        let statusBadge = '<span class="badge badge-online">● Active (DO-326A In Good Standing)</span>';
+        if (status === 'neutral_exit') {
+          cardClass = 'status-neutral';
+          statusBadge = '<span class="badge badge-medium">◌ Neutral Log / Withdrawn</span>';
+        } else if (status === 'adverse_log') {
+          cardClass = 'status-adverse';
+          statusBadge = '<span class="badge badge-critical">✕ Adverse Log / Disciplinary</span>';
+        }
+
+        const failsafeActive = c.failsafe_active === 1;
+        const failsafeBadge = failsafeActive 
+          ? '<span class="badge badge-high" style="font-size:10px;">⚡ Lead Backfill Active</span>'
+          : '<span class="badge badge-online" style="font-size:10px;">✓ Assignee Primary</span>';
+
+        const focusScore = c.focus_score !== undefined ? c.focus_score : (c.is_online ? 100 : 0);
+        const latestPr = c.latest_pipeline;
+
+        return `
+          <div class="cohort-card ${cardClass}">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
+                <div>
+                  <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Seat 0${idx + 1} · ID #${c.id}</div>
+                  <div style="font-size:15px; font-weight:700; color:var(--text-primary); margin-top:2px;">${escapeHtml(c.name)}</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+                  <span class="badge badge-${(c.role || 'junior').toLowerCase()}">${formatRoleName(c.role)}</span>
+                  <span class="badge ${c.is_online === 1 ? 'badge-online' : 'badge-offline'}" style="font-size:9px;">
+                    ${c.is_online === 1 ? '● Online' : '○ Offline'}
+                  </span>
+                </div>
+              </div>
+
+              <!-- DO-326A Track & Target Path -->
+              <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.6rem 0.75rem; margin-bottom:0.75rem;">
+                <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Assigned Aerospace Module:</div>
+                <div style="font-size:12px; font-weight:600; color:#93c5fd; margin-top:2px;">${escapeHtml(c.do326a_track || 'Avionics DO-326A Subsystem')}</div>
+                <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); margin-top:3px; word-break:break-all;">
+                  📁 ${escapeHtml(c.target_repo_path || 'src/core/module.rs')}
+                </div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
+                  GitHub Contributor: <span style="font-family:var(--font-mono); color:var(--text-primary);">@${escapeHtml(c.github_username || 'candidate')}</span>
+                </div>
+              </div>
+
+              <!-- Governance HR Status & Failsafe Readiness -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; font-size:11px;">
+                <div>${statusBadge}</div>
+                <div>${failsafeBadge}</div>
+              </div>
+
+              <!-- CI Pipeline & PR Status -->
+              <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:3px; padding:0.45rem 0.65rem; margin-bottom:0.75rem; font-size:11px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; font-weight:600;">Latest Pipeline:</span>
+                  ${latestPr ? `
+                    <span class="badge ${latestPr.path_guard_status === 'passed' ? 'badge-online' : 'badge-high'}" style="font-size:9px;">
+                      Path-Guard: ${latestPr.path_guard_status.toUpperCase()}
+                    </span>
+                  ` : '<span class="badge badge-offline" style="font-size:9px;">No PR Dispatched</span>'}
+                </div>
+                ${latestPr ? `
+                  <div style="margin-top:4px; display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:11px;">
+                    <a href="${latestPr.pr_url || '#'}" target="_blank" style="color:var(--text-primary); text-decoration:none; font-weight:600;">
+                      PR #${latestPr.pr_number}
+                    </a>
+                    <span class="telemetry-tag">${latestPr.commit_sha || 'HEAD'}</span>
+                    <span class="badge ${latestPr.ci_status === 'passed' ? 'badge-online' : (latestPr.ci_status === 'running' ? 'badge-high' : 'badge-critical')}" style="font-size:9px;">
+                      ${latestPr.ci_status}
+                    </span>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Focus & Telemetry Progress -->
+              <div style="margin-bottom:0.5rem;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
+                  <span style="color:var(--text-muted);">Workstation Focus:</span>
+                  <span style="font-family:var(--font-mono); font-weight:700; color:${focusScore >= 70 ? 'var(--status-green)' : (focusScore >= 40 ? 'var(--status-amber)' : 'var(--status-red)')};">${focusScore}%</span>
+                </div>
+                <div style="height:4px; background:var(--bg-root); border-radius:2px; overflow:hidden;">
+                  <div style="height:100%; width:${focusScore}%; background:${focusScore >= 70 ? 'var(--status-green)' : (focusScore >= 40 ? 'var(--status-amber)' : 'var(--status-red)')};"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lead Action Buttons -->
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:0.4rem; pt:0.5rem; border-top:1px solid var(--border-subtle); margin-top:0.5rem; flex-wrap:wrap;">
+              <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal(${c.id})">
+                + Assign Task
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="openGovernanceModal(${c.id})" title="Update HR Standing (Active, Neutral Exit, Adverse Log)">
+                ⚖️ HR Status
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="openManageTokenModal(${c.id})" title="Access Key Governance">
+                🔑 Key
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="openCandidateHistoryModal(${c.id})" title="Lifetime Records">
+                📜 History
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function filterCandidates(filter, btn) {
       activeFilter = filter;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      document.querySelectorAll('#leadPaneCohort .filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
       renderCandidatesTable();
     }
 
-    let activeTicketFilter = 'all';
-
     function renderCandidatesTable() {
       const tbody = document.getElementById('candidateTableBody');
+      if (!tbody) return;
       let list = cachedCandidates;
 
-      if (activeFilter === 'active') list = list.filter(c => c.is_online === 1);
-      else if (activeFilter === 'offline') list = list.filter(c => c.is_online !== 1);
-      else if (activeFilter === 'idle') list = list.filter(c => c.is_online === 1 && (c.idle_seconds || 0) > 180);
+      if (activeFilter === 'active') list = list.filter(c => (c.governance_status || 'active') === 'active');
+      else if (activeFilter === 'neutral') list = list.filter(c => c.governance_status === 'neutral_exit');
+      else if (activeFilter === 'adverse') list = list.filter(c => c.governance_status === 'adverse_log');
+      else if (activeFilter === 'online') list = list.filter(c => c.is_online === 1);
 
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">No candidates match the selected filter.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-muted);">No candidates match the selected filter.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = list.map(c => {
+      tbody.innerHTML = list.map((c, idx) => {
         const totalSec = (c.total_active_seconds || 0) + (c.idle_seconds || 0);
-        const workSec = c.workstation_seconds || 0;
-        const extSec = c.external_work_seconds || 0;
-        const idleSec = c.idle_seconds || 0;
-
-        const workPct = totalSec > 0 ? Math.round((workSec / totalSec) * 100) : 0;
-        const extPct = totalSec > 0 ? Math.round((extSec / totalSec) * 100) : 0;
-        const idlePct = totalSec > 0 ? Math.round((idleSec / totalSec) * 100) : 0;
-
         const focusScore = c.focus_score !== undefined ? c.focus_score : (c.is_online ? 100 : 0);
         const roleName = (c.role || 'junior').toLowerCase();
+        const status = c.governance_status || 'active';
+
+        let statusBadge = '<span class="badge badge-online">● Active</span>';
+        if (status === 'neutral_exit') statusBadge = '<span class="badge badge-medium">◌ Neutral Log</span>';
+        else if (status === 'adverse_log') statusBadge = '<span class="badge badge-critical">✕ Adverse Log</span>';
+
+        const failsafeBadge = c.failsafe_active === 1
+          ? '<span class="badge badge-high" style="font-size:9px;">⚡ Backfill Active</span>'
+          : '<span class="badge badge-online" style="font-size:9px;">✓ Primary</span>';
 
         return `
           <tr>
-            <td style="font-family:var(--font-mono); color:var(--text-muted);">#${c.id}</td>
+            <td style="font-family:var(--font-mono); color:var(--text-muted);">0${idx + 1}</td>
             <td>
               <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(c.name)}</div>
+              <div style="font-size:11px; color:#93c5fd; margin-top:2px;">${escapeHtml(c.do326a_track || 'DO-326A Module')}</div>
               <div style="margin-top:2px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
                 <span class="badge badge-${roleName}">${formatRoleName(c.role)}</span>
-                ${c.token_reset_requested === 1 ? `<span class="badge badge-high" style="font-size:9px;" title="Reset Requested: ${escapeHtml(c.token_reset_reason || '')}">⚠️ Reset Req</span>` : ''}
+                <span class="telemetry-tag">@${escapeHtml(c.github_username || 'candidate')}</span>
               </div>
             </td>
             <td>
-              <span class="badge ${c.is_online === 1 ? 'badge-online' : 'badge-offline'}">
-                ${c.is_online === 1 ? '● Online' : '○ Offline'}
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); word-break:break-all;">
+                ${escapeHtml(c.target_repo_path || 'src/')}
               </span>
             </td>
+            <td>${statusBadge}</td>
+            <td>${failsafeBadge}</td>
             <td>
               <span style="font-family:var(--font-mono); font-weight:700; color:${focusScore >= 70 ? 'var(--status-green)' : (focusScore >= 40 ? 'var(--status-amber)' : 'var(--status-red)')};">
                 ${focusScore}%
@@ -1385,18 +1762,7 @@
             </td>
             <td>
               <div style="font-family:var(--font-mono); font-size:12px; font-weight:600;">${formatSeconds(c.total_active_seconds || 0)}</div>
-              <div style="font-size:10px; color:var(--text-muted);">Ext: ${formatSeconds(extSec)} · WS: ${formatSeconds(workSec)}</div>
-              <div class="telemetry-bar-container" title="Workstation: ${workPct}% | External: ${extPct}% | Idle: ${idlePct}%">
-                <div class="bar-seg-ws" style="width:${workPct}%"></div>
-                <div class="bar-seg-ext" style="width:${extPct}%"></div>
-                <div class="bar-seg-idle" style="width:${idlePct}%"></div>
-              </div>
-            </td>
-            <td>
-              ${c.avg_score !== null && c.avg_score !== undefined ? `
-                <span style="font-family:var(--font-mono); font-weight:700;">${c.avg_score}/100</span>
-                <span class="badge badge-online" style="margin-left:4px;">${c.overall_grade || 'A'}</span>
-              ` : '<span style="color:var(--text-muted); font-size:11px;">Unrated</span>'}
+              <div style="font-size:10px; color:var(--text-muted);">${c.is_online === 1 ? '● Online' : '○ Offline'}</div>
             </td>
             <td>
               <div style="display:flex; flex-direction:column; gap:4px;">
@@ -1419,6 +1785,9 @@
                 <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal(${c.id})">
                   Assign Task
                 </button>
+                <button class="btn btn-secondary btn-sm" onclick="openGovernanceModal(${c.id})">
+                  ⚖️ HR Status
+                </button>
                 <button class="btn btn-secondary btn-sm" onclick="openPromoteModal(${c.id}, '${escapeHtml(c.name).replace(/'/g, "\\'")}', '${c.role}')">
                   Promote
                 </button>
@@ -1428,14 +1797,270 @@
                 <button class="btn btn-secondary btn-sm" onclick="openCandidateHistoryModal(${c.id})" title="View Lifetime History & Telemetry">
                   📜 History
                 </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteCandidate(${c.id}, '${escapeHtml(c.name).replace(/'/g, "\\'")}')">
-                  Delete
-                </button>
               </div>
             </td>
           </tr>
         `;
       }).join('');
+    }
+
+    // ========================================================================
+    // FAILSAFE PROTOCOL & SHADOW CODEBASE
+    // ========================================================================
+    let cachedFailsafeModules = [];
+
+    async function loadFailsafe() {
+      try {
+        const data = await apiFetch('/api/governance/failsafe');
+        cachedFailsafeModules = data.modules || [];
+        const deployedCount = data.deployed_failsafes || 0;
+
+        const kpiEl = document.getElementById('kpiActiveFailsafes');
+        if (kpiEl) kpiEl.innerText = `${deployedCount} Deployed`;
+        const tabCountEl = document.getElementById('tabCountFailsafe');
+        if (tabCountEl) tabCountEl.innerText = `${deployedCount} Active / ${cachedFailsafeModules.length} Ready`;
+
+        renderFailsafeModules();
+      } catch (err) {
+        console.error('Failed to load failsafe modules:', err);
+      }
+    }
+
+    function renderFailsafeModules() {
+      const grid = document.getElementById('failsafeGrid');
+      if (!grid) return;
+
+      if (!cachedFailsafeModules || cachedFailsafeModules.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1; padding:2rem; text-align:center; color:var(--text-muted);">No shadow codebase modules loaded.</div>';
+        return;
+      }
+
+      grid.innerHTML = cachedFailsafeModules.map(m => {
+        const isDeployed = m.is_deployed === 1;
+        return `
+          <div class="failsafe-card ${isDeployed ? 'deployed' : ''}">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem;">
+                <div>
+                  <span class="telemetry-tag" style="color:var(--text-primary); font-weight:700;">${escapeHtml(m.module_code)}</span>
+                  <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-top:4px;">${escapeHtml(m.module_name)}</div>
+                </div>
+                <span class="badge ${isDeployed ? 'badge-critical' : 'badge-online'}">
+                  ${isDeployed ? '⚡ LEAD BACKFILL ACTIVE' : '● STANDBY (100% READY)'}
+                </span>
+              </div>
+
+              <div style="font-size:11px; color:#93c5fd; margin-bottom:0.4rem;">
+                DO-326A Track: <strong>${escapeHtml(m.do326a_track || 'Aerospace')}</strong>
+              </div>
+
+              <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:3px; padding:0.5rem; margin-bottom:0.6rem; font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); word-break:break-all;">
+                Target: ${escapeHtml(m.target_path)}
+              </div>
+
+              <div style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:0.6rem;">
+                ${escapeHtml(m.notes || 'Golden Master verified under DO-326A.')}
+              </div>
+
+              ${m.lead_backfilled_at ? `
+                <div style="font-size:10px; color:var(--status-amber); font-family:var(--font-mono); margin-bottom:0.5rem;">
+                  Backfill Engaged: ${escapeHtml(m.lead_backfilled_at)}
+                </div>
+              ` : ''}
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; pt:0.5rem; border-top:1px solid var(--border-subtle);">
+              <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">
+                Readiness: <strong style="color:var(--status-green);">${m.readiness_pct}%</strong>
+              </span>
+              <button class="btn ${isDeployed ? 'btn-secondary' : 'btn-primary'} btn-sm" onclick="toggleFailsafe('${m.module_code}')">
+                ${isDeployed ? '↺ Disengage Backfill' : '⚡ Engage Lead Backfill'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function toggleFailsafe(moduleCode) {
+      if (!confirm(`Are you sure you want to toggle the Golden Master failsafe backfill for module ${moduleCode}?`)) return;
+      try {
+        const res = await apiFetch(`/api/governance/failsafe/${moduleCode}/toggle`, { method: 'POST' });
+        alert(res.message);
+        await loadFailsafe();
+        await loadCandidates();
+      } catch (err) {
+        alert('Failed to toggle failsafe: ' + err.message);
+      }
+    }
+
+    // ========================================================================
+    // CI/CD PIPELINE TELEMETRY & PATH-GUARDS
+    // ========================================================================
+    async function loadPipeline() {
+      try {
+        const data = await apiFetch('/api/governance/pipeline');
+        const list = data.pipeline || [];
+        const tbody = document.getElementById('pipelineTableBody');
+        if (!tbody) return;
+
+        if (list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-muted);">No pipeline telemetry events recorded yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = list.map(p => {
+          const pathGuardClass = p.path_guard_status === 'passed' ? 'badge-online' : (p.path_guard_status === 'warning' ? 'badge-high' : 'badge-critical');
+          const ciClass = p.ci_status === 'passed' ? 'badge-online' : (p.ci_status === 'running' ? 'badge-high' : 'badge-critical');
+
+          return `
+            <tr>
+              <td style="font-family:var(--font-mono); font-weight:700; color:var(--text-primary);">
+                <a href="${p.pr_url || '#'}" target="_blank" style="text-decoration:none; color:var(--accent-blue);">
+                  #${p.pr_number || 'N/A'}
+                </a>
+              </td>
+              <td>
+                <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(p.pr_title || 'CI Event')}</div>
+                <div style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono); margin-top:2px;">
+                  Branch: ${escapeHtml(p.branch || 'main')}
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600; font-size:12px;">${escapeHtml(p.candidate_name || 'External Contributor')}</div>
+              </td>
+              <td>
+                <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); word-break:break-all;">
+                  ${escapeHtml(p.target_path || 'src/')}
+                </span>
+              </td>
+              <td>
+                <span class="telemetry-tag">${escapeHtml(p.commit_sha || 'HEAD')}</span>
+              </td>
+              <td>
+                <span class="badge ${pathGuardClass}">
+                  🛡️ ${escapeHtml(p.path_guard_status || 'passed')}
+                </span>
+              </td>
+              <td>
+                <span class="badge ${ciClass}">
+                  ${escapeHtml(p.ci_status || 'passed')}
+                </span>
+              </td>
+              <td style="text-align:right; font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">
+                ${escapeHtml(p.updated_at || 'Just now')}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load pipeline telemetry:', err);
+      }
+    }
+
+    async function triggerMockPipelineIngress() {
+      try {
+        const res = await fetch('/api/webhooks/github', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidate_id: 2,
+            branch: 'feature/ed25519-core-verification',
+            target_path: 'src/crypto/ed25519_verifier.rs',
+            pr_number: 107,
+            pr_title: 'feat(crypto): add scalar multiplication validation tests',
+            pr_url: 'https://github.com/CyberForge/core/pull/107',
+            commit_sha: 'e1d849a',
+            path_guard_status: 'passed',
+            ci_status: 'passed'
+          })
+        });
+        const d = await res.json();
+        alert('Mock GitHub PR Webhook Telemetry dispatched successfully!');
+        await loadPipeline();
+        await loadCandidates();
+      } catch (err) {
+        alert('Failed to dispatch webhook: ' + err.message);
+      }
+    }
+
+    // ========================================================================
+    // HR GOVERNANCE STATUS MODAL (LEAD CONTROL PLANE)
+    // ========================================================================
+    function openGovernanceModal(candId) {
+      const c = cachedCandidates.find(x => x.id === candId);
+      if (!c) return;
+
+      document.getElementById('govCandId').value = c.id;
+      document.getElementById('govCandName').innerText = `${c.name} (Seat #${c.id})`;
+      document.getElementById('govCandTrack').innerText = `Assigned DO-326A Track: ${c.do326a_track || 'Defense Track'}`;
+      
+      const badgeEl = document.getElementById('govCurrentStatusBadge');
+      const curStatus = c.governance_status || 'active';
+      badgeEl.className = 'badge ' + (curStatus === 'active' ? 'badge-online' : (curStatus === 'neutral_exit' ? 'badge-medium' : 'badge-critical'));
+      badgeEl.innerText = curStatus.toUpperCase();
+
+      document.getElementById('govNewStatus').value = curStatus;
+      document.getElementById('govNotes').value = c.exit_reason || '';
+      toggleGovNotice();
+
+      document.getElementById('governanceModal').classList.add('open');
+    }
+
+    function closeGovernanceModal() {
+      document.getElementById('governanceModal').classList.remove('open');
+    }
+
+    function toggleGovNotice() {
+      const status = document.getElementById('govNewStatus').value;
+      const box = document.getElementById('govNoticeBox');
+      if (status === 'active') {
+        box.style.display = 'block';
+        box.style.background = 'var(--status-green-bg)';
+        box.style.color = '#34d399';
+        box.style.border = '1px solid var(--status-green)';
+        box.innerText = 'Candidate remains in active proving ground training. Lead Golden Master standby remains active.';
+      } else if (status === 'neutral_exit') {
+        box.style.display = 'block';
+        box.style.background = 'var(--status-blue-bg)';
+        box.style.color = '#93c5fd';
+        box.style.border = '1px solid var(--status-blue)';
+        box.innerText = 'Neutral Log Protocol: Records an honorable withdrawal preserving the candidate\'s professional standing. Automatically activates Lead Golden Master failsafe backfill.';
+      } else if (status === 'adverse_log') {
+        box.style.display = 'block';
+        box.style.background = 'var(--status-red-bg)';
+        box.style.color = '#f87171';
+        box.style.border = '1px solid var(--status-red)';
+        box.innerText = 'Adverse Log Protocol: Permanent disciplinary record for uncommunicated departure or security policy breach. Decommissions workstation access and engages Lead Golden Master failsafe.';
+      }
+    }
+
+    async function handleGovernanceSubmit(e) {
+      e.preventDefault();
+      const candId = document.getElementById('govCandId').value;
+      const status = document.getElementById('govNewStatus').value;
+      const notes = document.getElementById('govNotes').value.trim();
+
+      try {
+        const res = await apiFetch(`/api/admin/candidates/${candId}/governance-status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status, exit_reason: notes })
+        });
+        alert(res.message);
+        closeGovernanceModal();
+        await loadCandidates();
+        await loadFailsafe();
+      } catch (err) {
+        alert('Failed to update governance status: ' + err.message);
+      }
+    }
+
+    function exportCohortCsv() {
+      if (!ADMIN_KEY) {
+        alert('Please authenticate as Lead to export cohort records.');
+        return;
+      }
+      window.location.href = `/api/admin/export/candidates-csv?key=${encodeURIComponent(ADMIN_KEY)}`;
     }
 
     function filterTasks(filter, btn) {

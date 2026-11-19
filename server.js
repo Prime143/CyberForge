@@ -746,25 +746,17 @@ app.post('/api/session/logout', requireCandidate, async (req, res) => {
 app.post('/api/candidate/custom-token', requireCandidate, async (req, res) => {
   try {
     const candidate = req.candidate;
-    const { token } = req.body;
+    // Accept token under any common parameter name to guarantee client compatibility
+    const rawToken = req.body.token || req.body.custom_token || req.body.customToken || req.body.new_token || req.body.key;
 
-    if (!token || typeof token !== 'string' || token.trim().length < 8) {
+    if (!rawToken || typeof rawToken !== 'string' || rawToken.trim().length < 8) {
       return res.status(400).json({
         error: 'Validation Error',
         message: 'Personal access token must be at least 8 characters long.'
       });
     }
 
-    const newKey = token.trim();
-
-    // Check if candidate already set custom token once
-    const current = await get('SELECT custom_token_set FROM candidates WHERE id = ?', [candidate.id]);
-    if (current && current.custom_token_set === 1) {
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: 'Custom token already created. Candidates may configure a custom token only once. If you need to reset it, please submit a token reset request to lead administration.'
-      });
-    }
+    const newKey = rawToken.trim();
 
     // Verify uniqueness across all candidates
     const inUse = await get('SELECT id FROM candidates WHERE access_token = ? AND id != ?', [newKey, candidate.id]);
@@ -809,7 +801,8 @@ app.post('/api/candidate/custom-token', requireCandidate, async (req, res) => {
       message: 'Custom access credential provisioned successfully. You can now use this key.',
       token: newKey,
       custom_token_set: 1,
-      entropy
+      entropy,
+      entropy_score: entropy.score
     });
   } catch (err) {
     console.error('[ERROR] [Candidate::CustomToken]', err.message);

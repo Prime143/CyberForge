@@ -6,29 +6,37 @@
   <title>CyberForge | Candidate Engineering Workstation</title>
   <style>
     :root {
-      --bg-root: #090d16;
-      --bg-surface: #0f172a;
-      --bg-surface-elevated: #1e293b;
-      --bg-surface-hover: #243248;
-      --border-subtle: #1e293b;
-      --border-strong: #334155;
-      --border-focus: #3b82f6;
+      --bg-root: #070a10;
+      --bg-surface: #0d1424;
+      --bg-surface-elevated: #141e34;
+      --bg-surface-hover: #1b2844;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --border-focus: #38bdf8;
       --text-primary: #f8fafc;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
-      --accent-blue: #3b82f6;
-      --accent-blue-hover: #2563eb;
+      --accent-blue: #0284c7;
+      --accent-blue-hover: #0369a1;
+      --accent-cyan: #38bdf8;
       --status-green: #10b981;
       --status-green-bg: rgba(16, 185, 129, 0.12);
       --status-amber: #f59e0b;
       --status-amber-bg: rgba(245, 158, 11, 0.12);
       --status-red: #f43f5e;
       --status-red-bg: rgba(244, 63, 94, 0.12);
-      --status-blue: #3b82f6;
-      --status-blue-bg: rgba(59, 130, 246, 0.12);
+      --status-blue: #38bdf8;
+      --status-blue-bg: rgba(56, 189, 248, 0.12);
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
     }
+
+    /* Custom Defense-Grade Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-root); }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+    * { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.14) var(--bg-root); }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -419,8 +427,9 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(2px);
+      background: rgba(3, 6, 12, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -437,6 +446,7 @@
       padding: 1.5rem;
       max-height: 90vh;
       overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
     }
     .modal-header {
       display: flex;
@@ -561,6 +571,9 @@
           <span id="userTrackBadge" class="badge" style="background:rgba(37, 99, 235, 0.15); color:#93c5fd; border-color:rgba(37, 99, 235, 0.3); font-size:10px;">DO-326A Track</span>
           <span id="userGovBadge" class="badge badge-online" style="font-size:10px;">● Good Standing</span>
           <span id="userKeyTypeBadge" class="badge badge-medium" style="display:none; font-size:10px;"></span>
+          <button id="btnChangeKeyDirect" class="btn btn-secondary btn-sm" onclick="openCustomTokenModal()" style="font-size:10px; padding:2px 8px; height:22px;" title="Set or update your personal defense access token">
+            Change Key
+          </button>
           <a id="authResetKeyLink" href="javascript:void(0)" onclick="openRequestResetModal(false)" style="display:none; font-size:10px; color:var(--text-secondary); text-decoration:underline;">Request Reset</a>
         </div>
       </div>
@@ -676,7 +689,7 @@
             Default Cryptographic Key Active
           </div>
           <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
-            You are operating with a temporary default access key. You are permitted to generate your own personal credential <strong>once</strong>.
+            You are currently operating with a default access key. Please configure your personal defense access key below for enhanced security.
           </div>
         </div>
         <button class="btn btn-primary btn-sm" onclick="openCustomTokenModal()">
@@ -1028,8 +1041,8 @@
       </div>
 
       <div class="alert-banner" style="margin-bottom:1rem;">
-        <strong>Policy Directive: Single-Use Credential Generation</strong><br>
-        You are permitted to generate your custom access key <strong>only once</strong>. Ensure you safely record your new credential. Subsequent modifications require administrative authorization.
+        <strong>Defense Access Control Directive</strong><br>
+        Personal access credentials must be at least 8 characters long. Once updated, your new cryptographic token is required for all subsequent workstation operations.
       </div>
 
       <form onsubmit="handleCustomTokenSubmit(event)">
@@ -1067,7 +1080,7 @@
             <div id="customTokenEntropyBar" style="height:100%; width:0%; background:var(--status-red); transition:width 0.2s, background-color 0.2s;"></div>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:11px; color:var(--text-muted);">
-            <div id="ruleLength">○ Minimum 12 characters</div>
+            <div id="ruleLength">○ Minimum 8 characters</div>
             <div id="ruleUpper">○ Uppercase & Lowercase letters</div>
             <div id="ruleNumber">○ Numerical digits (0-9)</div>
             <div id="ruleSymbol">○ Defensive symbols (!@#$%...)</div>
@@ -2150,25 +2163,38 @@
     }
 
     function handleCustomTokenInput(val) {
-      const hasLength = val.length >= 12;
+      const hasLength = val.length >= 8;
       const hasUpperLower = /[a-z]/.test(val) && /[A-Z]/.test(val);
       const hasNumber = /[0-9]/.test(val);
       const hasSymbol = /[^a-zA-Z0-9]/.test(val);
 
-      document.getElementById('ruleLength').innerHTML = `${hasLength ? '✓' : '○'} Minimum 12 characters (${val.length}/12)`;
-      document.getElementById('ruleLength').style.color = hasLength ? 'var(--status-green)' : 'var(--text-muted)';
+      const ruleLen = document.getElementById('ruleLength');
+      if (ruleLen) {
+        ruleLen.innerHTML = `${hasLength ? '✓' : '○'} Minimum 8 characters (${val.length}/8)`;
+        ruleLen.style.color = hasLength ? 'var(--status-green)' : 'var(--text-muted)';
+      }
 
-      document.getElementById('ruleUpper').innerHTML = `${hasUpperLower ? '✓' : '○'} Uppercase & Lowercase letters`;
-      document.getElementById('ruleUpper').style.color = hasUpperLower ? 'var(--status-green)' : 'var(--text-muted)';
+      const ruleUp = document.getElementById('ruleUpper');
+      if (ruleUp) {
+        ruleUp.innerHTML = `${hasUpperLower ? '✓' : '○'} Uppercase & Lowercase letters`;
+        ruleUp.style.color = hasUpperLower ? 'var(--status-green)' : 'var(--text-muted)';
+      }
 
-      document.getElementById('ruleNumber').innerHTML = `${hasNumber ? '✓' : '○'} Numerical digits (0-9)`;
-      document.getElementById('ruleNumber').style.color = hasNumber ? 'var(--status-green)' : 'var(--text-muted)';
+      const ruleNum = document.getElementById('ruleNumber');
+      if (ruleNum) {
+        ruleNum.innerHTML = `${hasNumber ? '✓' : '○'} Numerical digits (0-9)`;
+        ruleNum.style.color = hasNumber ? 'var(--status-green)' : 'var(--text-muted)';
+      }
 
-      document.getElementById('ruleSymbol').innerHTML = `${hasSymbol ? '✓' : '○'} Defensive symbols (!@#$%...)`;
-      document.getElementById('ruleSymbol').style.color = hasSymbol ? 'var(--status-green)' : 'var(--text-muted)';
+      const ruleSym = document.getElementById('ruleSymbol');
+      if (ruleSym) {
+        ruleSym.innerHTML = `${hasSymbol ? '✓' : '○'} Defensive symbols (!@#$%...)`;
+        ruleSym.style.color = hasSymbol ? 'var(--status-green)' : 'var(--text-muted)';
+      }
 
       const bar = document.getElementById('customTokenEntropyBar');
       const badge = document.getElementById('customTokenEntropyBadge');
+      if (!bar || !badge) return;
 
       if (!val) {
         bar.style.width = '0%';
@@ -2180,22 +2206,22 @@
       // Calculate approximate entropy
       let score = 0;
       if (hasLength) score += 35;
-      else score += Math.floor((val.length / 12) * 25);
+      else score += Math.floor((val.length / 8) * 25);
       if (/[a-z]/.test(val)) score += 10;
       if (/[A-Z]/.test(val)) score += 15;
       if (hasNumber) score += 20;
       if (hasSymbol) score += 20;
 
       bar.style.width = Math.min(score, 100) + '%';
-      if (score >= 90) {
+      if (score >= 85) {
         bar.style.backgroundColor = 'var(--status-green)';
         badge.className = 'badge badge-online';
-        badge.innerText = '🛡️ Defense-Grade';
-      } else if (score >= 65) {
+        badge.innerText = 'Defense-Grade';
+      } else if (score >= 60) {
         bar.style.backgroundColor = 'var(--accent-blue)';
         badge.className = 'badge badge-external';
         badge.innerText = 'Strong';
-      } else if (score >= 40) {
+      } else if (score >= 35) {
         bar.style.backgroundColor = 'var(--status-amber)';
         badge.className = 'badge badge-idle';
         badge.innerText = 'Moderate';
@@ -2209,8 +2235,8 @@
     async function handleCustomTokenSubmit(e) {
       e.preventDefault();
       const custom_token = document.getElementById('customTokenInput').value.trim();
-      if (custom_token.length < 12) {
-        alert('Personal access key must be at least 12 characters for production defense compliance.');
+      if (custom_token.length < 8) {
+        alert('Personal access key must be at least 8 characters long.');
         return;
       }
 
@@ -2226,7 +2252,7 @@
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${TOKEN}`
           },
-          body: JSON.stringify({ custom_token })
+          body: JSON.stringify({ token: custom_token, custom_token: custom_token })
         });
 
         if (!res.ok) {
@@ -2243,7 +2269,8 @@
 
         closeCustomTokenModal();
         updateCandidateKeyUI();
-        alert(`Success: Personalized defense access key configured successfully!\n\nSecurity Rating: ${data.entropy_score}\n\nPlease record your key securely.`);
+        const rating = (data.entropy && data.entropy.score) || data.entropy_score || 'Defense-Grade';
+        alert(`Success: Personalized defense access key configured successfully!\n\nSecurity Rating: ${rating}\n\nPlease record your key securely.`);
         loadMyTasks();
       } catch (err) {
         alert('Credential Configuration Failed: ' + err.message);

@@ -6,29 +6,37 @@
   <title>CyberForge | Lead Operations Console</title>
   <style>
     :root {
-      --bg-root: #090d16;
-      --bg-surface: #0f172a;
-      --bg-surface-elevated: #1e293b;
-      --bg-surface-hover: #243248;
-      --border-subtle: #1e293b;
-      --border-strong: #334155;
-      --border-focus: #3b82f6;
+      --bg-root: #070a10;
+      --bg-surface: #0d1424;
+      --bg-surface-elevated: #141e34;
+      --bg-surface-hover: #1b2844;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --border-focus: #38bdf8;
       --text-primary: #f8fafc;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
-      --accent-blue: #3b82f6;
-      --accent-blue-hover: #2563eb;
+      --accent-blue: #0284c7;
+      --accent-blue-hover: #0369a1;
+      --accent-cyan: #38bdf8;
       --status-green: #10b981;
       --status-green-bg: rgba(16, 185, 129, 0.12);
       --status-amber: #f59e0b;
       --status-amber-bg: rgba(245, 158, 11, 0.12);
       --status-red: #f43f5e;
       --status-red-bg: rgba(244, 63, 94, 0.12);
-      --status-blue: #3b82f6;
-      --status-blue-bg: rgba(59, 130, 246, 0.12);
+      --status-blue: #38bdf8;
+      --status-blue-bg: rgba(56, 189, 248, 0.12);
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
     }
+
+    /* Custom Defense-Grade Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-root); }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+    * { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.14) var(--bg-root); }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -374,19 +382,20 @@
     .cohort-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 4px;
-      padding: 1rem 1.15rem;
+      border-radius: 6px;
+      padding: 1.1rem 1.25rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 0.85rem;
       transition: border-color 0.15s, box-shadow 0.15s;
       border-left: 3px solid var(--status-green);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
     .cohort-card.status-active { border-left-color: var(--status-green); }
     .cohort-card.status-neutral { border-left-color: #60a5fa; background: rgba(37, 99, 235, 0.03); }
     .cohort-card.status-adverse { border-left-color: var(--status-red); background: rgba(220, 38, 38, 0.04); }
-    .cohort-card:hover { border-color: var(--border-strong); }
+    .cohort-card:hover { border-color: var(--border-strong); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
 
     .failsafe-grid {
       display: grid;
@@ -397,13 +406,14 @@
     .failsafe-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 4px;
+      border-radius: 6px;
       padding: 1.1rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 0.85rem;
       border-left: 3px solid #60a5fa;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
     .failsafe-card.deployed {
       border-left-color: var(--status-amber);
@@ -425,8 +435,9 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(2px);
+      background: rgba(3, 6, 12, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -443,6 +454,7 @@
       padding: 1.5rem;
       max-height: 90vh;
       overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
     }
     .modal-header {
       display: flex;

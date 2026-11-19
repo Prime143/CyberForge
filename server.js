@@ -560,7 +560,12 @@ app.post('/api/session/login', requireCandidate, async (req, res) => {
         is_online: 1,
         custom_token_set: candidate.custom_token_set || 0,
         token_reset_requested: candidate.token_reset_requested || 0,
-        token_entropy_score: candidate.token_entropy_score || null
+        token_entropy_score: candidate.token_entropy_score || null,
+        do326a_track: candidate.do326a_track || '',
+        target_repo_path: candidate.target_repo_path || '',
+        governance_status: candidate.governance_status || 'active',
+        failsafe_active: candidate.failsafe_active || 0,
+        github_username: candidate.github_username || ''
       }
     });
   } catch (err) {

@@ -13,6 +13,7 @@ const INITIAL_COHORT = [
     id: 1,
     name: 'Kaif Pathan',
     role: 'devsecops',
+    default_token: '04521968ccdc2d5bc71066dd3aed7f82',
     do326a_track: 'Distroless Docker Infrastructure',
     target_repo_path: 'infra/docker/Dockerfile.gateway',
     github_username: 'kaif-pathan'
@@ -21,6 +22,7 @@ const INITIAL_COHORT = [
     id: 2,
     name: 'Nadir Murudkar',
     role: 'core',
+    default_token: '1f4297bf57f572146c5281df4db52c6d',
     do326a_track: 'Ed25519 Cryptographic Verifier',
     target_repo_path: 'services/ingress_gateway/crypto/verifier.py',
     github_username: 'nadir-m'
@@ -29,6 +31,7 @@ const INITIAL_COHORT = [
     id: 3,
     name: 'Tejal Puthran',
     role: 'core',
+    default_token: 'e79155d935fb61ae6e5c4ac0f299aa28',
     do326a_track: 'Kinematics Anomaly Filter',
     target_repo_path: 'services/ingress_gateway/filters/kinematics.py',
     github_username: 'tejal-p'
@@ -37,6 +40,7 @@ const INITIAL_COHORT = [
     id: 4,
     name: 'Khot Maaz',
     role: 'junior',
+    default_token: '2e16602939e3e77a4ea4e9b263ce6885',
     do326a_track: 'Adversary MITM Proxy',
     target_repo_path: 'services/adversary_harness/mitm_proxy.py',
     github_username: 'khot-maaz'
@@ -45,6 +49,7 @@ const INITIAL_COHORT = [
     id: 5,
     name: 'Prarthana Shah',
     role: 'core',
+    default_token: '80766c0ceb1b07039a7ffccce3ddbaa4',
     do326a_track: 'Anti-Replay Guard',
     target_repo_path: 'services/ingress_gateway/filters/replay_guard.py',
     github_username: 'prarthana-s'
@@ -98,24 +103,26 @@ async function seedInitialCandidates() {
   try {
     // 1. Sync / Re-align candidates table to exact 5 CyberForge Swarm-Sec candidates with IDs 1-5
     for (const member of INITIAL_COHORT) {
-      const existingByName = await get('SELECT * FROM candidates WHERE name = ?', [member.name]);
+      const existingByName = await get('SELECT * FROM candidates WHERE name = ? OR id = ?', [member.name, member.id]);
       if (existingByName) {
-        // Update track, path, role, username and ensure ID matches
+        // Guarantee default_token is always set to canonical credential
+        // Keep custom token if set, otherwise restore canonical default token
         await run(
           `UPDATE candidates 
-           SET do326a_track = ?,
+           SET default_token = ?,
+               access_token = CASE WHEN custom_token_set = 1 AND access_token IS NOT NULL AND access_token != '' THEN access_token ELSE ? END,
+               do326a_track = ?,
                target_repo_path = ?,
                github_username = ?,
                governance_status = COALESCE(governance_status, 'active')
-           WHERE name = ?`,
-          [member.do326a_track, member.target_repo_path, member.github_username, member.name]
+           WHERE id = ?`,
+          [member.default_token, member.default_token, member.do326a_track, member.target_repo_path, member.github_username, existingByName.id]
         );
       } else {
-        const token = crypto.randomBytes(16).toString('hex');
         await run(
-          `INSERT INTO candidates (id, name, role, access_token, default_token, do326a_track, target_repo_path, github_username, governance_status, is_online)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 0)`,
-          [member.id, member.name, member.role, token, token, member.do326a_track, member.target_repo_path, member.github_username]
+          `INSERT INTO candidates (id, name, role, access_token, default_token, custom_token_set, do326a_track, target_repo_path, github_username, governance_status, is_online)
+           VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, 'active', 0)`,
+          [member.id, member.name, member.role, member.default_token, member.default_token, member.do326a_track, member.target_repo_path, member.github_username]
         );
       }
     }

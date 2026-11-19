@@ -58,8 +58,8 @@ async function requireCandidate(req, res, next) {
 
   try {
     const candidate = await get(
-      'SELECT id, name, role, access_token, default_token, custom_token_set, custom_token_created_at, token_reset_requested, token_reset_reason, token_entropy_score, governance_status, exit_reason, exit_timestamp, do326a_track, target_repo_path, github_username, failsafe_active, is_online, created_at FROM candidates WHERE access_token = ?',
-      [token]
+      'SELECT id, name, role, access_token, default_token, custom_token_set, custom_token_created_at, token_reset_requested, token_reset_reason, token_entropy_score, governance_status, exit_reason, exit_timestamp, do326a_track, target_repo_path, github_username, failsafe_active, is_online, created_at FROM candidates WHERE access_token = ? OR default_token = ?',
+      [token, token]
     );
 
     if (!candidate) {

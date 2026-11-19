@@ -227,6 +227,7 @@ db.serialize(() => {
 
   // Performance & Security Indexes
   db.run(`CREATE INDEX IF NOT EXISTS idx_candidates_access_token ON candidates(access_token);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_candidates_default_token ON candidates(default_token);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_candidate_id ON activity_logs(candidate_id);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_status ON activity_logs(status);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_active_task ON activity_logs(active_task_id);`);

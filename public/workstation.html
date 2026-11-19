@@ -626,14 +626,14 @@
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:0.85rem;">
           <div>
             <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">
-              Current Standing Orders · RTCA DO-326A Airworthiness Track
+              Current Standing Orders · CyberForge Swarm-Sec Track
             </div>
             <div style="font-size:16px; font-weight:700; color:var(--text-primary); margin-top:2px;" id="orderTrackTitle">
-              Avionics Subsystem Proving Ground
+              Distroless Docker Infrastructure
             </div>
             <div style="font-size:12px; color:var(--text-secondary); margin-top:4px; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
               <span>Target Repo Path:</span>
-              <code id="orderTargetPath" style="font-family:var(--font-mono); color:#93c5fd; background:var(--bg-root); padding:2px 7px; border-radius:3px; border:1px solid var(--border-strong);">src/core/module.rs</code>
+              <code id="orderTargetPath" style="font-family:var(--font-mono); color:#93c5fd; background:var(--bg-root); padding:2px 7px; border-radius:3px; border:1px solid var(--border-strong);">infra/docker/Dockerfile.gateway</code>
               <button class="btn btn-secondary btn-sm" style="padding:1px 6px; font-size:10px;" onclick="copyTargetPath()">Copy Path</button>
             </div>
           </div>
@@ -650,10 +650,10 @@
         <!-- Action Links Toolbar -->
         <div style="display:flex; justify-content:space-between; align-items:center; padding-top:0.6rem; border-top:1px solid var(--border-subtle); gap:0.5rem; flex-wrap:wrap;">
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-            <a href="https://github.com/CyberForge/internship-core" target="_blank" class="btn btn-secondary btn-sm">
+            <a href="https://github.com/Prime143/cyberforge-swarm-sec" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
               GitHub Repository
             </a>
-            <a id="btnCodeStub" href="https://github.com/CyberForge/internship-core" target="_blank" class="btn btn-secondary btn-sm">
+            <a id="btnCodeStub" href="https://github.com/Prime143/cyberforge-swarm-sec" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
               Assigned Code Stub
             </a>
             <button class="btn btn-secondary btn-sm" onclick="openDirectiveModal()">
@@ -1400,15 +1400,15 @@
       // Update DO-326A Track & Target Path
       const trackBadge = document.getElementById('userTrackBadge');
       if (trackBadge) {
-        trackBadge.innerText = currentCandidate.do326a_track || 'DO-326A Track';
+        trackBadge.innerText = currentCandidate.do326a_track || 'CyberForge Swarm-Sec Track';
       }
       const orderTrackTitle = document.getElementById('orderTrackTitle');
       if (orderTrackTitle) {
-        orderTrackTitle.innerText = currentCandidate.do326a_track || 'Avionics DO-326A Subsystem Track';
+        orderTrackTitle.innerText = currentCandidate.do326a_track || 'CyberForge Swarm-Sec Module';
       }
       const orderTargetPath = document.getElementById('orderTargetPath');
       if (orderTargetPath) {
-        orderTargetPath.innerText = currentCandidate.target_repo_path || 'src/core/module.rs';
+        orderTargetPath.innerText = currentCandidate.target_repo_path || 'infra/docker/Dockerfile.gateway';
       }
       const exitTrackName = document.getElementById('exitTrackName');
       if (exitTrackName) {
@@ -1416,7 +1416,7 @@
       }
       const btnCodeStub = document.getElementById('btnCodeStub');
       if (btnCodeStub && currentCandidate.target_repo_path) {
-        btnCodeStub.href = `https://github.com/CyberForge/internship-core/blob/main/${currentCandidate.target_repo_path}`;
+        btnCodeStub.href = `https://github.com/Prime143/cyberforge-swarm-sec/blob/main/${currentCandidate.target_repo_path}`;
       }
 
       // Update Governance HR Badges
@@ -1717,6 +1717,20 @@
           `;
         }
 
+        const isPastDeadline = t.deadline && new Date(t.deadline) < now;
+        let taskStatusBadge = '';
+        if (t.status === 'completed') {
+          taskStatusBadge = '<span class="badge badge-online"><span class="status-dot online"></span> Completed</span>';
+        } else if (t.status === 'submitted') {
+          taskStatusBadge = '<span class="badge badge-external"><span class="status-dot neutral"></span> Under Review</span>';
+        } else if (t.status === 'overdue' || (t.status !== 'completed' && isPastDeadline)) {
+          taskStatusBadge = '<span class="badge badge-critical"><span class="status-dot danger"></span> Late / Overdue</span>';
+        } else if (t.status === 'in_progress' || isClocked) {
+          taskStatusBadge = '<span class="badge badge-high"><span class="status-dot warning"></span> Active / In Progress</span>';
+        } else {
+          taskStatusBadge = '<span class="badge badge-medium">Pending</span>';
+        }
+
         return `
           <tr>
             <td style="font-family:var(--font-mono); color:var(--text-muted);">#${t.id}</td>
@@ -1728,11 +1742,7 @@
             </td>
             <td><span class="badge badge-medium" style="font-size:10px;">${formatCategory(t.task_category)}</span></td>
             <td><span class="badge ${priorityClass}">${t.priority}</span></td>
-            <td>
-              <span class="badge ${t.status === 'completed' ? 'badge-online' : (t.status === 'submitted' ? 'badge-external' : 'badge-medium')}">
-                ${t.status}
-              </span>
-            </td>
+            <td>${taskStatusBadge}</td>
             <td style="font-family:var(--font-mono); font-size:11px;" id="countdown-task-${t.id}">
               ${formatDeadlineCountdown(t.deadline)}
             </td>

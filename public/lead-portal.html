@@ -1713,12 +1713,12 @@
               <!-- DO-326A Track & Target Path -->
               <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.6rem 0.75rem; margin-bottom:0.75rem;">
                 <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Assigned Aerospace Module</div>
-                <div style="font-size:12px; font-weight:600; color:#93c5fd; margin-top:2px;">${escapeHtml(c.do326a_track || 'Avionics DO-326A Subsystem')}</div>
+                <div style="font-size:12px; font-weight:600; color:#93c5fd; margin-top:2px;">${escapeHtml(c.do326a_track || 'CyberForge Swarm-Sec Module')}</div>
                 <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); margin-top:3px; word-break:break-all;">
-                  Path: ${escapeHtml(c.target_repo_path || 'src/core/module.rs')}
+                  Path: <a href="https://github.com/Prime143/cyberforge-swarm-sec/blob/main/${escapeHtml(c.target_repo_path)}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd; text-decoration:underline;">${escapeHtml(c.target_repo_path || 'infra/docker/Dockerfile.gateway')}</a>
                 </div>
                 <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
-                  GitHub: <span style="font-family:var(--font-mono); color:var(--text-primary);">@${escapeHtml(c.github_username || 'candidate')}</span>
+                  GitHub: <a href="https://github.com/${escapeHtml(c.github_username || 'Prime143')}" target="_blank" rel="noopener noreferrer" style="font-family:var(--font-mono); color:var(--text-primary); text-decoration:none;">@${escapeHtml(c.github_username || 'candidate')}</a>
                 </div>
               </div>
 
@@ -1726,6 +1726,34 @@
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; font-size:11px;">
                 <div>${statusBadge}</div>
                 <div>${failsafeBadge}</div>
+              </div>
+
+              <!-- Live Assigned Task Status Telemetry -->
+              <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:3px; padding:0.45rem 0.65rem; margin-bottom:0.75rem; font-size:11px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; font-weight:700;">Task Status Telemetry:</span>
+                  <span style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-primary);">
+                    ${c.task_counts ? c.task_counts.total_tasks : (c.assigned_tasks_count || 0)} Total
+                  </span>
+                </div>
+                ${(c.task_counts && c.task_counts.total_tasks > 0) || (c.assigned_tasks_count > 0) ? `
+                  <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:4px;">
+                    ${c.task_counts?.pending_count > 0 ? `<span class="badge badge-medium" style="font-size:9px;">${c.task_counts.pending_count} Pending</span>` : ''}
+                    ${c.task_counts?.in_progress_count > 0 ? `<span class="badge badge-high" style="font-size:9px;"><span class="status-dot warning"></span> ${c.task_counts.in_progress_count} Active</span>` : ''}
+                    ${c.task_counts?.submitted_count > 0 ? `<span class="badge badge-critical" style="font-size:9px; background:#ef444420; color:#f87171; border:1px solid #ef444450;"><span class="status-dot danger"></span> ${c.task_counts.submitted_count} Under Review</span>` : ''}
+                    ${c.task_counts?.completed_count > 0 ? `<span class="badge badge-online" style="font-size:9px;"><span class="status-dot online"></span> ${c.task_counts.completed_count} Completed</span>` : ''}
+                    ${c.task_counts?.overdue_count > 0 ? `<span class="badge badge-critical" style="font-size:9px; background:#ef444420; color:#f87171; border:1px solid #ef444450;"><span class="status-dot danger"></span> ${c.task_counts.overdue_count} Late</span>` : ''}
+                  </div>
+                  ${c.active_task_title ? `
+                    <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-secondary); margin-top:5px; border-top:1px dashed var(--border-subtle); padding-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(c.active_task_title)}">
+                      <span style="color:var(--accent-blue); font-weight:600;">Current:</span> ${escapeHtml(c.active_task_title)}
+                    </div>
+                  ` : ''}
+                ` : `
+                  <div style="font-size:10px; color:var(--text-muted); font-style:italic;">
+                    No deliverables assigned yet.
+                  </div>
+                `}
               </div>
 
               <!-- CI Pipeline & PR Status -->
@@ -2300,9 +2328,20 @@
             </td>
             <td><span class="badge ${priorityClass}">${t.priority}</span></td>
             <td>
-              <span class="badge ${t.status === 'completed' ? 'badge-online' : (t.status === 'submitted' ? 'badge-critical' : 'badge-medium')}">
-                ${t.status}
-              </span>
+              ${(() => {
+                const isPast = t.deadline && new Date(t.deadline) < now;
+                if (t.status === 'completed') {
+                  return '<span class="badge badge-online"><span class="status-dot online"></span> Completed</span>';
+                } else if (t.status === 'submitted') {
+                  return '<span class="badge badge-critical" style="background:#ef444420; color:#f87171; border:1px solid #ef444450;"><span class="status-dot danger"></span> Under Review</span>';
+                } else if (t.status === 'overdue' || (t.status !== 'completed' && isPast)) {
+                  return '<span class="badge badge-critical" style="background:#ef444420; color:#f87171; border:1px solid #ef444450;"><span class="status-dot danger"></span> Late / Overdue</span>';
+                } else if (t.status === 'in_progress') {
+                  return '<span class="badge badge-high"><span class="status-dot warning"></span> Active / In Progress</span>';
+                } else {
+                  return '<span class="badge badge-medium">Pending</span>';
+                }
+              })()}
               ${t.score !== null && t.score !== undefined && t.status === 'completed' ? `<div style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono); margin-top:2px;">Score: ${t.score}/100</div>` : ''}
             </td>
             <td style="font-family:var(--font-mono); font-size:11px;" id="admin-countdown-${t.id}">

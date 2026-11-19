@@ -1,8 +1,8 @@
 /**
- * CyberForge Cohort Initial Seeder
+ * CyberForge Cohort Initial Seeder & Repository Sync
  *
- * Automatically provisions 4-candidate DO-326A aerospace flight cohort,
- * Golden Master Shadow Codebase records, and baseline pipeline telemetry.
+ * Automatically provisions 5-candidate CyberForge Swarm-Sec cohort,
+ * Golden Master Shadow Codebase records, and verifies clean PR telemetry baseline.
  */
 
 const crypto = require('crypto');
@@ -10,207 +10,162 @@ const { get, run, all, logAudit } = require('../database');
 
 const INITIAL_COHORT = [
   {
+    id: 1,
     name: 'Kaif Pathan',
     role: 'devsecops',
-    do326a_track: 'Ed25519 Cryptographic Verifier',
-    target_repo_path: 'src/crypto/ed25519_verifier.rs',
+    do326a_track: 'Distroless Docker Infrastructure',
+    target_repo_path: 'infra/docker/Dockerfile.gateway',
     github_username: 'kaif-pathan'
   },
   {
+    id: 2,
     name: 'Nadir Murudkar',
     role: 'core',
-    do326a_track: 'Kinematics Kalman State Filter',
-    target_repo_path: 'src/filters/kinematics.rs',
+    do326a_track: 'Ed25519 Cryptographic Verifier',
+    target_repo_path: 'services/ingress_gateway/crypto/verifier.py',
     github_username: 'nadir-m'
   },
   {
+    id: 3,
     name: 'Tejal Puthran',
     role: 'core',
-    do326a_track: 'Ingress HMAC-SHA256 Guard',
-    target_repo_path: 'src/middleware/hmac_guard.js',
+    do326a_track: 'Kinematics Anomaly Filter',
+    target_repo_path: 'services/ingress_gateway/filters/kinematics.py',
     github_username: 'tejal-p'
   },
   {
+    id: 4,
     name: 'Khot Maaz',
     role: 'junior',
-    do326a_track: 'Avionics High-Rate Telemetry Streamer',
-    target_repo_path: 'src/telemetry/streamer.rs',
+    do326a_track: 'Adversary MITM Proxy',
+    target_repo_path: 'services/adversary_harness/mitm_proxy.py',
     github_username: 'khot-maaz'
+  },
+  {
+    id: 5,
+    name: 'Prarthana Shah',
+    role: 'core',
+    do326a_track: 'Anti-Replay Guard',
+    target_repo_path: 'services/ingress_gateway/filters/replay_guard.py',
+    github_username: 'prarthana-s'
   }
 ];
 
 const INITIAL_SHADOW_MODULES = [
   {
     module_code: 'MOD-01',
-    module_name: 'Kinematics Kalman State Filter',
-    do326a_track: 'Flight Kinematics & Attitude Estimation',
-    target_path: 'src/filters/kinematics.rs',
+    module_name: 'Distroless Docker Infrastructure',
+    do326a_track: 'Minimal Container Hardening & Ingress Gateway',
+    target_path: 'infra/docker/Dockerfile.gateway',
     readiness_pct: 100,
-    notes: 'Golden Master v2.4 validated under RTCA DO-326A Tier 1 fault matrix.'
+    notes: 'Golden Master distroless multi-stage hardened build with non-root runtime.'
   },
   {
     module_code: 'MOD-02',
     module_name: 'Ed25519 Cryptographic Verifier',
     do326a_track: 'Zero-Trust Ingress & Signature Verification',
-    target_path: 'src/crypto/ed25519_verifier.rs',
+    target_path: 'services/ingress_gateway/crypto/verifier.py',
     readiness_pct: 100,
-    notes: 'Rust-based constant-time signature verification engine with memory zeroization.'
+    notes: 'Constant-time Ed25519 signature verification engine with memory zeroization.'
   },
   {
     module_code: 'MOD-03',
-    module_name: 'Ingress HMAC-SHA256 Guard',
-    do326a_track: 'Ingress Signature Verification & Rate-Limiting',
-    target_path: 'src/middleware/hmac_guard.js',
+    module_name: 'Kinematics Anomaly Filter',
+    do326a_track: 'Flight Kinematics & Attitude Estimation',
+    target_path: 'services/ingress_gateway/filters/kinematics.py',
     readiness_pct: 100,
-    notes: 'Deterministic payload canonicalization with replay-attack timestamp window.'
+    notes: 'State-space covariance boundary checking and trajectory rate-of-climb anomaly rejection.'
   },
   {
     module_code: 'MOD-04',
-    module_name: 'Avionics High-Rate Telemetry Streamer',
-    do326a_track: 'UDP/TCP Low-Latency Telemetry Link',
-    target_path: 'src/telemetry/streamer.rs',
+    module_name: 'Adversary MITM Proxy',
+    do326a_track: 'Offensive Adversary Emulation & Proxy',
+    target_path: 'services/adversary_harness/mitm_proxy.py',
     readiness_pct: 100,
-    notes: 'Asynchronous buffered ring-buffer with automated drop-detection and backpressure.'
+    notes: 'Simulated packet alteration and adversary MITM injection harness.'
   },
   {
     module_code: 'MOD-05',
-    module_name: 'DO-326A Memory Boundary Sanitizer',
-    do326a_track: 'Memory Safety & Buffer Overflow Elimination',
-    target_path: 'src/security/boundary_sanitizer.c',
+    module_name: 'Anti-Replay Guard',
+    do326a_track: 'Deterministic Timestamp Window & Nonce Verification',
+    target_path: 'services/ingress_gateway/filters/replay_guard.py',
     readiness_pct: 100,
-    notes: 'Hardware-enforced bounds checking for DMA buffers and serial packets.'
-  },
-  {
-    module_code: 'MOD-06',
-    module_name: 'Fault-Tolerant Sweeper Daemon',
-    do326a_track: 'Autonomous System Health & Deadman Sweeper',
-    target_path: 'src/daemons/sweeper.js',
-    readiness_pct: 100,
-    notes: 'Isolated background worker enforcing 60s dead-man switches and memory garbage collection.'
+    notes: 'Sliding window nonce cache preventing replay attacks within 60s flight windows.'
   }
 ];
 
 async function seedInitialCandidates() {
   try {
-    // 1. Provision or update candidates with DO-326A tracks
+    // 1. Sync / Re-align candidates table to exact 5 CyberForge Swarm-Sec candidates with IDs 1-5
     for (const member of INITIAL_COHORT) {
-      const existingCand = await get('SELECT * FROM candidates WHERE name = ?', [member.name]);
-      if (!existingCand) {
-        const token = crypto.randomBytes(16).toString('hex');
-        const res = await run(
-          `INSERT INTO candidates (name, role, access_token, default_token, do326a_track, target_repo_path, github_username, governance_status, is_online)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 0)`,
-          [member.name, member.role, token, token, member.do326a_track, member.target_repo_path, member.github_username]
-        );
-        await logAudit(res.lastID, 'COHORT_AEROSPACE_PROVISIONED', {
-          track: member.do326a_track,
-          path: member.target_repo_path
-        });
-      } else {
-        // Update track and repo path if missing
+      const existingByName = await get('SELECT * FROM candidates WHERE name = ?', [member.name]);
+      if (existingByName) {
+        // Update track, path, role, username and ensure ID matches
         await run(
           `UPDATE candidates 
-           SET do326a_track = COALESCE(do326a_track, ?),
-               target_repo_path = COALESCE(target_repo_path, ?),
-               github_username = COALESCE(github_username, ?),
+           SET do326a_track = ?,
+               target_repo_path = ?,
+               github_username = ?,
                governance_status = COALESCE(governance_status, 'active')
-           WHERE id = ?`,
-          [member.do326a_track, member.target_repo_path, member.github_username, existingCand.id]
+           WHERE name = ?`,
+          [member.do326a_track, member.target_repo_path, member.github_username, member.name]
+        );
+      } else {
+        const token = crypto.randomBytes(16).toString('hex');
+        await run(
+          `INSERT INTO candidates (id, name, role, access_token, default_token, do326a_track, target_repo_path, github_username, governance_status, is_online)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 0)`,
+          [member.id, member.name, member.role, token, token, member.do326a_track, member.target_repo_path, member.github_username]
         );
       }
     }
 
-    // 2. Provision Shadow Codebase entries if empty
-    const existingShadow = await get('SELECT COUNT(*) AS count FROM shadow_codebase');
-    if (!existingShadow || existingShadow.count === 0) {
-      for (const mod of INITIAL_SHADOW_MODULES) {
+    // Ensure IDs 1-5 alignment
+    // Check if Kaif Pathan has ID 2 and need to align to 1:
+    const kaif = await get("SELECT * FROM candidates WHERE name = 'Kaif Pathan'");
+    if (kaif && kaif.id !== 1) {
+      const slot1 = await get('SELECT id FROM candidates WHERE id = 1');
+      if (!slot1) {
+        await run('UPDATE candidates SET id = 1 WHERE name = ?', ['Kaif Pathan']);
+        await run('UPDATE activity_logs SET candidate_id = 1 WHERE candidate_id = ?', [kaif.id]);
+        await run('UPDATE work_logs SET candidate_id = 1 WHERE candidate_id = ?', [kaif.id]);
+        await run('UPDATE tickets SET candidate_id = 1 WHERE candidate_id = ?', [kaif.id]);
+        await run('UPDATE notifications SET candidate_id = 1 WHERE candidate_id = ?', [kaif.id]);
+        await run('UPDATE audit_trail SET candidate_id = 1 WHERE candidate_id = ?', [kaif.id]);
+      }
+    }
+
+    // 2. Sync Shadow Codebase entries to match the 5 real Swarm-Sec modules
+    await run('DELETE FROM shadow_codebase WHERE module_code NOT IN ("MOD-01", "MOD-02", "MOD-03", "MOD-04", "MOD-05")');
+    for (const mod of INITIAL_SHADOW_MODULES) {
+      const existing = await get('SELECT id FROM shadow_codebase WHERE module_code = ?', [mod.module_code]);
+      if (existing) {
+        await run(
+          `UPDATE shadow_codebase 
+           SET module_name = ?, do326a_track = ?, target_path = ?, readiness_pct = ?, notes = ?
+           WHERE module_code = ?`,
+          [mod.module_name, mod.do326a_track, mod.target_path, mod.readiness_pct, mod.notes, mod.module_code]
+        );
+      } else {
         await run(
           `INSERT INTO shadow_codebase (module_code, module_name, do326a_track, target_path, readiness_pct, is_deployed, notes)
            VALUES (?, ?, ?, ?, ?, 0, ?)`,
           [mod.module_code, mod.module_name, mod.do326a_track, mod.target_path, mod.readiness_pct, mod.notes]
         );
       }
-      console.log('[DevSecOps] Shadow Codebase Failsafe Golden Master modules initialized (6/6 Standby).');
     }
 
-    // 3. Provision baseline pipeline telemetry if empty
-    const existingTelemetry = await get('SELECT COUNT(*) AS count FROM pipeline_telemetry');
-    if (!existingTelemetry || existingTelemetry.count === 0) {
-      const candidates = await all('SELECT id, name, target_repo_path, github_username FROM candidates LIMIT 6');
-      const sampleEvents = [
-        {
-          candIdx: 0,
-          pr_number: 101,
-          branch: 'feature/ed25519-core-verification',
-          pr_title: 'feat(crypto): implement constant-time ed25519 point verification',
-          commit_sha: 'a8f190c',
-          path_guard: 'passed',
-          ci_status: 'passed'
-        },
-        {
-          candIdx: 1,
-          pr_number: 102,
-          branch: 'feature/kinematics-state-filter',
-          pr_title: 'feat(filters): add Kalman state covariance matrix bounds',
-          commit_sha: '7b203ef',
-          path_guard: 'passed',
-          ci_status: 'passed'
-        },
-        {
-          candIdx: 2,
-          pr_number: 103,
-          branch: 'feature/hmac-ingress-guard',
-          pr_title: 'feat(middleware): enforce sha256 signature timestamp window',
-          commit_sha: '4d119ca',
-          path_guard: 'passed',
-          ci_status: 'passed'
-        },
-        {
-          candIdx: 3,
-          pr_number: 104,
-          branch: 'feature/telemetry-udp-streamer',
-          pr_title: 'feat(streamer): asynchronous ring-buffer frame serialization',
-          commit_sha: '9c5812b',
-          path_guard: 'passed',
-          ci_status: 'running'
-        }
-      ];
+    // 3. Clear all fake/mock PR telemetry so every candidate starts with NO PR DISPATCHED
+    await run('DELETE FROM pipeline_telemetry WHERE pr_number IN (101, 102, 103, 104) OR pr_url LIKE "%CyberForge/core%"');
 
-      for (const ev of sampleEvents) {
-        const cand = candidates[ev.candIdx];
-        if (cand) {
-          await run(
-            `INSERT INTO pipeline_telemetry (candidate_id, candidate_name, branch, target_path, pr_number, pr_title, pr_url, commit_sha, path_guard_status, ci_status, ci_run_url)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              cand.id,
-              cand.name,
-              ev.branch,
-              cand.target_repo_path,
-              ev.pr_number,
-              ev.pr_title,
-              `https://github.com/CyberForge/core/pull/${ev.pr_number}`,
-              ev.commit_sha,
-              ev.path_guard,
-              ev.ci_status,
-              `https://github.com/CyberForge/core/actions/runs/${5000 + ev.pr_number}`
-            ]
-          );
-        }
-      }
-      console.log('[DevSecOps] Initialized baseline GitHub Actions CI path-guard pipeline telemetry.');
-    }
-
-    console.log('[DevSecOps] DO-326A Cohort Matrix and Failsafe registry verified successfully.');
+    console.log('[DevSecOps] CyberForge Swarm-Sec Cohort Matrix and Shadow Codebase synchronized.');
   } catch (err) {
-    console.error('[ERROR] [Seeder] Failed to seed DO-326A cohort / failsafe:', err.message);
+    console.error('[ERROR] [Seeder] Failed to seed Swarm-Sec cohort / failsafe:', err.message);
   }
 }
 
 module.exports = {
-  seedInitialCandidates
-};
-
-module.exports = {
+  INITIAL_COHORT,
+  INITIAL_SHADOW_MODULES,
   seedInitialCandidates
 };

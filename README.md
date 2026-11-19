@@ -38,12 +38,13 @@ The active CyberForge cohort operates across specialized engineering disciplines
 
 > **Zero-Trust Security Notice:** In strict adherence to OWASP A07 (Identification and Authentication Failures) and ISO/IEC 27001 credential governance, **zero authentication tokens, passwords, or credentials are published in version control**. All candidate workstation credentials are cryptographically provisioned at runtime via CSPRNG, client-rotated, and stored exclusively in protected runtime memory.
 
-| Candidate Name | Role / Rank | DO-326A Aerospace Domain Track | Target Repository Module |
-|:---------------|:------------|:-------------------------------|:-------------------------|
-| **Kaif Pathan** | DevSecOps & Cloud Security | Ed25519 Cryptographic Verifier | `src/crypto/ed25519_verifier.rs` |
-| **Nadir Murudkar** | Core Proving Ground Developer | Kinematics Kalman State Filter | `src/filters/kinematics.rs` |
-| **Tejal Puthran** | Core Proving Ground Developer | Ingress HMAC-SHA256 Guard | `src/middleware/hmac_guard.js` |
-| **Khot Maaz** | Junior Systems Developer | Avionics High-Rate Telemetry Streamer | `src/telemetry/streamer.rs` |
+| Candidate ID | Candidate Name | Role / Rank | CyberForge Swarm-Sec Domain Track | Target Repository Module |
+|:------------:|:---------------|:------------|:----------------------------------|:-------------------------|
+| `1` | **Kaif Pathan** | DevSecOps & Cloud Security | Distroless Docker Infrastructure | `infra/docker/Dockerfile.gateway` |
+| `2` | **Nadir Murudkar** | Core Proving Ground Developer | Ed25519 Cryptographic Verifier | `services/ingress_gateway/crypto/verifier.py` |
+| `3` | **Tejal Puthran** | Core Proving Ground Developer | Kinematics Anomaly Filter | `services/ingress_gateway/filters/kinematics.py` |
+| `4` | **Khot Maaz** | Junior Systems Developer | Adversary MITM Proxy | `services/adversary_harness/mitm_proxy.py` |
+| `5` | **Prarthana Shah** | Core Proving Ground Developer | Anti-Replay Guard | `services/ingress_gateway/filters/replay_guard.py` |
 
 ---
 

@@ -1121,8 +1121,13 @@ app.get('/api/candidate/tasks', requireCandidate, async (req, res) => {
     const now = new Date();
     const enrichedTasks = tasks.map(t => {
       const isOverdue = t.status !== 'completed' && new Date(t.deadline) < now;
+      let effectiveStatus = t.status;
+      if (isOverdue && t.status !== 'completed') {
+        effectiveStatus = 'overdue';
+      }
       return {
         ...t,
+        status: effectiveStatus,
         is_overdue: isOverdue
       };
     });
@@ -1139,8 +1144,8 @@ app.get('/api/candidate/tasks', requireCandidate, async (req, res) => {
         governance_status: candidate.governance_status || 'active',
         exit_reason: candidate.exit_reason || null,
         exit_timestamp: candidate.exit_timestamp || null,
-        do326a_track: candidate.do326a_track || 'Avionics DO-326A Defense Track',
-        target_repo_path: candidate.target_repo_path || 'src/core/module.rs',
+        do326a_track: candidate.do326a_track || 'Distroless Docker Infrastructure',
+        target_repo_path: candidate.target_repo_path || 'infra/docker/Dockerfile.gateway',
         github_username: candidate.github_username || '',
         failsafe_active: candidate.failsafe_active || 0
       },
@@ -2246,15 +2251,87 @@ app.get('/api/governance/cohort', requireAdmin, async (req, res) => {
       telemetryMap[t.candidate_id] = t;
     });
 
+    // Fetch dynamic live task metrics for each candidate
+    const taskRows = await all(`
+      SELECT 
+        assigned_to,
+        COUNT(*) AS total_tasks,
+        SUM(CASE WHEN status = 'pending' AND (deadline IS NULL OR datetime(deadline) >= datetime('now')) THEN 1 ELSE 0 END) AS pending_count,
+        SUM(CASE WHEN status = 'in_progress' AND (deadline IS NULL OR datetime(deadline) >= datetime('now')) THEN 1 ELSE 0 END) AS in_progress_count,
+        SUM(CASE WHEN status = 'submitted' THEN 1 ELSE 0 END) AS submitted_count,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_count,
+        SUM(CASE WHEN status = 'overdue' OR (status != 'completed' AND datetime(deadline) < datetime('now')) THEN 1 ELSE 0 END) AS overdue_count
+      FROM tasks
+      WHERE assigned_to IS NOT NULL
+      GROUP BY assigned_to
+    `);
+    const taskMap = {};
+    taskRows.forEach(r => {
+      taskMap[r.assigned_to] = {
+        total_tasks: r.total_tasks || 0,
+        pending_count: r.pending_count || 0,
+        in_progress_count: r.in_progress_count || 0,
+        submitted_count: r.submitted_count || 0,
+        completed_count: r.completed_count || 0,
+        overdue_count: r.overdue_count || 0
+      };
+    });
+
+    // Fetch active / primary task for each candidate
+    const activeTasks = await all(`
+      SELECT t.id, t.assigned_to, t.title, t.status, t.deadline
+      FROM tasks t
+      WHERE t.assigned_to IS NOT NULL AND t.status IN ('in_progress', 'pending', 'submitted', 'overdue')
+      ORDER BY 
+        CASE 
+          WHEN t.status = 'in_progress' THEN 1
+          WHEN t.status = 'overdue' THEN 2
+          WHEN t.status = 'submitted' THEN 3
+          WHEN t.status = 'pending' THEN 4
+          ELSE 5
+        END,
+        t.id DESC
+    `);
+    const activeTaskMap = {};
+    activeTasks.forEach(at => {
+      if (!activeTaskMap[at.assigned_to]) {
+        activeTaskMap[at.assigned_to] = at;
+      }
+    });
+
+    // Fetch latest work log message for each candidate
+    const workLogs = await all(`
+      SELECT wl.candidate_id, wl.message, wl.created_at
+      FROM work_logs wl
+      INNER JOIN (
+        SELECT candidate_id, MAX(id) AS max_id FROM work_logs GROUP BY candidate_id
+      ) latest_wl ON wl.id = latest_wl.max_id
+    `);
+    const workLogMap = {};
+    workLogs.forEach(w => {
+      workLogMap[w.candidate_id] = w;
+    });
+
     const enriched = candidates.map(c => {
       const active = c.total_active_seconds || 0;
       const idle = c.idle_seconds || 0;
       const total = active + idle;
       const focusScore = total > 0 ? Math.round((active / total) * 100) : (c.is_online ? 100 : 0);
+      const taskStats = taskMap[c.id] || { total_tasks: 0, pending_count: 0, in_progress_count: 0, submitted_count: 0, completed_count: 0, overdue_count: 0 };
+      const curTask = activeTaskMap[c.id] || null;
+      const curLog = workLogMap[c.id] || null;
+
       return {
         ...c,
         focus_score: focusScore,
-        latest_pipeline: telemetryMap[c.id] || null
+        latest_pipeline: telemetryMap[c.id] || null,
+        task_counts: taskStats,
+        assigned_tasks_count: taskStats.total_tasks,
+        completed_tasks_count: taskStats.completed_count,
+        active_task: curTask,
+        active_task_title: curTask ? curTask.title : null,
+        latest_work_log: curLog ? curLog.message : null,
+        latest_work_log_time: curLog ? curLog.created_at : null
       };
     });
 

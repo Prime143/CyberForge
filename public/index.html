@@ -3,121 +3,825 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CyberForge | Engineering Proving Ground Gateway</title>
+  <title>CyberForge Swarm-Sec | Aerospace Defensive Proving Ground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-root: #0b0f19;
-      --bg-surface: #111827;
-      --border-strong: #374151;
-      --border-subtle: #1f2937;
-      --text-primary: #f9fafb;
-      --text-secondary: #9ca3af;
-      --text-muted: #6b7280;
-      --accent-blue: #2563eb;
-      --accent-blue-hover: #1d4ed8;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, Consolas, monospace;
+      --bg-root: #060910;
+      --bg-surface: #0b111e;
+      --bg-surface-elevated: #111a2e;
+      --bg-surface-hover: #16223b;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --border-accent: rgba(56, 189, 248, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #0284c7;
+      --accent-blue-hover: #0369a1;
+      --accent-cyan: #38bdf8;
+      --status-green: #10b981;
+      --status-green-bg: rgba(16, 185, 129, 0.12);
+      --status-amber: #f59e0b;
+      --status-amber-bg: rgba(245, 158, 11, 0.12);
+      --status-red: #f43f5e;
+      --status-red-bg: rgba(244, 63, 94, 0.12);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      background: var(--bg-root);
+      background-color: var(--bg-root);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.08), transparent 45%),
+        radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 100% 100%, 28px 28px;
       color: var(--text-primary);
       font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar */
+    header.top-nav {
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(6, 9, 16, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .brand-group {
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      font-size: 13px;
+      gap: 0.75rem;
     }
-    .panel {
+    .brand-mark {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .brand-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--accent-cyan);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .nav-link {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: var(--bg-surface-elevated);
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--status-green);
+      background: var(--status-green-bg);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 9px;
+      border-radius: 4px;
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--status-green);
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 2.5rem 0 3.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 3rem;
+    }
+    .hero-pretitle {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-cyan);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .hero-title {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text-primary);
+      max-width: 820px;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+    .hero-lead {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      max-width: 760px;
+      margin-bottom: 2rem;
+    }
+    .hero-lead strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Ingress Action Cards */
+    .ingress-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      max-width: 860px;
+    }
+    .ingress-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-strong);
       border-radius: 6px;
-      padding: 2.5rem 2rem;
-      max-width: 480px;
-      width: 100%;
-    }
-    .title {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      margin-bottom: 0.25rem;
-    }
-    .subtitle {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-bottom: 1.5rem;
-      font-family: var(--font-mono);
-    }
-    .description {
-      color: var(--text-secondary);
-      font-size: 13px;
-      line-height: 1.6;
-      margin-bottom: 1.75rem;
-      border-top: 1px solid var(--border-subtle);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 1rem 0;
-    }
-    .btn-group {
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .ingress-card:hover {
+      background: var(--bg-surface-elevated);
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+    }
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .card-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+    .badge-candidate {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent-cyan);
+    }
+    .badge-lead {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--status-amber);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+    }
+    .card-action {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+    }
+
+    /* Section Headings */
+    .section-header {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
       gap: 0.75rem;
     }
-    .btn {
-      display: inline-flex;
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 0.65rem 1rem;
+      gap: 0.6rem;
+    }
+    .section-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Interactive Topology Grid */
+    .topology-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+    @media (max-width: 900px) {
+      .topology-container { grid-template-columns: 1fr; }
+    }
+
+    .node-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .node-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      padding: 0.9rem 1.1rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .node-item:hover, .node-item.selected {
+      background: var(--bg-surface-elevated);
+      border-color: var(--accent-cyan);
+    }
+    .node-item.selected {
+      border-left: 3px solid var(--accent-cyan);
+    }
+    .node-info-top {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2px;
+    }
+    .node-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+    .node-name {
       font-size: 13px;
       font-weight: 600;
-      border-radius: 4px;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background-color 0.15s, border-color 0.15s;
-    }
-    .btn-primary {
-      background: var(--accent-blue);
-      color: #fff;
-      border: 1px solid var(--accent-blue);
-    }
-    .btn-primary:hover {
-      background: var(--accent-blue-hover);
-    }
-    .btn-secondary {
-      background: transparent;
       color: var(--text-primary);
-      border: 1px solid var(--border-strong);
     }
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.04);
+    .node-assignee {
+      font-size: 12px;
+      color: var(--text-secondary);
     }
-    .footer-note {
-      margin-top: 1.5rem;
+    .node-path-preview {
+      font-family: var(--font-mono);
       font-size: 11px;
       color: var(--text-muted);
-      text-align: center;
+    }
+
+    /* Node Detail Inspector Box */
+    .inspector-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .inspector-header {
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+    .inspector-badge {
       font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-cyan);
+      margin-bottom: 0.4rem;
+    }
+    .inspector-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .inspector-assignee {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .inspector-field {
+      margin-bottom: 1rem;
+    }
+    .inspector-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .inspector-value {
+      font-size: 12px;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+    .inspector-path-box {
+      background: var(--bg-root);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 0.65rem 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-cyan);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      word-break: break-all;
+      gap: 0.5rem;
+    }
+    .copy-btn {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+    .copy-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-surface-hover);
+    }
+
+    .inspector-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 1.25rem;
+    }
+    .btn-github {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+      padding: 0.5rem 0.9rem;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-github:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--text-secondary);
+    }
+
+    /* Founder Manifest & Defense Standard */
+    .manifest-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+    @media (max-width: 800px) {
+      .manifest-grid { grid-template-columns: 1fr; }
+    }
+    .manifest-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 1.5rem;
+    }
+    .manifest-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .manifest-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* Telemetry Ribbon */
+    .telemetry-strip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 3.5rem;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .telemetry-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .telemetry-item .label {
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+    .telemetry-item .val {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Footer */
+    footer.bottom-footer {
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(6, 9, 16, 0.95);
+      padding: 1.75rem 1.5rem;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-brand {
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
     }
   </style>
 </head>
 <body>
-  <div class="panel">
-    <div class="title">CyberForge Proving Ground</div>
-    <div class="subtitle">Student Engineering Incubator // Access Ingress</div>
-    
-    <div class="description">
-      An open, student-led engineering incubator and live-infrastructure proving ground. Candidates build defensive software, security verification tooling, and resilient systems for public utility, civic governance, and national infrastructure.
-    </div>
 
-    <div class="btn-group">
-      <a href="/workstation" class="btn btn-primary">Connect Candidate Workstation ➔</a>
-      <a href="/lead-portal.html" class="btn btn-secondary">Lead Operations Console</a>
-    </div>
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="nav-inner">
+      <div class="brand-group">
+        <span class="brand-mark">
+          CYBERFORGE
+        </span>
+        <span class="brand-tag">SWARM-SEC // PROVING GROUND v1.4</span>
+      </div>
 
-    <div class="footer-note">
-      CONTINUOUS TELEMETRY · APPEND-ONLY AUDIT TRAIL
+      <div class="nav-actions">
+        <div class="status-indicator">
+          <span class="pulse-dot"></span>
+          <span>5/5 NODES NOMINAL</span>
+        </div>
+        <a href="/workstation" class="nav-link">Workstation Ingress</a>
+        <a href="/lead-portal.html" class="nav-link">Lead Console</a>
+        <a href="https://github.com/Prime143/cyberforge-swarm-sec" target="_blank" rel="noopener" class="nav-link" style="color:var(--accent-cyan);">GitHub ↗</a>
+      </div>
     </div>
-  </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-pretitle">
+        <span>//</span> RTCA DO-326A AIRWORTHINESS DEFENSIVE MATRIX
+      </div>
+      <h1 class="hero-title">
+        Defensive software verification for aerospace & mission-critical infrastructure.
+      </h1>
+      <p class="hero-lead">
+        An open, student-led engineering proving ground architected by <strong>Vijay Ukande</strong> (MSc Cybersecurity). 
+        Five candidate engineers develop and defend cryptographic gateway modules against active adversary MITM simulation under strict DO-326A path-guard controls.
+      </p>
+
+      <!-- Ingress Portals -->
+      <div class="ingress-grid">
+        <a href="/workstation" class="ingress-card">
+          <div>
+            <div class="card-meta">
+              <span class="card-badge badge-candidate">CANDIDATE ACCESS</span>
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">Port 4000 // /workstation</span>
+            </div>
+            <div class="card-title">Candidate Workstation</div>
+            <div class="card-desc">
+              Access your assigned DO-326A module stub, submit proof-of-work telemetry, rotate your personal access key, and inspect standing orders.
+            </div>
+          </div>
+          <div class="card-action">
+            Connect Workstation HUD ➔
+          </div>
+        </a>
+
+        <a href="/lead-portal.html" class="ingress-card">
+          <div>
+            <div class="card-meta">
+              <span class="card-badge badge-lead">COMMAND & CONTROL</span>
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">Port 4000 // /lead-hub</span>
+            </div>
+            <div class="card-title">Lead Operations Console</div>
+            <div class="card-desc">
+              Real-time candidate telemetry, heartbeat monitors, task dispatch, DO-326A PR compliance verification, and Golden Master failsafe fallback.
+            </div>
+          </div>
+          <div class="card-action">
+            Enter Lead Console ➔
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Interactive Topology Section (Standout Hero Moment) -->
+    <section>
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">
+            <span>Swarm-Sec Architecture Matrix</span>
+          </h2>
+          <p class="section-subtitle">
+            Interactive topology showing the 5 real candidate modules in <a href="https://github.com/Prime143/cyberforge-swarm-sec" target="_blank" rel="noopener" style="color:var(--accent-cyan);">Prime143/cyberforge-swarm-sec</a>
+          </p>
+        </div>
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">
+          Click any module to inspect target source path & compliance objective
+        </div>
+      </div>
+
+      <div class="topology-container">
+        <!-- Node List -->
+        <div class="node-list" id="nodeList">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Inspector Box -->
+        <div class="inspector-box" id="inspectorBox">
+          <div>
+            <div class="inspector-header">
+              <div class="inspector-badge" id="inspCode">MOD-01</div>
+              <div class="inspector-title" id="inspName">Distroless Docker Infrastructure</div>
+              <div class="inspector-assignee" id="inspAssignee">Assigned to: Kaif Pathan (Seat 01 · Junior)</div>
+            </div>
+
+            <div class="inspector-field">
+              <div class="inspector-label">DO-326A Track & Security Focus:</div>
+              <div class="inspector-value" id="inspTrack">Minimal Container Hardening & Ingress Gateway</div>
+            </div>
+
+            <div class="inspector-field">
+              <div class="inspector-label">Target Repository Source File:</div>
+              <div class="inspector-path-box">
+                <span id="inspPath">infra/docker/Dockerfile.gateway</span>
+                <button class="copy-btn" onclick="copyInspectorPath()">Copy</button>
+              </div>
+            </div>
+
+            <div class="inspector-field">
+              <div class="inspector-label">Airworthiness Defense Objective:</div>
+              <div class="inspector-value" id="inspObjective">
+                Multi-stage distroless build ensuring zero shell, zero package manager, and strictly non-root execution inside ingress containers.
+              </div>
+            </div>
+          </div>
+
+          <div class="inspector-actions">
+            <a id="inspGithubLink" href="https://github.com/Prime143/cyberforge-swarm-sec/blob/main/infra/docker/Dockerfile.gateway" target="_blank" rel="noopener" class="btn-github">
+              <span>View Source on GitHub ↗</span>
+            </a>
+            <a href="/workstation" class="btn-github" style="color:var(--accent-cyan); border-color:var(--border-accent);">
+              <span>Open Workstation ➔</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Telemetry Strip -->
+    <section>
+      <div class="telemetry-strip">
+        <div class="telemetry-item">
+          <span class="label">COHORT SEATS</span>
+          <span class="val">5 Active Engineers</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="label">CI PATH GUARDS</span>
+          <span class="val" style="color:var(--status-green);">DO-326A Enforced</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="label">AUDIT INTEGRITY</span>
+          <span class="val">SQLite WAL Append-Only</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="label">API RUNTIME</span>
+          <span class="val" id="apiUptime">Online (Nominal)</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="label">LEAD ARCHITECT</span>
+          <span class="val">Vijay Ukande</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Founder Manifest & Real Mission Section -->
+    <section>
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Initiative Architecture & Purpose</h2>
+          <p class="section-subtitle">Real engineering proof-of-work vs. generic resume fluff</p>
+        </div>
+      </div>
+
+      <div class="manifest-grid">
+        <div class="manifest-card">
+          <div class="manifest-title">
+            <span>The Problem: The AI Resume Trap</span>
+          </div>
+          <p class="manifest-text">
+            Entry-level cybersecurity is flooded with identical cloned repositories, generic calculator apps, and AI-generated text that candidates cannot defend during technical grilling. Recruiters and engineering leads have zero proof of whether a candidate actually understands concurrency, memory zeroization, or cryptographic boundary enforcement.
+          </p>
+        </div>
+
+        <div class="manifest-card">
+          <div class="manifest-title">
+            <span>The CyberForge Solution: Live Proving Ground</span>
+          </div>
+          <p class="manifest-text">
+            CyberForge operates a shared real repository (<code style="font-family:var(--font-mono); color:var(--accent-cyan); font-size:11px;">cyberforge-swarm-sec</code>). Each candidate is locked to a specific architectural boundary. If a candidate touching cryptography modifies the kinematics filter, CI path-guards reject the PR automatically. Telemetry, check-ins, and code reviews are append-only and cryptographically verified.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bottom-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <strong>CyberForge Swarm-Sec</strong> · Founded by Vijay Ukande (MSc Cybersecurity)
+      </div>
+      <div>
+        Continuous Telemetry · Append-Only Audit Trail · Zero Untracked Code
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const SWARM_MODULES = [
+      {
+        code: 'MOD-01',
+        name: 'Distroless Docker Gateway',
+        assignee: 'Kaif Pathan (Seat 01 · Junior)',
+        track: 'Minimal Container Hardening & Ingress Gateway',
+        path: 'infra/docker/Dockerfile.gateway',
+        objective: 'Multi-stage distroless build ensuring zero shell, zero package manager, and strictly non-root execution inside ingress containers.'
+      },
+      {
+        code: 'MOD-02',
+        name: 'Ed25519 Cryptographic Verifier',
+        assignee: 'Nadir Murudkar (Seat 02 · Junior)',
+        track: 'Zero-Trust Ingress & Signature Verification',
+        path: 'services/ingress_gateway/crypto/verifier.py',
+        objective: 'Constant-time Ed25519 signature verification engine with memory zeroization and cryptographic timing-attack resistance.'
+      },
+      {
+        code: 'MOD-03',
+        name: 'Kinematics Anomaly Filter',
+        assignee: 'Tejal Puthran (Seat 03 · Junior)',
+        track: 'Flight Kinematics & Attitude Estimation',
+        path: 'services/ingress_gateway/filters/kinematics.py',
+        objective: 'State-space covariance boundary checking and trajectory rate-of-climb anomaly rejection to prevent physical drone hijacking.'
+      },
+      {
+        code: 'MOD-04',
+        name: 'Adversary MITM Proxy',
+        assignee: 'Khot Maaz (Seat 04 · Junior)',
+        track: 'Offensive Adversary Emulation & Proxy',
+        path: 'services/adversary_harness/mitm_proxy.py',
+        objective: 'Simulated packet alteration and adversary MITM injection harness testing the resilience of peer candidate filters.'
+      },
+      {
+        code: 'MOD-05',
+        name: 'Anti-Replay Guard',
+        assignee: 'Prarthana Shah (Seat 05 · Junior)',
+        track: 'Deterministic Timestamp Window & Nonce Verification',
+        path: 'services/ingress_gateway/filters/replay_guard.py',
+        objective: 'Sliding window nonce cache preventing packet replay attacks within 60-second flight windows under DO-326A standards.'
+      }
+    ];
+
+    let currentSelectedIdx = 0;
+
+    function renderNodeList() {
+      const container = document.getElementById('nodeList');
+      container.innerHTML = SWARM_MODULES.map((m, idx) => `
+        <div class="node-item ${idx === currentSelectedIdx ? 'selected' : ''}" onclick="selectNode(${idx})">
+          <div>
+            <div class="node-info-top">
+              <span class="node-code">${m.code}</span>
+              <span class="node-name">${m.name}</span>
+            </div>
+            <div class="node-assignee">${m.assignee}</div>
+          </div>
+          <div class="node-path-preview">${m.path.split('/').pop()}</div>
+        </div>
+      `).join('');
+    }
+
+    function selectNode(idx) {
+      currentSelectedIdx = idx;
+      renderNodeList();
+      const m = SWARM_MODULES[idx];
+      document.getElementById('inspCode').innerText = m.code;
+      document.getElementById('inspName').innerText = m.name;
+      document.getElementById('inspAssignee').innerText = 'Assigned to: ' + m.assignee;
+      document.getElementById('inspTrack').innerText = m.track;
+      document.getElementById('inspPath').innerText = m.path;
+      document.getElementById('inspObjective').innerText = m.objective;
+      document.getElementById('inspGithubLink').href = `https://github.com/Prime143/cyberforge-swarm-sec/blob/main/${m.path}`;
+    }
+
+    function copyInspectorPath() {
+      const path = document.getElementById('inspPath').innerText;
+      navigator.clipboard.writeText(path).then(() => {
+        alert('Copied path to clipboard: ' + path);
+      }).catch(() => {
+        prompt('Copy path:', path);
+      });
+    }
+
+    async function fetchLiveHealth() {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+          const data = await res.json();
+          const uptimeMinutes = Math.floor(data.uptime / 60);
+          document.getElementById('apiUptime').innerText = `Online (${uptimeMinutes}m uptime)`;
+        }
+      } catch (_) {
+        // Fallback gracefully
+      }
+    }
+
+    // Init
+    renderNodeList();
+    fetchLiveHealth();
+  </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -102,7 +102,7 @@
       display: inline-block;
       flex-shrink: 0;
     }
-    .status-dot.online { background-color: var(--status-green); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+    .status-dot.online { background-color: var(--status-green); }
     .status-dot.offline { background-color: var(--text-muted); }
     .status-dot.idle { background-color: var(--status-amber); }
     .status-dot.danger { background-color: var(--status-red); }
@@ -118,11 +118,9 @@
     .form-label {
       display: block;
       font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-weight: 500;
       color: var(--text-secondary);
-      margin-bottom: 0.35rem;
+      margin-bottom: 4px;
     }
     .form-input, .form-select, .form-textarea {
       width: 100%;
@@ -144,14 +142,12 @@
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 2px 7px;
-      border-radius: 3px;
-      font-size: 11px;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
       font-weight: 600;
       font-family: var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
       border: 1px solid transparent;
     }
     .badge-devsecops { background: rgba(220, 38, 38, 0.15); color: #f87171; border-color: rgba(220, 38, 38, 0.3); }
@@ -209,8 +205,6 @@
       color: var(--text-secondary);
       font-size: 11px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
       padding: 0.55rem 0.85rem;
       border-bottom: 1px solid var(--border-strong);
     }
@@ -395,7 +389,7 @@
       color: var(--text-secondary);
       font-size: 10px;
       padding: 1px 5px;
-      border-radius: 9999px;
+      border-radius: 4px;
       font-family: var(--font-mono);
     }
 
@@ -417,11 +411,9 @@
     }
     .panel-title {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-primary);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
+      }
 
     /* Modals */
     .modal-overlay {
@@ -446,7 +438,7 @@
       padding: 1.5rem;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     }
     .modal-header {
       display: flex;
@@ -530,7 +522,7 @@
               style="position:absolute; right:8px; background:transparent; border:none; color:var(--text-secondary); cursor:pointer; font-size:12px;"
               title="Toggle visibility"
             >
-              👁️
+              show
             </button>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
@@ -544,7 +536,7 @@
         </div>
 
         <button type="submit" id="authSubmitBtn" class="btn btn-primary" style="width:100%; padding:0.6rem;">
-          <span id="authBtnSpinner" style="display:none;">⏳</span>
+          <span id="authBtnSpinner" style="display:none; font-size:11px;">·</span>
           <span id="authBtnText">Initialize Workstation Session</span>
         </button>
       </form>
@@ -596,7 +588,7 @@
           </button>
           <div id="notifDropdown" style="display:none; position:absolute; right:0; top:35px; width:340px; background:var(--bg-surface-elevated); border:1px solid var(--border-strong); border-radius:4px; box-shadow:0 10px 25px rgba(0,0,0,0.5); z-index:60; max-height:400px; overflow-y:auto;">
             <div style="padding:0.6rem 0.8rem; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:11px; font-weight:700; text-transform:uppercase;">System Notifications</span>
+              <span style="font-size:11px; font-weight:600;">System notifications</span>
               <button class="btn btn-secondary btn-sm" style="padding:2px 5px; font-size:10px;" onclick="markAllNotifsRead()">Mark Read</button>
             </div>
             <div id="notifList" style="padding:0.4rem;">
@@ -615,14 +607,14 @@
     <!-- Active Deliverable HUD Strip -->
     <div class="active-deliverable-bar">
       <div class="deliv-meta">
-        <span style="font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">Active Focus:</span>
+        <span style="font-size:11px; font-weight:600; color:var(--text-secondary);">Active focus:</span>
         <span id="currentDeliverableBadge" class="badge" style="background:var(--bg-surface-elevated); color:var(--text-secondary); border-color:var(--border-strong);">NO DELIVERABLE BOUND</span>
         <span id="currentDeliverableTitle" class="deliv-title" style="color:var(--text-secondary);">Select "Clock In" on an assigned task below to bind workstation telemetry.</span>
       </div>
 
       <div style="display:flex; align-items:center; gap:0.6rem;">
         <span id="deliverableClockWrapper" style="display:none; align-items:center; gap:0.5rem;">
-          <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Task Time:</span>
+          <span style="font-size:11px; color:var(--text-secondary); font-weight:500;">Task time:</span>
           <span id="deliverableTimerDisplay" class="deliv-clock">00:00:00</span>
           <button id="clockOutBtn" class="btn btn-secondary btn-sm" onclick="handleClockOut()">
             Pause Task
@@ -638,7 +630,7 @@
       <div class="panel" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-left:4px solid var(--accent-blue); padding:1rem 1.25rem; margin-bottom:1.25rem;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:0.85rem;">
           <div>
-            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">
+            <div style="font-size:10px; font-weight:500; color:var(--text-muted);">
               Current Standing Orders · CyberForge Swarm-Sec Track
             </div>
             <div style="font-size:16px; font-weight:700; color:var(--text-primary); margin-top:2px;" id="orderTrackTitle">
@@ -652,7 +644,7 @@
           </div>
 
           <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem;">
-            <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Sprint Delivery Cutoff:</div>
+            <div style="font-size:10px; font-weight:500; color:var(--text-muted);">Sprint cutoff:</div>
             <div id="sprintCountdownDisplay" style="font-family:var(--font-mono); font-size:15px; font-weight:700; color:#fbbf24;">
               04d 18h 32m 10s
             </div>
@@ -722,7 +714,7 @@
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Strict completion deadlines enforced by continuous governance sweeper</div>
             </div>
             <div class="filter-bar" style="margin-bottom:0;">
-              <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Filter:</span>
+              <span style="font-size:11px; color:var(--text-secondary); font-weight:500;">Filter:</span>
               <button class="filter-btn active" id="myTaskFilterAll" onclick="filterMyTasks('all', this)">All</button>
               <button class="filter-btn" id="myTaskFilterActive" onclick="filterMyTasks('active', this)">Active Sprint</button>
               <button class="filter-btn" id="myTaskFilterSubmitted" onclick="filterMyTasks('submitted', this)">Under Review</button>
@@ -802,7 +794,7 @@
             </div>
             <div style="display:flex; gap:0.5rem; align-items:center;">
               <div class="filter-bar" style="margin-bottom:0;">
-                <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Filter:</span>
+                <span style="font-size:11px; color:var(--text-secondary); font-weight:500;">Filter:</span>
                 <button class="filter-btn active" id="myTicketFilterAll" onclick="filterMyTickets('all', this)">All</button>
                 <button class="filter-btn" id="myTicketFilterActive" onclick="filterMyTickets('active', this)">Active Blockers</button>
                 <button class="filter-btn" id="myTicketFilterResolved" onclick="filterMyTickets('resolved', this)">Resolved History</button>
@@ -849,15 +841,15 @@
 
           <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem;">
             <div style="background:var(--bg-surface-elevated); padding:1rem; border-radius:4px; border:1px solid var(--border-subtle);">
-              <div style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Overall Letter Grade</div>
+              <div style="font-size:11px; color:var(--text-secondary); font-weight:500;">Overall grade</div>
               <div id="scorecardOverallGrade" style="font-size:24px; font-weight:800; font-family:var(--font-mono); color:var(--text-primary); margin-top:0.25rem;">—</div>
             </div>
             <div style="background:var(--bg-surface-elevated); padding:1rem; border-radius:4px; border:1px solid var(--border-subtle);">
-              <div style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Cumulative Score Average</div>
+              <div style="font-size:11px; color:var(--text-secondary); font-weight:500;">Cumulative average</div>
               <div id="scorecardAvgScore" style="font-size:24px; font-weight:800; font-family:var(--font-mono); color:var(--text-primary); margin-top:0.25rem;">— / 100</div>
             </div>
             <div style="background:var(--bg-surface-elevated); padding:1rem; border-radius:4px; border:1px solid var(--border-subtle);">
-              <div style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Evaluated Deliverables</div>
+              <div style="font-size:11px; color:var(--text-secondary); font-weight:500;">Deliverables evaluated</div>
               <div id="scorecardCompletedCount" style="font-size:24px; font-weight:800; font-family:var(--font-mono); color:var(--text-primary); margin-top:0.25rem;">0</div>
             </div>
           </div>
@@ -898,7 +890,7 @@
 
       <div style="font-size:12px; color:var(--text-secondary); line-height:1.6; space-y-4;">
         <div style="margin-bottom:1rem;">
-          <h4 style="color:var(--text-primary); font-size:12px; text-transform:uppercase; margin-bottom:0.35rem; font-weight:700;">
+          <h4 style="color:var(--text-primary); font-size:12px; margin-bottom:4px; font-weight:600);">
             Section A — Strategic Purpose
           </h4>
           <p>
@@ -907,7 +899,7 @@
         </div>
 
         <div style="margin-bottom:1rem;">
-          <h4 style="color:var(--text-primary); font-size:12px; text-transform:uppercase; margin-bottom:0.35rem; font-weight:700;">
+          <h4 style="color:var(--text-primary); font-size:12px; margin-bottom:4px; font-weight:600);">
             Section B — Standards of Engagement
           </h4>
           <ul style="padding-left:1.25rem;">
@@ -919,7 +911,7 @@
         </div>
 
         <div style="margin-bottom:1.25rem;">
-          <h4 style="color:var(--text-primary); font-size:12px; text-transform:uppercase; margin-bottom:0.35rem; font-weight:700;">
+          <h4 style="color:var(--text-primary); font-size:12px; margin-bottom:4px; font-weight:600);">
             Section C — Immutable Auditing & Non-Repudiation
           </h4>
           <p>
@@ -1065,7 +1057,7 @@
               style="position:absolute; right:8px; background:transparent; border:none; color:var(--text-secondary); cursor:pointer; font-size:12px;"
               title="Toggle visibility"
             >
-              👁️
+              show
             </button>
           </div>
         </div>
@@ -1073,7 +1065,7 @@
         <!-- Real-Time Entropy Assessment Meter -->
         <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.75rem; margin-bottom:1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-            <span style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Security Strength:</span>
+            <span style="font-size:11px; color:var(--text-muted); font-weight:500;">Security strength:</span>
             <span id="customTokenEntropyBadge" class="badge badge-medium">Evaluating</span>
           </div>
           <div style="height:4px; background:var(--bg-surface-elevated); border-radius:2px; overflow:hidden; margin-bottom:0.6rem;">
@@ -1139,23 +1131,23 @@
       </div>
       <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-          <span style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Status</span>
+          <span style="font-size:11px; color:var(--text-muted); font-weight:500;">Status</span>
           <span id="viewSubStatusBadge" class="badge">Submitted</span>
         </div>
-        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-top:0.5rem;">Artifact Repository / PR URL:</div>
+        <div style="font-size:11px; color:var(--text-muted); font-weight:500); margin-top:8px;">Artifact / PR URL:</div>
         <div style="margin-top:2px;">
           <a id="viewSubUrlLink" href="#" target="_blank" rel="noopener noreferrer" style="font-family:var(--font-mono); font-size:12px; color:var(--accent-blue); word-break:break-all;"></a>
         </div>
-        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-top:0.75rem;">Submitted Engineering Remarks:</div>
+        <div style="font-size:11px; color:var(--text-muted); font-weight:500); margin-top:12px;">Engineering remarks:</div>
         <div id="viewSubRemarks" style="font-size:12px; color:var(--text-secondary); margin-top:2px; font-family:var(--font-mono); white-space:pre-wrap; background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:3px;"></div>
       </div>
 
       <div id="viewSubReviewSection" style="display:none; background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-          <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-primary);">Lead Evaluator Review</span>
+          <span style="font-size:11px; font-weight:600; color:var(--text-primary);">Lead evaluator review</span>
           <span id="viewSubScoreDisplay" style="font-family:var(--font-mono); font-size:14px; font-weight:800; color:var(--status-green);">— / 100</span>
         </div>
-        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Feedback Guidance:</div>
+        <div style="font-size:11px; color:var(--text-muted); font-weight:500;">Feedback:</div>
         <div id="viewSubFeedback" style="font-size:12px; color:var(--text-secondary); margin-top:2px; line-height:1.5;"></div>
       </div>
 
@@ -1183,12 +1175,12 @@
           <span id="ticketDetailStatus" class="badge">open</span>
         </div>
         <div id="ticketDetailSubject" style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;"></div>
-        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Technical Details & Reproduction Logs:</div>
+        <div style="font-size:11px; color:var(--text-muted); font-weight:500;">Technical details &amp; reproduction logs:</div>
         <div id="ticketDetailDescription" style="font-size:11px; color:var(--text-secondary); font-family:var(--font-mono); white-space:pre-wrap; background:rgba(0,0,0,0.2); padding:0.5rem; border-radius:3px; max-height:160px; overflow-y:auto; margin-top:2px;"></div>
       </div>
 
       <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
-        <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-primary); margin-bottom:0.35rem;">Lead Engineering Guidance:</div>
+        <div style="font-size:11px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">Lead guidance:</div>
         <div id="ticketDetailGuidance" style="font-size:12px; color:var(--text-secondary); line-height:1.5;"></div>
       </div>
 
@@ -2504,7 +2496,7 @@
               ` : ''}
 
               <div style="font-size:12px; color:var(--text-secondary); line-height:1.5; border-top:1px solid var(--border-subtle); padding-top:0.6rem;">
-                <strong style="color:var(--text-primary); font-size:11px; text-transform:uppercase;">Lead Evaluator Feedback:</strong><br>
+                <strong style="color:var(--text-primary); font-size:11px;">Lead feedback:</strong><br>
                 ${escapeHtml(ev.review_feedback || 'No remarks provided.')}
               </div>
             </div>

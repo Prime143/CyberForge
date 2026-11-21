@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -102,7 +102,7 @@
       display: inline-block;
       flex-shrink: 0;
     }
-    .status-dot.online { background-color: var(--status-green); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+    .status-dot.online { background-color: var(--status-green); }
     .status-dot.offline { background-color: var(--text-muted); }
     .status-dot.idle { background-color: var(--status-amber); }
     .status-dot.danger { background-color: var(--status-red); }
@@ -118,11 +118,9 @@
     .form-label {
       display: block;
       font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-weight: 500;
       color: var(--text-secondary);
-      margin-bottom: 0.35rem;
+      margin-bottom: 4px;
     }
     .form-input, .form-select, .form-textarea {
       width: 100%;
@@ -144,14 +142,12 @@
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 2px 7px;
-      border-radius: 3px;
-      font-size: 11px;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
       font-weight: 600;
       font-family: var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
       border: 1px solid transparent;
     }
     .badge-devsecops { background: rgba(220, 38, 38, 0.15); color: #f87171; border-color: rgba(220, 38, 38, 0.3); }
@@ -181,14 +177,12 @@
       background: var(--bg-surface-elevated);
       color: var(--text-secondary);
       font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 0.55rem 0.85rem;
+      font-weight: 500;
+      padding: 8px 12px;
       border-bottom: 1px solid var(--border-strong);
     }
     td {
-      padding: 0.55rem 0.85rem;
+      padding: 8px 12px;
       border-bottom: 1px solid var(--border-subtle);
       color: var(--text-primary);
       vertical-align: middle;
@@ -266,9 +260,7 @@
     }
     .kpi-label {
       font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-weight: 500;
       color: var(--text-secondary);
     }
     .kpi-value {
@@ -321,7 +313,7 @@
       color: var(--text-secondary);
       font-size: 10px;
       padding: 1px 5px;
-      border-radius: 9999px;
+      border-radius: 4px;
       font-family: var(--font-mono);
     }
 
@@ -343,10 +335,9 @@
     }
     .panel-title {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       color: var(--text-primary);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0em;
     }
 
     /* Filter Controls Strip */
@@ -390,12 +381,11 @@
       gap: 0.85rem;
       transition: border-color 0.15s, box-shadow 0.15s;
       border-left: 3px solid var(--status-green);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
     .cohort-card.status-active { border-left-color: var(--status-green); }
     .cohort-card.status-neutral { border-left-color: #60a5fa; background: rgba(37, 99, 235, 0.03); }
     .cohort-card.status-adverse { border-left-color: var(--status-red); background: rgba(220, 38, 38, 0.04); }
-    .cohort-card:hover { border-color: var(--border-strong); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+    .cohort-card:hover { border-color: var(--border-strong); background: var(--bg-surface-elevated); }
 
     .failsafe-grid {
       display: grid;
@@ -413,7 +403,6 @@
       justify-content: space-between;
       gap: 0.85rem;
       border-left: 3px solid #60a5fa;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
     .failsafe-card.deployed {
       border-left-color: var(--status-amber);
@@ -454,7 +443,7 @@
       padding: 1.5rem;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     }
     .modal-header {
       display: flex;
@@ -616,7 +605,7 @@
       <!-- Cohort Matrix Top Banner -->
       <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:4px; padding:0.9rem 1.15rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
         <div>
-          <div style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.04em;">
+          <div style="font-size:12px; font-weight:600; color:var(--text-primary);">
             RTCA DO-326A Airworthiness Governance Cohort
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
@@ -646,7 +635,7 @@
             <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Continuous heartbeat, token entropy score, and HR standing audit</div>
           </div>
           <div class="filter-bar" style="margin-bottom:0;">
-            <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Filter:</span>
+            <span style="font-size:11px; color:var(--text-secondary); font-weight:500;">Filter:</span>
             <button class="filter-btn active" onclick="filterCandidates('all', this)">All (6)</button>
             <button class="filter-btn" onclick="filterCandidates('active', this)">Active</button>
             <button class="filter-btn" onclick="filterCandidates('neutral', this)">Neutral Log</button>
@@ -731,7 +720,7 @@
       <!-- Pipeline Governance Banner -->
       <div style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:4px; padding:0.9rem 1.15rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
         <div>
-          <div style="font-size:12px; font-weight:700; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.04em;">
+          <div style="font-size:12px; font-weight:600; color:var(--text-primary);">
             GitHub Actions CI & DO-326A Path-Guard Telemetry
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
@@ -793,7 +782,7 @@
           </div>
           <div style="display:flex; gap:0.5rem; align-items:center;">
             <div class="filter-bar" style="margin-bottom:0;">
-              <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Filter:</span>
+              <span style="font-size:11px; color:var(--text-secondary); font-weight:500;">Filter:</span>
               <button class="filter-btn active" id="taskFilterAll" onclick="filterTasks('all', this)">All</button>
               <button class="filter-btn" id="taskFilterSubmitted" onclick="filterTasks('submitted', this)">Review Required</button>
               <button class="filter-btn" id="taskFilterInProgress" onclick="filterTasks('in_progress', this)">In Progress</button>
@@ -845,7 +834,7 @@
             <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Respond with architectural guidance or troubleshooting steps</div>
           </div>
           <div class="filter-bar" style="margin-bottom:0;">
-            <span style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; font-weight:600;">Filter:</span>
+            <span style="font-size:11px; color:var(--text-secondary); font-weight:500;">Filter:</span>
             <button class="filter-btn active" id="ticketFilterAll" onclick="filterTickets('all', this)">All</button>
             <button class="filter-btn" id="ticketFilterActive" onclick="filterTickets('active', this)">Active / Open</button>
             <button class="filter-btn" id="ticketFilterResolved" onclick="filterTickets('resolved', this)">Resolved History</button>
@@ -1106,9 +1095,9 @@
         <input type="hidden" id="reviewTaskId" />
 
         <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.85rem; margin-bottom:1rem;">
-          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Artifact Submission URL:</div>
+          <div style="font-size:11px; color:var(--text-muted); font-weight:500;">Artifact submission URL:</div>
           <div id="reviewArtifactUrl" style="font-family:var(--font-mono); font-size:12px; margin-top:2px; word-break:break-all;"></div>
-          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600; margin-top:0.6rem;">Candidate Remarks:</div>
+          <div style="font-size:11px; color:var(--text-muted); font-weight:500; margin-top:0.6rem;">Candidate remarks:</div>
           <div id="reviewCandidateNotes" style="font-size:12px; color:var(--text-secondary); margin-top:2px;"></div>
         </div>
 
@@ -1132,7 +1121,7 @@
             </div>
           </div>
 
-          <div style="font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; margin-bottom:0.4rem;">
+          <div style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-bottom:0.4rem;">
             4-Tier Evaluation Rubric (25 Points Each)
           </div>
           <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.5rem; margin-bottom:1rem;">
@@ -1282,11 +1271,11 @@
           <div style="font-weight:700; font-size:13px; color:var(--text-primary);" id="manageTokenCandName"></div>
           <span id="manageTokenTypeBadge" class="badge"></span>
         </div>
-        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Active Access Key:</div>
+        <div style="font-size:11px; color:var(--text-muted); font-weight:500;">Active access key:</div>
         <div style="display:flex; align-items:center; gap:0.5rem; margin-top:4px;">
           <input type="password" id="manageTokenPlaintext" class="form-input form-input-mono" readonly style="font-size:12px; background:var(--bg-surface-elevated);" />
-          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleManageTokenMask()">👁️ Reveal</button>
-          <button type="button" class="btn btn-primary btn-sm" onclick="copyManageToken()">📋 Copy</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleManageTokenMask()">Reveal</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="copyManageToken()">Copy</button>
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.6rem; font-size:11px;">
           <span style="color:var(--text-muted);">Security Rating:</span>
@@ -1296,12 +1285,12 @@
       </div>
 
       <div style="font-size:12px; color:var(--text-secondary); margin-bottom:1rem; line-height:1.5;">
-        <strong>Governance Actions:</strong> Choose whether to unlock the candidate so they can configure their own custom token on their workstation, or immediately generate a fresh cryptographic default token.
+        <strong>Governance Actions:</strong> Choose whether to allow the candidate to configure their own custom token on their workstation, or immediately generate a fresh cryptographic default token.
       </div>
 
       <div style="display:flex; flex-direction:column; gap:0.6rem;">
         <button type="button" class="btn btn-secondary" onclick="executeTokenAction('unlock_self_gen')">
-          🔓 Unlock Candidate (Allow 1-Time Custom Key Generation on Workstation)
+          Allow Custom Key — candidate sets token once on workstation
         </button>
         <button type="button" class="btn btn-primary" onclick="executeTokenAction('issue_new_token')">
           ⚡ Generate Fresh Random Key & Overwrite Credential
@@ -1711,7 +1700,7 @@
             <div>
               <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
                 <div>
-                  <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Seat 0${idx + 1} · ID #${c.id}</div>
+                  <div style="font-size:10px; font-weight:500; color:var(--text-muted);">Seat 0${idx + 1} · ID #${c.id}</div>
                   <div style="font-size:15px; font-weight:700; color:var(--text-primary); margin-top:2px;">${escapeHtml(c.name)}</div>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
@@ -1724,7 +1713,7 @@
 
               <!-- DO-326A Track & Target Path -->
               <div style="background:var(--bg-root); border:1px solid var(--border-subtle); border-radius:4px; padding:0.6rem 0.75rem; margin-bottom:0.75rem;">
-                <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Assigned Aerospace Module</div>
+                <div style="font-size:10px; font-weight:500; color:var(--text-muted);">Assigned module</div>
                 <div style="font-size:12px; font-weight:600; color:#93c5fd; margin-top:2px;">${escapeHtml(c.do326a_track || 'CyberForge Swarm-Sec Module')}</div>
                 <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); margin-top:3px; word-break:break-all;">
                   Path: <a href="https://github.com/Prime143/cyberforge-swarm-sec/blob/main/${escapeHtml(c.target_repo_path)}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd; text-decoration:underline;">${escapeHtml(c.target_repo_path || 'infra/docker/Dockerfile.gateway')}</a>
@@ -1743,7 +1732,7 @@
               <!-- Live Assigned Task Status Telemetry -->
               <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:3px; padding:0.45rem 0.65rem; margin-bottom:0.75rem; font-size:11px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; font-weight:700;">Task Status Telemetry:</span>
+                  <span style="color:var(--text-muted); font-size:10px; font-weight:500;">Task status:</span>
                   <span style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-primary);">
                     ${c.task_counts ? c.task_counts.total_tasks : (c.assigned_tasks_count || 0)} Total
                   </span>
@@ -1771,7 +1760,7 @@
               <!-- CI Pipeline & PR Status -->
               <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:3px; padding:0.45rem 0.65rem; margin-bottom:0.75rem; font-size:11px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="color:var(--text-muted); font-size:10px; text-transform:uppercase; font-weight:600;">CI Path-Guard:</span>
+                  <span style="color:var(--text-muted); font-size:10px; font-weight:500;">CI path-guard:</span>
                   ${latestPr ? `
                     <span class="badge ${latestPr.path_guard_status === 'passed' ? 'badge-online' : 'badge-high'}" style="font-size:9px;">
                       ${latestPr.path_guard_status.toUpperCase()}
@@ -1805,7 +1794,7 @@
               <!-- Candidate Live Transmitted Status Log -->
               ${c.latest_work_log ? `
                 <div style="background:var(--bg-root); border-left:2px solid var(--accent-blue); padding:0.35rem 0.55rem; margin-top:0.4rem; border-radius:0 3px 3px 0;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:9px; color:var(--text-muted);">
                     <span>Transmitted Status Log</span>
                     <span>${c.latest_work_log_time ? formatTimestamp(c.latest_work_log_time) : ''}</span>
                   </div>
@@ -1996,7 +1985,7 @@
                   <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-top:4px;">${escapeHtml(m.module_name)}</div>
                 </div>
                 <span class="badge ${isDeployed ? 'badge-critical' : 'badge-online'}">
-                  ${isDeployed ? '⚡ LEAD BACKFILL ACTIVE' : '● STANDBY (100% READY)'}
+                  ${isDeployed ? 'Lead backfill active' : 'Standby · ready'}
                 </span>
               </div>
 
@@ -2024,7 +2013,7 @@
                 Readiness: <strong style="color:var(--status-green);">${m.readiness_pct}%</strong>
               </span>
               <button class="btn ${isDeployed ? 'btn-secondary' : 'btn-primary'} btn-sm" onclick="toggleFailsafe('${m.module_code}')">
-                ${isDeployed ? '↺ Disengage Backfill' : '⚡ Engage Lead Backfill'}
+                ${isDeployed ? 'Disengage backfill' : 'Engage backfill'}
               </button>
             </div>
           </div>
@@ -2089,7 +2078,7 @@
               </td>
               <td>
                 <span class="badge ${pathGuardClass}">
-                  🛡️ ${escapeHtml(p.path_guard_status || 'passed')}
+                  ${escapeHtml(p.path_guard_status || 'passed')}
                 </span>
               </td>
               <td>
@@ -2283,7 +2272,7 @@
         if (t.file_url) {
           specSnippet = `
             <div style="font-size:11px; margin-top:4px;">
-              <span style="color:var(--text-muted); font-weight:600;">📎 Spec Asset:</span>
+              <span style="color:var(--text-muted); font-weight:600;">Spec:</span>
               <a href="${escapeHtml(t.file_url)}" download="${escapeHtml(t.file_name || 'specification')}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-blue); font-family:var(--font-mono); text-decoration:underline;">
                 ${escapeHtml(t.file_name || 'Download Specification')} ${t.file_size ? `(${formatBytes(t.file_size)})` : ''}
               </a>
@@ -2305,7 +2294,7 @@
         if (t.submission_file_url) {
           artifactSnippet += `
             <div style="font-size:11px; margin-top:4px;">
-              <span style="color:var(--text-muted); font-weight:600;">📦 Deliverable File:</span> 
+              <span style="color:var(--text-muted); font-weight:600;">File:</span> 
               <a href="${escapeHtml(t.submission_file_url)}" download="${escapeHtml(t.submission_file_name || 'submission')}" target="_blank" rel="noopener noreferrer" style="color:var(--status-green); font-family:var(--font-mono); text-decoration:underline;">
                 ${escapeHtml(t.submission_file_name || 'Download Deliverable')}
               </a>
@@ -2853,19 +2842,19 @@
 
         summary.innerHTML = `
           <div style="background:var(--bg-root); border:1px solid var(--border-subtle); padding:0.6rem; border-radius:4px;">
-            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Active Time</div>
+            <div style="font-size:10px; color:var(--text-muted);">Active time</div>
             <div style="font-size:14px; font-weight:700; font-family:var(--font-mono); color:var(--accent-blue);">${formatSeconds(t.total_active_seconds || 0)}</div>
           </div>
           <div style="background:var(--bg-root); border:1px solid var(--border-subtle); padding:0.6rem; border-radius:4px;">
-            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Workstation / Ext</div>
+            <div style="font-size:10px; color:var(--text-muted);">Workstation / external</div>
             <div style="font-size:12px; font-family:var(--font-mono);">${formatSeconds(t.workstation_seconds || 0)} / ${formatSeconds(t.external_work_seconds || 0)}</div>
           </div>
           <div style="background:var(--bg-root); border:1px solid var(--border-subtle); padding:0.6rem; border-radius:4px;">
-            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Sessions / Checkpoints</div>
+            <div style="font-size:10px; color:var(--text-muted);">Sessions / checkpoints</div>
             <div style="font-size:14px; font-weight:700; font-family:var(--font-mono);">${t.total_sessions || 0} / ${(data.work_logs || []).length}</div>
           </div>
           <div style="background:var(--bg-root); border:1px solid var(--border-subtle); padding:0.6rem; border-radius:4px;">
-            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase;">Deliverables</div>
+            <div style="font-size:10px; color:var(--text-muted);">Deliverables</div>
             <div style="font-size:14px; font-weight:700; font-family:var(--font-mono);">${(data.tasks || []).length} (${(data.tasks || []).filter(x => x.status === 'completed').length} done)</div>
           </div>
         `;
@@ -2935,7 +2924,7 @@
     function getEntropyBadge(score) {
       if (!score) return '<span class="badge badge-medium" style="font-size:9px;">Evaluating</span>';
       if (score.includes('Defense-Grade') || score.includes('High') || score.includes('Strong')) {
-        return `<span class="badge badge-online" style="font-size:9px;" title="${escapeHtml(score)}">🛡️ ${escapeHtml(score)}</span>`;
+        return `<span class="badge badge-online" style="font-size:9px;" title="${escapeHtml(score)}">${escapeHtml(score)}</span>`;
       }
       if (score.includes('Moderate')) {
         return `<span class="badge badge-external" style="font-size:9px;" title="${escapeHtml(score)}">⚠️ ${escapeHtml(score)}</span>`;

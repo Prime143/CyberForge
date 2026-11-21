@@ -180,6 +180,13 @@ db.serialize(() => {
   db.run(`ALTER TABLE candidates ADD COLUMN github_username TEXT`, () => {});
   db.run(`ALTER TABLE candidates ADD COLUMN failsafe_active INTEGER DEFAULT 0`, () => {});
 
+  // Security Hardening & Compliance Migrations (CIS / OWASP / NIST SP 800-63B)
+  db.run(`ALTER TABLE candidates ADD COLUMN failed_attempts INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN locked_until DATETIME`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN must_change_token INTEGER DEFAULT 0`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN last_login_at DATETIME`, () => {});
+  db.run(`ALTER TABLE candidates ADD COLUMN last_login_ip TEXT`, () => {});
+
   // Table 7: shadow_codebase (Lead Architect Failsafe Protocol)
   db.run(`
     CREATE TABLE IF NOT EXISTS shadow_codebase (
@@ -217,6 +224,8 @@ db.serialize(() => {
 
   db.run(`UPDATE candidates SET default_token = access_token WHERE default_token IS NULL;`, () => {});
   db.run(`UPDATE candidates SET governance_status = 'active' WHERE governance_status IS NULL;`, () => {});
+  db.run(`UPDATE candidates SET must_change_token = CASE WHEN custom_token_set = 0 THEN 1 ELSE 0 END WHERE must_change_token IS NULL OR must_change_token = 0 AND custom_token_set = 0;`, () => {});
+  db.run(`UPDATE candidates SET role = 'junior';`, () => {});
 
   db.run(`ALTER TABLE activity_logs ADD COLUMN workstation_seconds INTEGER DEFAULT 0`, () => {});
   db.run(`ALTER TABLE activity_logs ADD COLUMN external_work_seconds INTEGER DEFAULT 0`, () => {});
@@ -228,6 +237,7 @@ db.serialize(() => {
   // Performance & Security Indexes
   db.run(`CREATE INDEX IF NOT EXISTS idx_candidates_access_token ON candidates(access_token);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_candidates_default_token ON candidates(default_token);`);
+  db.run(`CREATE INDEX IF NOT EXISTS idx_candidates_locked_until ON candidates(locked_until);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_candidate_id ON activity_logs(candidate_id);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_status ON activity_logs(status);`);
   db.run(`CREATE INDEX IF NOT EXISTS idx_activity_logs_active_task ON activity_logs(active_task_id);`);

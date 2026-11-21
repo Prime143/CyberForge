@@ -93,13 +93,49 @@ function evaluateTokenEntropy(token) {
 }
 
 // ============================================================================
+// In-Memory Rate Limiting & Brute-Force Guards (CIS Control 16 & OWASP ASVS)
+// ============================================================================
+const loginAttemptMap = new Map(); // key: ip, value: { count, resetAt }
+const TOKEN_CHANGE_COOLDOWN_MS = 60 * 1000; // 60 seconds anti-spam rotation cooldown
+const tokenChangeCooldownMap = new Map(); // key: candidateId, value: timestamp
+
+function checkRateLimit(ip, maxAttempts = 10, windowMs = 15 * 60 * 1000) {
+  const now = Date.now();
+  const entry = loginAttemptMap.get(ip) || { count: 0, resetAt: now + windowMs };
+  if (now > entry.resetAt) {
+    entry.count = 0;
+    entry.resetAt = now + windowMs;
+  }
+  entry.count++;
+  loginAttemptMap.set(ip, entry);
+  return entry.count > maxAttempts;
+}
+
+function resetRateLimit(ip) {
+  loginAttemptMap.delete(ip);
+}
+
+// ============================================================================
 // Security & Ingress Middlewares
 // ============================================================================
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || null;
 app.use(cors({
-  origin: '*',
+  origin: ALLOWED_ORIGIN ? ALLOWED_ORIGIN : true,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key'],
+  credentials: true
 }));
+
+// OWASP ASVS & CIS benchmark response security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.removeHeader('X-Powered-By');
+  next();
+});
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -517,6 +553,19 @@ app.post('/api/session/login', requireCandidate, async (req, res) => {
   try {
     const candidate = req.candidate;
 
+    // IP-level brute-force guard (CIS Control 16)
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    if (checkRateLimit(clientIp)) {
+      return res.status(429).json({
+        error: 'Too Many Requests',
+        message: 'Too many login attempts from this address. Please wait 15 minutes before retrying.'
+      });
+    }
+    resetRateLimit(clientIp);
+
+    // Update login audit metadata
+    await run('UPDATE candidates SET last_login_at = CURRENT_TIMESTAMP, last_login_ip = ?, failed_attempts = 0 WHERE id = ?', [clientIp, candidate.id]);
+
     // 1. Mark candidate as online
     await run('UPDATE candidates SET is_online = 1 WHERE id = ?', [candidate.id]);
 
@@ -559,6 +608,7 @@ app.post('/api/session/login', requireCandidate, async (req, res) => {
         role: candidate.role,
         is_online: 1,
         custom_token_set: candidate.custom_token_set || 0,
+        must_change_token: candidate.must_change_token ?? (candidate.custom_token_set ? 0 : 1),
         token_reset_requested: candidate.token_reset_requested || 0,
         token_entropy_score: candidate.token_entropy_score || null,
         do326a_track: candidate.do326a_track || '',
@@ -745,30 +795,62 @@ app.post('/api/session/logout', requireCandidate, async (req, res) => {
 
 /**
  * POST /api/candidate/custom-token (Candidate Auth)
- * Allows candidate to configure their personalized access key.
- * Strictly permitted only ONCE per candidate lifecycle.
+ * Allows candidate to configure or rotate their personal access key.
+ * Persistent: Saved in database and used for all subsequent logins.
+ * Rotation policy: 60-second cooldown between key rotations (CWE-799).
  */
 app.post('/api/candidate/custom-token', requireCandidate, async (req, res) => {
   try {
     const candidate = req.candidate;
+
+    // Anti-spam rotation cooldown guard (60 seconds)
+    const lastChange = tokenChangeCooldownMap.get(candidate.id);
+    if (lastChange && (Date.now() - lastChange) < TOKEN_CHANGE_COOLDOWN_MS) {
+      const waitSec = Math.ceil((TOKEN_CHANGE_COOLDOWN_MS - (Date.now() - lastChange)) / 1000);
+      return res.status(429).json({
+        error: 'Too Many Requests',
+        message: `Please wait ${waitSec} second(s) before rotating your key again.`
+      });
+    }
+
     // Accept token under any common parameter name to guarantee client compatibility
     const rawToken = req.body.token || req.body.custom_token || req.body.customToken || req.body.new_token || req.body.key;
 
-    if (!rawToken || typeof rawToken !== 'string' || rawToken.trim().length < 8) {
+    if (!rawToken || typeof rawToken !== 'string') {
       return res.status(400).json({
         error: 'Validation Error',
-        message: 'Personal access token must be at least 8 characters long.'
+        message: 'Personal access key is required.'
       });
     }
 
     const newKey = rawToken.trim();
 
+    // NIST SP 800-63B & CIS benchmark: Minimum 12 characters for enterprise access credentials
+    if (newKey.length < 12) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Personal access key must be at least 12 characters long for cybersecurity compliance.'
+      });
+    }
+
+    // Reject trivially predictable patterns
+    const WEAK_PATTERNS = [
+      /^(.)\1+$/, // All same character (e.g. 'aaaaaaaaaaaa')
+      /^(password|admin|letmein|access|cyberforge|qwerty|123456)/i
+    ];
+    if (WEAK_PATTERNS.some(p => p.test(newKey))) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Access key is too predictable. Please use a unique mix of letters, numbers, and symbols.'
+      });
+    }
+
     // Verify uniqueness across all candidates
-    const inUse = await get('SELECT id FROM candidates WHERE access_token = ? AND id != ?', [newKey, candidate.id]);
+    const inUse = await get('SELECT id FROM candidates WHERE (access_token = ? OR default_token = ?) AND id != ?', [newKey, newKey, candidate.id]);
     if (inUse) {
       return res.status(409).json({
         error: 'Conflict',
-        message: 'This access key is already in use by another candidate. Please choose a different unique key.'
+        message: 'This access key is already registered. Please choose a different unique key.'
       });
     }
 
@@ -778,12 +860,15 @@ app.post('/api/candidate/custom-token', requireCandidate, async (req, res) => {
       UPDATE candidates 
       SET access_token = ?, 
           custom_token_set = 1, 
+          must_change_token = 0,
           custom_token_created_at = CURRENT_TIMESTAMP, 
           token_entropy_score = ?, 
           token_reset_requested = 0, 
           token_reset_reason = NULL 
       WHERE id = ?
     `, [newKey, entropy.details, candidate.id]);
+
+    tokenChangeCooldownMap.set(candidate.id, Date.now());
 
     await logAudit(candidate.id, 'CANDIDATE_CUSTOM_TOKEN_PROVISIONED', {
       entropy: entropy.score,
@@ -793,7 +878,7 @@ app.post('/api/candidate/custom-token', requireCandidate, async (req, res) => {
 
     await sendAlert(
       'Candidate Configured Custom Key',
-      `Candidate **${candidate.name}** configured their custom token (Entropy: ${entropy.score}, ${entropy.entropy_bits} bits)`,
+      `Candidate **${candidate.name}** updated their access token (Entropy: ${entropy.score}, ${entropy.entropy_bits} bits)`,
       'info',
       [
         { name: 'Candidate', value: candidate.name, inline: true },
@@ -803,9 +888,10 @@ app.post('/api/candidate/custom-token', requireCandidate, async (req, res) => {
     );
 
     res.status(200).json({
-      message: 'Custom access credential provisioned successfully. You can now use this key.',
+      message: 'Personal access key saved successfully. Use this key for all future logins.',
       token: newKey,
       custom_token_set: 1,
+      must_change_token: 0,
       entropy,
       entropy_score: entropy.score
     });

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1023,18 +1023,18 @@
   </div>
 
   <!-- ======================================================================
-       MODAL: CONFIGURE PERSONALIZED ACCESS KEY (ONCE-ONLY)
+       MODAL: CONFIGURE PERSONALIZED ACCESS KEY (PERSISTENT / ROTATABLE)
        ====================================================================== -->
   <div id="customTokenModal" class="modal-overlay">
     <div class="modal-box" style="max-width:560px;">
       <div class="modal-header">
-        <div class="modal-title">Configure Personal Access Credential</div>
+        <div class="modal-title">Set / Rotate Personal Access Key</div>
         <button class="btn btn-secondary btn-sm" onclick="closeCustomTokenModal()">✕</button>
       </div>
 
       <div class="alert-banner" style="margin-bottom:1rem;">
-        <strong>Defense Access Control Directive</strong><br>
-        Personal access credentials must be at least 8 characters long. Once updated, your new cryptographic token is required for all subsequent workstation operations.
+        <strong>Defense Access Control Directive (CIS & NIST SP 800-63B)</strong><br>
+        Personal access credentials must be at least 12 characters long. Once updated, your new cryptographic token is saved and required for all subsequent logins. You can rotate this key at any time.
       </div>
 
       <form onsubmit="handleCustomTokenSubmit(event)">
@@ -1072,7 +1072,7 @@
             <div id="customTokenEntropyBar" style="height:100%; width:0%; background:var(--status-red); transition:width 0.2s, background-color 0.2s;"></div>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:11px; color:var(--text-muted);">
-            <div id="ruleLength">○ Minimum 8 characters</div>
+            <div id="ruleLength">○ Minimum 12 characters</div>
             <div id="ruleUpper">○ Uppercase & Lowercase letters</div>
             <div id="ruleNumber">○ Numerical digits (0-9)</div>
             <div id="ruleSymbol">○ Defensive symbols (!@#$%...)</div>
@@ -1081,7 +1081,7 @@
 
         <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" class="btn btn-secondary" onclick="closeCustomTokenModal()">Cancel</button>
-          <button type="submit" id="btnSubmitCustomToken" class="btn btn-primary">Lock & Commit Key</button>
+          <button type="submit" id="btnSubmitCustomToken" class="btn btn-primary">Save & Commit Key</button>
         </div>
       </form>
     </div>
@@ -1466,8 +1466,16 @@
         keyBadge.style.display = 'inline-flex';
         keyBadge.className = 'badge badge-idle';
         keyBadge.innerText = 'Default Key';
-        resetLink.style.display = 'none';
+        resetLink.style.display = 'inline';
         promptBanner.style.display = 'flex';
+
+        // Cybersecurity compliance: Mandatory prompt to set personal key upon login
+        setTimeout(() => {
+          const modal = document.getElementById('customTokenModal');
+          if (modal && !modal.classList.contains('open')) {
+            openCustomTokenModal();
+          }
+        }, 600);
       }
     }
 
@@ -2155,14 +2163,14 @@
     }
 
     function handleCustomTokenInput(val) {
-      const hasLength = val.length >= 8;
+      const hasLength = val.length >= 12;
       const hasUpperLower = /[a-z]/.test(val) && /[A-Z]/.test(val);
       const hasNumber = /[0-9]/.test(val);
       const hasSymbol = /[^a-zA-Z0-9]/.test(val);
 
       const ruleLen = document.getElementById('ruleLength');
       if (ruleLen) {
-        ruleLen.innerHTML = `${hasLength ? '✓' : '○'} Minimum 8 characters (${val.length}/8)`;
+        ruleLen.innerHTML = `${hasLength ? '✓' : '○'} Minimum 12 characters (${val.length}/12)`;
         ruleLen.style.color = hasLength ? 'var(--status-green)' : 'var(--text-muted)';
       }
 
@@ -2198,7 +2206,7 @@
       // Calculate approximate entropy
       let score = 0;
       if (hasLength) score += 35;
-      else score += Math.floor((val.length / 8) * 25);
+      else score += Math.floor((val.length / 12) * 25);
       if (/[a-z]/.test(val)) score += 10;
       if (/[A-Z]/.test(val)) score += 15;
       if (hasNumber) score += 20;
@@ -2227,8 +2235,8 @@
     async function handleCustomTokenSubmit(e) {
       e.preventDefault();
       const custom_token = document.getElementById('customTokenInput').value.trim();
-      if (custom_token.length < 8) {
-        alert('Personal access key must be at least 8 characters long.');
+      if (custom_token.length < 12) {
+        alert('Personal access key must be at least 12 characters long for cybersecurity compliance.');
         return;
       }
 
@@ -2257,12 +2265,13 @@
         sessionStorage.setItem('cyberforge_candidate_token', TOKEN);
         if (currentCandidate) {
           currentCandidate.custom_token_set = 1;
+          currentCandidate.must_change_token = 0;
         }
 
         closeCustomTokenModal();
         updateCandidateKeyUI();
         const rating = (data.entropy && data.entropy.score) || data.entropy_score || 'Defense-Grade';
-        alert(`Success: Personalized defense access key configured successfully!\n\nSecurity Rating: ${rating}\n\nPlease record your key securely.`);
+        alert(`Success: Personal access key updated and saved in the database!\n\nSecurity Rating: ${rating}\n\nUse this key for all future logins. You can rotate it anytime.`);
         loadMyTasks();
       } catch (err) {
         alert('Credential Configuration Failed: ' + err.message);

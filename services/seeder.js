@@ -12,7 +12,7 @@ const INITIAL_COHORT = [
   {
     id: 1,
     name: 'Kaif Pathan',
-    role: 'devsecops',
+    role: 'junior',
     default_token: '04521968ccdc2d5bc71066dd3aed7f82',
     do326a_track: 'Distroless Docker Infrastructure',
     target_repo_path: 'infra/docker/Dockerfile.gateway',
@@ -21,7 +21,7 @@ const INITIAL_COHORT = [
   {
     id: 2,
     name: 'Nadir Murudkar',
-    role: 'core',
+    role: 'junior',
     default_token: '1f4297bf57f572146c5281df4db52c6d',
     do326a_track: 'Ed25519 Cryptographic Verifier',
     target_repo_path: 'services/ingress_gateway/crypto/verifier.py',
@@ -30,7 +30,7 @@ const INITIAL_COHORT = [
   {
     id: 3,
     name: 'Tejal Puthran',
-    role: 'core',
+    role: 'junior',
     default_token: 'e79155d935fb61ae6e5c4ac0f299aa28',
     do326a_track: 'Kinematics Anomaly Filter',
     target_repo_path: 'services/ingress_gateway/filters/kinematics.py',
@@ -48,7 +48,7 @@ const INITIAL_COHORT = [
   {
     id: 5,
     name: 'Prarthana Shah',
-    role: 'core',
+    role: 'junior',
     default_token: '80766c0ceb1b07039a7ffccce3ddbaa4',
     do326a_track: 'Anti-Replay Guard',
     target_repo_path: 'services/ingress_gateway/filters/replay_guard.py',
@@ -109,7 +109,8 @@ async function seedInitialCandidates() {
         // Keep custom token if set, otherwise restore canonical default token
         await run(
           `UPDATE candidates 
-           SET default_token = ?,
+           SET role = 'junior',
+               default_token = ?,
                access_token = CASE WHEN custom_token_set = 1 AND access_token IS NOT NULL AND access_token != '' THEN access_token ELSE ? END,
                do326a_track = ?,
                target_repo_path = ?,
